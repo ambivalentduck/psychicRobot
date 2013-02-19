@@ -7,7 +7,7 @@
 class twoLinkArm
 {
 public:
-	twoLinkArm(point x0, double l1, double l2, double lc1, double lc2, double m1, double m2, double I1, double I2);
+	twoLinkArm(ArmParams P);
 	~twoLinkArm();
 	void moveShoulder(point x0);
 	point fkin(point q);
@@ -20,10 +20,9 @@ public:
 	point getQDDot(point q, point qdot, point xddot);
 	void crapPoint(point p);
 	void crapMat(mat2 m);
-	
 	bool unitTests();
-private:
-	struct PARAMS
+	
+	struct ArmParams
 	{
 		point x0;
 		double l1;
@@ -34,7 +33,11 @@ private:
 		double m2;
 		double I1;
 		double I2;
-	} params;
+	};
+	static ArmParams defaultParams();
+	
+private:
+	 ArmParams params;
 		
 };
 

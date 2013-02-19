@@ -2,17 +2,9 @@
 #include <cmath>
 #include <iostream>
 
-twoLinkArm::twoLinkArm(point x0, double l1, double l2, double lc1, double lc2, double m1, double m2, double I1, double I2)
+twoLinkArm::twoLinkArm(ArmParams P)
 {
-	params.x0=x0;
-	params.l1=l1;
-	params.l2=l2;
-	params.lc1=lc1;
-	params.lc2=lc2;
-	params.m1=m1;
-	params.m2=m2;
-	params.I1=I1;
-	params.I2=I2;
+	params=P;
 }
 
 twoLinkArm::~twoLinkArm()
@@ -39,7 +31,6 @@ void twoLinkArm::fkin(point q, point &x, point &x1)
 
 bool twoLinkArm::ikin(point x, point &q)
 {
-	point xtemp=x;
 	x=x-params.x0;
 	double S=(std::pow(params.l1+params.l2,2)-(std::pow(x.X(),2)+std::pow(x.Y(),2)))/(std::pow(x.X(),2)+std::pow(x.Y(),2)-std::pow(params.l1-params.l2,2));
 	if(S<0) {q=point(); return false;}
@@ -157,7 +148,23 @@ bool twoLinkArm::unitTests()
 	crapPoint(C);
 	std::cout<<std::endl;
 	
-	return 0;
+	return 1;
 }
+
+ArmParams twoLinkArm::defaultParams()
+{
+	ArmParams P;
+	P.x0=point(-.0062791,.9087526);
+	P.l1=.2450;
+	P.l2=.3350;
+	P.lc1=.1225;
+	P.lc2=.1872;
+	P.m1=1.93;
+	P.m2=1.52;
+	P.I1=.0141;
+	P.I2=.0188;
+	return P;
+}
+
 
 
