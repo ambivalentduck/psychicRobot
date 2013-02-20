@@ -11,15 +11,15 @@
 class ArmSolver
 {
 public:
-	ArmSolver(twoLinkArm::ArmParams P, double tspacing, bool solveIntent=true);
+	ArmSolver(twoLinkArm::ArmParams P, bool solveIntent=true, bool constImpedance=true);
 	~ArmSolver();
 	int func(double t, const double y[], double f[]);
-	void firstpush(double t, point p, point v, point a, mat2 Kp, mat2 Kd);
+	void cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, mat2 Kp, mat2 Kd);
 	void push(double t, point p, point v, point a);
-	void pull(double t, point 
+	bool pull(point &p, int timeout=-1);
+	void solve();
 	static int statfunc(double t, const double y[], double f[], void *params);
 	static int statjac(double t, const double y[], double *dfdy, double dfdt[], void *params);
-	
 private:
 	gsl_odeiv2_driver * driver;
 	gsl_odeiv2_system sys;
@@ -27,9 +27,17 @@ private:
 	twoLinkArm * arm;
 	bool solveDes, constImp, seeded;
 	std::deque<point> qm,qs,qmdot,qsdot,qmddot,torquem,Kpm,Kdm;
-	std::deque<double> times;
+	std::deque<double> times, stimes;
 	mat2 Kd, Kp;
-	double t, tSpacing;
+	QSemaphore solvesemaphore, grabsemaphore;
+};
+
+class solveThread : public QThread
+{
+public:
+	solveThread(ArmSolver * solver);
+	void run();		
+	ArmSolver * as;
 };
 
 #endif

@@ -1,13 +1,14 @@
 #include "ode.h"
 
-ArmSolver::ArmSolver(twoLinkArm::ArmParams P, double tspacing, bool solveIntent, bool constImpedance)
+ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpedance)
 {
 	solveDes=solveIntent;
-	tSpacing=tspacing;
+	constImp=constImpedance;
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
 	driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45,1e-6, 1e-6, 0.0);
+	seeded=false;
 }
 
 ArmSolver::~ArmSolver()
@@ -27,7 +28,7 @@ int ArmSolver::func(double t, const double y[], double f[])
 	
 	mat2 kpi;
 	mat2 kdi;
-	if(constImpedance) {kpi=Kp; kdi=Kd;}
+	if(constImp) {kpi=Kp; kdi=Kd;}
 	else {kpi=Kpm[0]*oms+Kpm[1]*s; kdi=Kdm[0]*oms+Kdm[1]*s;}
 	
 	f[0]=y[2];
@@ -44,37 +45,97 @@ int ArmSolver::func(double t, const double y[], double f[])
 	return GSL_SUCCESS;
 }
 
-void ArmSolver::push(double t, point p, point v, point a)
+void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+{
+	seeded=false;
+	int a=solvesemaphore.available();
+	solvesemaphore.acquire(a);
+	
+	times.clear();
+	qm.clear();
+	qmdot.clear();
+	qmddot.clear();
+	torquem.clear();
+	
+	point q;
+	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
+	qm.push_back(q);
+	
+	mat2 fJ=arm->jacobian(q);
+	point qdot=fJ/v;
+	qmdot.push_back(qdot);
+	
+	point qddot=arm->getQDDot(q,qdot,a);
+	qmddot.push_back(qddot);
+	
+	point torque=(fJ.transpose())*force;
+	torquem.push_back(torque);
+	
+	times.push_back(t);
+	
+	Kd=kd;
+	Kp=kp;
+	
+	arm->setShoulder(P.x0);
+	seeded=true;
+}
+
+void ArmSolver::push(double t, point p, point v, point a, point force)
 {
 	point q;
-	while(arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
+	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
+	qm.push_back(q);
+	
+	mat2 fJ=arm->jacobian(q);
+	point qdot=fJ/v;
+	qmdot.push_back(qdot);
+	
+	point qddot=arm->getQDDot(q,qdot,a);
+	qmddot.push_back(qddot);
+	
+	point torque=(fJ.transpose())*force;
+	torquem.push_back(torque);
+	
+	times.push_back(t);
+	
+	solvesemaphore.release();
+}
+
+void ArmSolver::solve()
+{
+	while(solvesemaphore.tryAcquire(1,3*17)) //Try for at least 3 frames to start solving
 	{
-		
-		
-	point q = ikin(p);
-	
-	
-	
-	
-	if(N>0) {delete solved; delete times;}
-	solved=new double[n];
-	times=new double[n];
-	N=n;
-	solved[0]=y1;
-	times[0]=t1;
-	double t=t1;
-	double y=y1;
-	for(int k=1; k<=n; k++)
-	{
-		double tk=t1+(t2-t1)*double(k)/N;
+		double y[4];
+		y[0]=qs[0][0];
+		y[1]=qs[0][1];
+		y[2]=qsdot[0][0];
+		y[3]=qsdot[0][1];
+		double t=times[0];
+		double tk=times[1];
 		int status=gsl_odeiv2_driver_apply(driver, &t, tk, &y);
-		times[k]=t;
-		solved[k]=y;
+		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
+		point qst=point(y[0],y[1]);
+		point qstdot=point(y[2],y[3]);
 		
-		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash at: "<<k<<std::endl; break;}
+		qs.push_back(qst);
+		qsdot.push_back(qstdot);
+		stimes.push_back(t);
+		grabsemaphore.release();
 		
-		std::cout<<times[k] TAB solved[k] << std::endl;
+		qm.pop_front();
+		qmdot.pop_front();
+		qmddot.pop_front();
+		times.pop_front();
 	}
+}
+
+bool ArmSolver::pull(point &p, int timeout)
+{
+	if(!grabsemaphore.tryAcquire(1,timeout) return false;
+	p=fkin(qs.front());
+	qs.pop_front();
+	qsdot.pop_front();
+	stimes.pop_front();
 }
 
 int ArmSolver::statjac(double t, const double y[], double *dfdy, double dfdt[], void *params)
@@ -88,5 +149,13 @@ int ArmSolver::statfunc(double t, const double y[], double f[], void *params)
 	return o->func(t,y,f);
 }
 		
-		
+solveThread::solveThread(ArmSolver * solver)
+{
+	as=solver;
+}
+
+void solveThread::run()
+{
+	if(!isRunning) as->solve();
+}
 		
