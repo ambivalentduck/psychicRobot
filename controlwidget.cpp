@@ -67,6 +67,14 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	gain=0;
 	connect(gainBox, SIGNAL(valueChanged(double)), this, SLOT(setGain(double)));
 	
+	layout->addRow(tr("EA Gain:"), eaGainBox=new QDoubleSpinBox(this));
+	gainBox->setValue(1);
+	gainBox->setMaximum(5);
+	gainBox->setMinimum(-5);
+	gainBox->setDecimals(3);
+	eaGain=1;
+	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
+	
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
@@ -82,6 +90,9 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
 	userWidget->show();
+	
+	//Get the armsolver class initialized with default blah.
+	armsolver=new ArmSolver(twoLinkArm::defaultParams(),true,true);
 	
 	//Set up a "calibration" field. Should be a 1/4 circle in each corner
 	sphereVec.clear();
@@ -138,6 +149,18 @@ void ControlWidget::readPending()
 	if(inSize != s) in.resize(s);
 	us->readDatagram(in.data(), in.size());
 	
+	//Make sure pva is seeded.
+	xpcTime=*reinterpret_cast<double*>(in.data());
+	position.X()=*reinterpret_cast<double*>(in.data()+sizeof(double));
+	position.Y()=*reinterpret_cast<double*>(in.data()+2*sizeof(double));
+	velocity.X()=*reinterpret_cast<double*>(in.data()+3*sizeof(double));
+	velocity.Y()=*reinterpret_cast<double*>(in.data()+4*sizeof(double));
+	accel.X()=*reinterpret_cast<double*>(in.data()+5*sizeof(double));
+	accel.Y()=*reinterpret_cast<double*>(in.data()+6*sizeof(double));
+	force.X()=*reinterpret_cast<double*>(in.data()+7*sizeof(double));
+	force.Y()=-(*reinterpret_cast<double*>(in.data()+8*sizeof(double))); //Strange error
+	cursor=position;
+	
 	if(ignoreInput) //Send something back out so that XPC doesn't choke/stall/worse
 	{
 		gain=sigGain;
@@ -146,15 +169,8 @@ void ControlWidget::readPending()
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
-	
-	cursor.X()=*reinterpret_cast<double*>(in.data()+sizeof(double));
-	cursor.Y()=*reinterpret_cast<double*>(in.data()+2*sizeof(double));
-	velocity.X()=*reinterpret_cast<double*>(in.data()+3*sizeof(double));
-	velocity.Y()=*reinterpret_cast<double*>(in.data()+4*sizeof(double));
-	accel.X()=*reinterpret_cast<double*>(in.data()+5*sizeof(double));
-	accel.Y()=*reinterpret_cast<double*>(in.data()+6*sizeof(double));
-	force.X()=*reinterpret_cast<double*>(in.data()+7*sizeof(double));
-	force.Y()=*reinterpret_cast<double*>(in.data()+8*sizeof(double));
+	armsolver->push(xpcTime, position, velocity, accel, force);
+	armsolver->solve();
 	
 	if (!leftOrigin) trialStart=now;
 	if (!leftOrigin) if (cursor.dist(origin)>(oRadius+cRadius)) leftOrigin=true;
@@ -175,7 +191,10 @@ void ControlWidget::readPending()
 		sphere.radius=tRadius;
 		sphereVec.push_back(sphere);
 	}
+	
 	//Cursor
+	armsolver->pull(desposition, 1);
+	cursor=desposition*(1l-eaGain)+position*eaGain;
 	sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
 	sphere.radius=cRadius;
@@ -286,6 +305,9 @@ point ControlWidget::loadTrial(int T)
 	trialNumBox->setValue(T);
 	gainBox->setValue(sigGain);
 	
+	
+	armsolver->cleanpush(twoLinkArm::defaultParams(), xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+		
 	state=hold;
 	holdStart=now;
 	return target;

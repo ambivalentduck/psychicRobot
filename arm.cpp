@@ -156,7 +156,7 @@ bool twoLinkArm::unitTests()
 	return 1;
 }
 
-ArmParams twoLinkArm::defaultParams()
+twoLinkArm::ArmParams twoLinkArm::defaultParams()
 {
 	ArmParams P;
 	P.x0=point(-.0062791,.9087526);

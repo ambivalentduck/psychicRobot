@@ -33,9 +33,18 @@ mat2 mat2::operator *(double d)
 	return mat2(m[0]*d,m[1]*d, m[2]*d,m[3]*d);
 }
 
-mat2 mat2::operator +(mat2 m)
+mat2 mat2::operator +(mat2 m2)
 {
-	return mat2(m[0]+m.m[0],m[1]+m.m[1],m[2]+m.m[2],m[3]+m.m[3]);
+	return mat2(m[0]+m2.m[0],m[1]+m2.m[1],m[2]+m2.m[2],m[3]+m2.m[3]);
+}
+
+mat2 mat2::operator =(mat2 m2)
+{
+	m[0]=m2.m[0];
+	m[1]=m2.m[1];
+	m[2]=m2.m[2];
+	m[3]=m2.m[3];
+	return *this;
 }
 
 mat2 mat2::transpose()

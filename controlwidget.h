@@ -13,6 +13,8 @@
 #include "displaywidget.h"
 #include "timestuff.h"
 #include <cmath>
+#include "armsolver.h"
+#include "arm.h"
 
 
 class ControlWidget : public QWidget
@@ -24,12 +26,13 @@ public:
 	
 private:
 	QSpinBox *trialNumBox, *subjectBox;
-	QDoubleSpinBox *gainBox;
+	QDoubleSpinBox *gainBox, *eaGainBox;
 	QPushButton *startButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
 		
 	DisplayWidget * userWidget;
+	ArmSolver * armsolver;
 
 	void closeEvent(QCloseEvent *event);
 	void goGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(false); }
@@ -43,7 +46,7 @@ private:
 	QFile contFile;
 	QTextStream outStream;
 	
-	double sigGain, gain, min, smalls, bigs;
+	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime;
 	enum stimuli {UNSTIMULATED=0, CURL=1, SADDLE=2} stimulus;
 	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
 	std::vector<QWidget*> grayList;
@@ -55,7 +58,7 @@ private:
 	timespec zero, now, trialStart, targetAcquired, holdStart;
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide;
 	int trial, subject,lastStim;
-	point origin, cursor, velocity, accel, target, force, center;
+	point origin, cursor, desposition, position, velocity, accel, target, force, center;
 	
 signals:
 	void endApp();
@@ -68,6 +71,7 @@ public slots:
 	double evalSigmoid(double t, double risetime) {double a=10l/risetime; t-=risetime/2l; return (a*t/sqrt(1l+pow(a*t,2))+1l)/2l;}
 	void setStimulus(int i) {stimulus=stimuli(i);}
 	void setGain(double g) {sigGain=g;}
+	void setEAGain(double g) {eaGain=g;}
 };
 
 #endif
