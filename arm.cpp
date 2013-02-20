@@ -12,9 +12,14 @@ twoLinkArm::~twoLinkArm()
 	return;
 }
 
-void twoLinkArm::moveShoulder(point x0)
+void twoLinkArm::setShoulder(point x0)
 {
 	params.x0=x0;
+}
+
+void twoLinkArm::moveShoulder(point x0)
+{
+	params.x0=params.x0+x0;
 }
 
 point twoLinkArm::fkin(point q)
@@ -34,7 +39,7 @@ bool twoLinkArm::ikin(point x, point &q)
 	x=x-params.x0;
 	double S=(std::pow(params.l1+params.l2,2)-(std::pow(x.X(),2)+std::pow(x.Y(),2)))/(std::pow(x.X(),2)+std::pow(x.Y(),2)-std::pow(params.l1-params.l2,2));
 	if(S<0) {q=point(); return false;}
-	q[1]=-2.0*std::atan(std::sqrt(S));
+	q[1]=-2.0*std::atan(std::sqrt(S)); //Negative sign indicates elbow right.
 	q[0]=std::atan2(x.Y(),x.X())-std::atan2(params.l2*std::sin(q[1]),params.l1+params.l2*std::cos(q[1]));
 	return true;
 }

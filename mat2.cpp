@@ -28,6 +28,16 @@ point mat2::operator *(point p)
 	return point(m[0]*p.p[0]+m[1]*p.p[1], m[2]*p.p[0]+m[3]*p.p[1]);
 }
 
+mat2 mat2::operator *(double d)
+{
+	return mat2(m[0]*d,m[1]*d, m[2]*d,m[3]*d);
+}
+
+mat2 mat2::operator +(mat2 m)
+{
+	return mat2(m[0]+m.m[0],m[1]+m.m[1],m[2]+m.m[2],m[3]+m.m[3]);
+}
+
 mat2 mat2::transpose()
 {
 	return mat2(m[0],m[2],m[1],m[3]);
