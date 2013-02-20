@@ -24,7 +24,7 @@ public:
 	
 private:
 	QSpinBox *trialNumBox, *subjectBox;
-	QDoubleSpinBox *delayBox;
+	QDoubleSpinBox *gainBox;
 	QPushButton *startButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
@@ -36,29 +36,26 @@ private:
 	void unGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(true); }
 	point loadTrial(int T);
 	void noConsecutive(bool * array, int n);
-	void processUDP(QByteArray in);
 	
-	QByteArray read,out;
+	QByteArray in,out;
 	int inSize, outSize;
 	QUdpSocket * us;
-	QFile contFile, trialFile;
-	QTextStream outStream, trialStream;
+	QFile contFile;
+	QTextStream outStream;
 	
-	double * minJerkParams[6];
-	double lastTargetTime, viscousity, curl, saddle, inertia, probeDelay, pillowMag, min, probeOn, visualdelay;
+	double sigGain, gain, min, smalls, bigs;
 	enum stimuli {UNSTIMULATED=0, CURL=1, SADDLE=2} stimulus;
-	enum GameState {acquireTarget=0, inTarget=1} state;
-	enum ProbeType {NONE=0, VISCOUSITY=1, PULSE=2} probe;
+	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
 	std::vector<QWidget*> grayList;
 	std::vector<DisplayWidget::Sphere> sphereVec;
 	std::deque<timespec> times;
 	std::deque<QByteArray> data;
 	DisplayWidget::Sphere sphere;
 
-	timespec zero, now, trialStart, targetAcquired;
-	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin;
-	int trial, subject;
-	point origin, cursor, velocity, accel, target, force, center, commandforce, unitcommandforce;
+	timespec zero, now, trialStart, targetAcquired, holdStart;
+	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide;
+	int trial, subject,lastStim;
+	point origin, cursor, velocity, accel, target, force, center;
 	
 signals:
 	void endApp();
@@ -70,7 +67,7 @@ public slots:
 	void setSubject(int i) {subject=i;}
 	double evalSigmoid(double t, double risetime) {double a=10l/risetime; t-=risetime/2l; return (a*t/sqrt(1l+pow(a*t,2))+1l)/2l;}
 	void setStimulus(int i) {stimulus=stimuli(i);}
-	void setDelay(double d) {if (d<=0.0) visualdelay=-1; else visualdelay=d;}
+	void setGain(double g) {sigGain=g;}
 };
 
 #endif

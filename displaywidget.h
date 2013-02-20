@@ -13,11 +13,11 @@
 
 #define LEFT .325l
 #define RIGHT -.344l
-#define TOP .198l
-#define BOTTOM .698l
-#define PROJECTORX -.0121l
-#define PROJECTORY .663l
-#define PROJECTORZ 1.327l
+#define TOP .17l
+#define BOTTOM .68l
+#define PROJECTORX 0l
+#define PROJECTORY .645l
+#define PROJECTORZ 1.36l
 
 #define LOWERBAR .50l
 #define UPPERBAR .65l
