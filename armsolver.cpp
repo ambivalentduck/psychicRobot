@@ -98,6 +98,7 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 
 void ArmSolver::push(double t, point p, point v, point a, point force)
 {
+	if(!seeded) return;
 	point q;
 	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
 	qm.push_back(q);
