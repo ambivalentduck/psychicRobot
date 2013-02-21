@@ -106,7 +106,6 @@ void DisplayWidget::paintGL()
 		glCallList(sphereList);
 		glPopMatrix();
 	}
-	renderText(0,.4,0,text);
 
 	pbuffer->updateDynamicTexture(dyntexture);
 
@@ -128,6 +127,8 @@ void DisplayWidget::paintGL()
 		glTexCoord2f(1,0); glVertex2f(RIGHT,BOTTOM);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+	
+	renderText(0,.4,0,text);
 	
 	dataMutex.unlock();
 	swapBuffers();
