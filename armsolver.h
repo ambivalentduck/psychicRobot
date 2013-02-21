@@ -50,6 +50,7 @@ private:
 	mat2 Kd, Kp;
 	QSemaphore solvesemaphore, grabsemaphore;
 	QMutex destructomutex;
+	point qst, qstdot;
 };
 
 
