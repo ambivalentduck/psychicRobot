@@ -106,6 +106,7 @@ void DisplayWidget::paintGL()
 		glCallList(sphereList);
 		glPopMatrix();
 	}
+	renderText(0,.4,0,text);
 
 	pbuffer->updateDynamicTexture(dyntexture);
 
