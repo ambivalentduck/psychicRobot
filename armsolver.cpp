@@ -7,7 +7,15 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
+	#ifdef __GSL_ODEIV2_H__
 	driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45,1e-6, 1e-6, 0.0);
+	#else
+	odetype=gsl_odeiv_step_rk8pd;
+	odestep=gsl_odeiv_step_alloc (odetype, 4);
+	odecontrol=gsl_odeiv_control_y_new (1e-6, 0.0);
+	odeevolve=gsl_odeiv_evolve_alloc(4);
+	gsl_ieee_env_setup();
+	#endif
 	seeded=false;
 }
 
@@ -122,7 +130,15 @@ void ArmSolver::run()
 		y[3]=qsdot[0][1];
 		double t=times[0];
 		double tk=times[1];
+		#ifdef __GSL_ODEIV2_H__
 		int status=gsl_odeiv2_driver_apply(driver, &t, tk, y);
+		#else
+		double h=1e-6;
+		while(t<tk)
+		{
+			int status = gsl_odeiv_evolve_apply(odeevolve,odecontrol,odestep,&sys,&t,tk,&h,y);
+		}
+		#endif
 		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
 		point qst=point(y[0],y[1]);
 		point qstdot=point(y[2],y[3]);

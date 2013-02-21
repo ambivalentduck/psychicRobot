@@ -3,6 +3,9 @@
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
+#ifndef __GSL_ODEIV2_H__
+	#include <gsl/gsl_odeiv.h>
+#endif
 #include <deque>
 #include "arm.h"
 #include "displaywidget.h"
@@ -25,8 +28,17 @@ public:
 	static int statfunc(double t, const double y[], double f[], void *params);
 	static int statjac(double t, const double y[], double *dfdy, double dfdt[], void *params);
 private:
-	gsl_odeiv2_driver * driver;
-	gsl_odeiv2_system sys;
+	#ifdef __GSL_ODEIV2_H__
+		gsl_odeiv2_driver * driver;
+		gsl_odeiv2_system sys;
+	#else
+	const gsl_odeiv_step_type * odetype;
+	gsl_odeiv_step * odestep;
+	gsl_odeiv_control * odecontrol;
+	gsl_odeiv_evolve * odeevolve;
+	gsl_odeiv_system sys;
+	#endif
+		
 	void * voidpointer;
 	twoLinkArm * arm;
 	bool solveDes, constImp, seeded;
