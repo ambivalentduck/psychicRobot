@@ -32,9 +32,9 @@ public:
 	void operator += (T c);
 	void operator -= (T c);
 	void operator *= (T c);
-	void operator /= (T c);
+	void operator /= (T c);                     
 	
-	Point<T> operator -() {return -1*(*this);}
+	Point<T> operator -() {return (*this)*-1l;}
 	bool operator == (Point<T> p2);
 	
 	double dist(Point<T> p2);
