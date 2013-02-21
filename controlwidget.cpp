@@ -201,25 +201,7 @@ void ControlWidget::readPending()
 	sphere.radius=cRadius;
 	sphereVec.push_back(sphere);
 	
-	sphere.color=point(1,0,1); //Blue
-	sphere.position=desposition;
-	sphere.radius=cRadius;
-	sphereVec.push_back(sphere);
-	
-	sphere.color=point(1,1,1); //Blue
-	sphere.position=position;
-	sphere.radius=cRadius;
-	sphereVec.push_back(sphere);
-	
 	userWidget->setSpheres(sphereVec);
-	
-	QString xstring;
-	xstring.setNum(force.X());
-	QString ystring;
-	ystring.setNum(force.Y());
-	userWidget->setText(xstring+", "+ystring);
-	
-	
 		
 	switch(state)
 	{
