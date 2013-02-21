@@ -200,12 +200,12 @@ void ControlWidget::readPending()
 	sphere.radius=cRadius;
 	sphereVec.push_back(sphere);
 	
-	phere.color=point(1,0,1); //Blue
+	sphere.color=point(1,0,1); //Blue
 	sphere.position=desposition;
 	sphere.radius=cRadius;
 	sphereVec.push_back(sphere);
 	
-	phere.color=point(1,1,1); //Blue
+	sphere.color=point(1,1,1); //Blue
 	sphere.position=position;
 	sphere.radius=cRadius;
 	sphereVec.push_back(sphere);
