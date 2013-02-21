@@ -212,9 +212,11 @@ void ControlWidget::readPending()
 	
 	userWidget->setSpheres(sphereVec);
 	
-	QString fstring;
-	fstring.setNum(force.Y());
-	userWidget->setText(fstring);
+	QString xstring;
+	xstring.setNum(force.X());
+	QString ystring;
+	ystring.setNum(force.Y());
+	userWidget->setText(xstring+", "+ystring);
 	
 	
 		
