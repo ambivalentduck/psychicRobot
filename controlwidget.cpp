@@ -325,7 +325,7 @@ point ControlWidget::loadTrial(int T)
 	gainBox->setValue(sigGain);
 	
 	
-	armsolver->cleanpush(twoLinkArm::defaultParams(), xpcTime, center, point(), point(), point(), mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	armsolver->cleanpush(twoLinkArm::defaultParams(), xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 		
 	state=hold;
 	holdStart=now;
