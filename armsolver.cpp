@@ -14,7 +14,6 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 	odestep=gsl_odeiv_step_alloc (odetype, 4);
 	odecontrol=gsl_odeiv_control_y_new (1e-6, 0.0);
 	odeevolve=gsl_odeiv_evolve_alloc(4);
-	//gsl_ieee_env_setup();
 	#endif
 	seeded=false;
 }
@@ -76,10 +75,12 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	point q;
 	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
 	qm.push_back(q);
+	qst=q;
 	
 	mat2 fJ=arm->jacobian(q);
 	point qdot=fJ/v;
 	qmdot.push_back(qdot);
+	qstdot=qdot;
 	
 	point qddot=arm->getQDDot(q,qdot,a);
 	qmddot.push_back(qddot);
@@ -166,7 +167,7 @@ void ArmSolver::run()
 bool ArmSolver::pull(point &p, int timeout)
 {
 	if(!grabsemaphore.tryAcquire(1,timeout)) return false;
-	p=arm->fkin(qs.front());
+	p=arm->fkin(qs.front()); //Update with braindead q+qdot*delta(t)?
 	qs.pop_front();
 	qsdot.pop_front();
 	stimes.pop_front();
