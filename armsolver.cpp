@@ -71,6 +71,8 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	qmddot.clear();
 	torquem.clear();
 	
+	arm->setShoulder(P.x0);
+	
 	point q;
 	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
 	qm.push_back(q);
@@ -92,7 +94,6 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	Kd=kd;
 	Kp=kp;
 	
-	arm->setShoulder(P.x0);
 	seeded=true;
 	destructomutex.unlock();
 }
@@ -113,6 +114,7 @@ void ArmSolver::push(double t, point p, point v, point a, point force)
 	
 	point torque=(fJ.transpose())*force;
 	torquem.push_back(torque);
+	std::cout << torque[0] << " " << torque[1] << std::endl;
 	
 	times.push_back(t);
 	
