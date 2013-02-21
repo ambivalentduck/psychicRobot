@@ -7,21 +7,27 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
-	#ifdef __GSL_ODEIV2_H__
+	#ifdef NEWGSL
 	driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45,1e-6, 1e-6, 0.0);
 	#else
 	odetype=gsl_odeiv_step_rk8pd;
 	odestep=gsl_odeiv_step_alloc (odetype, 4);
 	odecontrol=gsl_odeiv_control_y_new (1e-6, 0.0);
 	odeevolve=gsl_odeiv_evolve_alloc(4);
-	gsl_ieee_env_setup();
+	//gsl_ieee_env_setup();
 	#endif
 	seeded=false;
 }
 
 ArmSolver::~ArmSolver()
 {
+	#ifdef NEWGSL
 	gsl_odeiv2_driver_free(driver);
+	#else
+	gsl_odeiv_evolve_free(odeevolve);
+	gsl_odeiv_control_free(odecontrol);
+	gsl_odeiv_step_free(odestep);
+	#endif
 	delete arm;
 }
 
@@ -130,13 +136,14 @@ void ArmSolver::run()
 		y[3]=qsdot[0][1];
 		double t=times[0];
 		double tk=times[1];
-		#ifdef __GSL_ODEIV2_H__
+		#ifdef NEWGSL
 		int status=gsl_odeiv2_driver_apply(driver, &t, tk, y);
 		#else
 		double h=1e-6;
+		int status;
 		while(t<tk)
 		{
-			int status = gsl_odeiv_evolve_apply(odeevolve,odecontrol,odestep,&sys,&t,tk,&h,y);
+			status = gsl_odeiv_evolve_apply(odeevolve,odecontrol,odestep,&sys,&t,tk,&h,y);
 		}
 		#endif
 		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
