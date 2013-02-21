@@ -114,7 +114,6 @@ void ArmSolver::push(double t, point p, point v, point a, point force)
 	
 	point torque=(fJ.transpose())*force;
 	torquem.push_back(torque);
-	std::cout << torque[0] << " " << torque[1] << std::endl;
 	
 	times.push_back(t);
 	
@@ -162,6 +161,7 @@ void ArmSolver::run()
 		qm.pop_front();
 		qmdot.pop_front();
 		qmddot.pop_front();
+		torquem.pop_front();
 		times.pop_front();
 	}
 }
