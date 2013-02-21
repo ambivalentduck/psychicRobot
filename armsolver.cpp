@@ -60,11 +60,10 @@ int ArmSolver::func(double t, const double y[], double f[])
 
 void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
 {
-	seeded=false;
 	destructomutex.lock();
+	seeded=false;
 	int av=solvesemaphore.available();
 	solvesemaphore.acquire(av);
-	destructomutex.unlock();
 	
 	times.clear();
 	qm.clear();
@@ -95,6 +94,7 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	
 	arm->setShoulder(P.x0);
 	seeded=true;
+	destructomutex.unlock();
 }
 
 void ArmSolver::push(double t, point p, point v, point a, point force)
