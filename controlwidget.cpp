@@ -159,7 +159,6 @@ void ControlWidget::readPending()
 	accel.Y()=*reinterpret_cast<double*>(in.data()+6*sizeof(double));
 	force.X()=*reinterpret_cast<double*>(in.data()+7*sizeof(double));
 	force.Y()=-(*reinterpret_cast<double*>(in.data()+8*sizeof(double))); //Strange error
-	force=-force;
 	cursor=position;
 	
 	if(ignoreInput) //Send something back out so that XPC doesn't choke/stall/worse
