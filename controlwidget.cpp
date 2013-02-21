@@ -193,7 +193,7 @@ void ControlWidget::readPending()
 	}
 	
 	//Cursor
-	armsolver->pull(desposition, 1);
+	while(armsolver->pull(desposition, 1));
 	cursor=desposition*(1l-eaGain)+position*eaGain;
 	sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
