@@ -131,10 +131,10 @@ void ArmSolver::run()
 		if(!solvesemaphore.tryAcquire(1,3*17)) break; //Try for at least 3 frames to start solving
 		destructomutex.unlock();
 		double y[4];
-		y[0]=qs[0][0];
-		y[1]=qs[0][1];
-		y[2]=qsdot[0][0];
-		y[3]=qsdot[0][1];
+		y[0]=qst[0];
+		y[1]=qst[1];
+		y[2]=qstdot[0];
+		y[3]=qstdot[1];
 		double t=times[0];
 		double tk=times[1];
 		#ifdef NEWGSL
@@ -148,8 +148,8 @@ void ArmSolver::run()
 		}
 		#endif
 		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
-		point qst=point(y[0],y[1]);
-		point qstdot=point(y[2],y[3]);
+		qst=point(y[0],y[1]);
+		qstdot=point(y[2],y[3]);
 		
 		qs.push_back(qst);
 		qsdot.push_back(qstdot);
