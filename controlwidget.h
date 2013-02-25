@@ -26,7 +26,7 @@ public:
 	
 private:
 	QSpinBox *trialNumBox, *subjectBox;
-	QDoubleSpinBox *gainBox, *eaGainBox;
+	QDoubleSpinBox *gainBox, *eaGainBox, *l1Box, *l2Box;
 	QPushButton *startButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
@@ -47,16 +47,17 @@ private:
 	QTextStream outStream;
 	
 	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime;
-	enum stimuli {UNSTIMULATED=0, CURL=1, SADDLE=2} stimulus;
+	enum stimuli {UNSTIMULATED=0, STIMULATED=1} stimulus;
 	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
 	std::vector<QWidget*> grayList;
 	std::vector<DisplayWidget::Sphere> sphereVec;
 	std::deque<timespec> times;
 	std::deque<QByteArray> data;
 	DisplayWidget::Sphere sphere;
-
+	
+	twoLinkArm::ArmParams params;
 	timespec zero, now, trialStart, targetAcquired, holdStart;
-	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide;
+	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide, firstpush;
 	int trial, subject,lastStim;
 	point origin, cursor, desposition, position, velocity, accel, target, force, center;
 	
@@ -72,6 +73,8 @@ public slots:
 	void setStimulus(int i) {stimulus=stimuli(i);}
 	void setGain(double g) {sigGain=g;}
 	void setEAGain(double g) {eaGain=g;}
+	void setl1(double l) {params.l1=l;}
+	void setl2(double l) {params.l2=l;}
 };
 
 #endif

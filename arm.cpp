@@ -12,6 +12,11 @@ twoLinkArm::~twoLinkArm()
 	return;
 }
 
+void twoLinkArm::setParams(ArmParams P)
+{
+	params=P;
+}
+
 void twoLinkArm::setShoulder(point x0)
 {
 	params.x0=x0;

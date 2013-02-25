@@ -24,6 +24,7 @@ public:
 	~twoLinkArm();
 	void moveShoulder(point x0);
 	void setShoulder(point x0);
+	void setParams(ArmParams P);
 	point fkin(point q);
 	void fkin(point q, point &x, point &x1);
 	bool ikin(point x, point &q);

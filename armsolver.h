@@ -22,7 +22,8 @@ public:
 	ArmSolver(twoLinkArm::ArmParams P, bool solveIntent=true, bool constImpedance=true);
 	~ArmSolver();
 	int func(double t, const double y[], double f[]);
-	void cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd);
+	void setParams(twoLinkArm::ArmParams P);
+	void firstPush(double t, point p, point v, point a, point force, mat2 kp, mat2 kd);
 	void push(double t, point p, point v, point a, point force);
 	bool pull(point &p, int timeout=-1);
 	void solve();

@@ -58,30 +58,25 @@ int ArmSolver::func(double t, const double y[], double f[])
 	return GSL_SUCCESS;
 }
 
-void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+void ArmSolver::setParams(twoLinkArm::ArmParams P)
 {
 	destructomutex.lock();
-	seeded=false;
-	int av=solvesemaphore.available();
-	solvesemaphore.acquire(av);
 	
-	times.clear();
-	qm.clear();
-	qmdot.clear();
-	qmddot.clear();
-	torquem.clear();
+	arm->setParams(P);
 	
-	arm->setShoulder(P.x0);
-	
+	destructomutex.unlock();
+}
+
+void ArmSolver::firstPush(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+{
+	if(seeded) return;
 	point q;
 	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
 	qm.push_back(q);
-	qst=q;
 	
 	mat2 fJ=arm->jacobian(q);
 	point qdot=fJ/v;
 	qmdot.push_back(qdot);
-	qstdot=qdot;
 	
 	point qddot=arm->getQDDot(q,qdot,a);
 	qmddot.push_back(qddot);
@@ -95,8 +90,8 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	Kp=kp;
 	
 	seeded=true;
-	destructomutex.unlock();
 }
+
 
 void ArmSolver::push(double t, point p, point v, point a, point force)
 {

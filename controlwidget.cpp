@@ -75,6 +75,22 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	eaGain=1;
 	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
 	
+	params=twoLinkArm::defaultParams();
+	
+	layout->addRow(tr("Forearm Length  (meters):"), l2Box=new QDoubleSpinBox(this));
+	gainBox->setValue(params.l2);
+	gainBox->setMaximum(1);
+	gainBox->setMinimum(0);
+	gainBox->setDecimals(4);
+	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setl2(double)));
+	
+	layout->addRow(tr("Upper Arm Length (meters):"), l1Box=new QDoubleSpinBox(this));
+	gainBox->setValue(params.l1);
+	gainBox->setMaximum(1);
+	gainBox->setMinimum(0);
+	gainBox->setDecimals(4);
+	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
+	
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
@@ -92,7 +108,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget->show();
 	
 	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(twoLinkArm::defaultParams(),true,true);
+	armsolver=new ArmSolver(params,true,true);
 	
 	//Set up a "calibration" field. Should be a 1/4 circle in each corner
 	sphereVec.clear();
@@ -149,6 +165,9 @@ void ControlWidget::readPending()
 	if(inSize != s) in.resize(s);
 	us->readDatagram(in.data(), in.size());
 	
+	double reset_=0;
+	double mass_=3;
+	
 	//Make sure pva is seeded.
 	xpcTime=*reinterpret_cast<double*>(in.data());
 	position.X()=*reinterpret_cast<double*>(in.data()+sizeof(double));
@@ -166,6 +185,8 @@ void ControlWidget::readPending()
 		gain=sigGain;
 		out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 		out.append(reinterpret_cast<char*>(&gain),sizeof(double));
+		out.append(reinterpret_cast<char*>(&mass_),sizeof(double));
+		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
@@ -227,8 +248,14 @@ void ControlWidget::readPending()
 		break;
 	}
 	
+	reset_=1;
+	mass_=0;
+	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&gain),sizeof(double));
+	out.append(reinterpret_cast<char*>(&mass_),sizeof(double));
+	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
+	
 	//This will require additional appends for other stimuli
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 	
@@ -306,8 +333,12 @@ point ControlWidget::loadTrial(int T)
 	trialNumBox->setValue(T);
 	gainBox->setValue(sigGain);
 	
-	
-	armsolver->cleanpush(twoLinkArm::defaultParams(), xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	if(!firstpush)
+	{
+		firstpush=true;
+		armsolver->firstPush(xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	}
+	else armsolver->setParams(params);
 		
 	state=hold;
 	holdStart=now;
