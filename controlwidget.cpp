@@ -10,8 +10,8 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADETIME 1
-#define FADELENGTH 50
+#define FADETIME 2
+#define FADELENGTH 100
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
@@ -274,9 +274,9 @@ void ControlWidget::readPending()
 		while(it2!=extracted.end())
 		{
 			fade2=.5*(1.0+fade/double(FADELENGTH));
-			sphere.color=point(0,1,1)/fade2;
+			sphere.color=point(0,1,1)*fade2;
 			sphere.position=*it2;
-			sphere.radius=cRadius/fade2;
+			sphere.radius=cRadius*fade2;
 			sphereVec.push_back(sphere);
 			fade++;
 			it2++;
