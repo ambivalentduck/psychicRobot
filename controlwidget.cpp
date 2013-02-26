@@ -259,7 +259,7 @@ void ControlWidget::readPending()
 		fade=0;
 		while(it!=handle.end())
 		{
-			fade2=FADELENGTH-fade/2;
+			fade2=FADELENGTH/2.0-fade/2.0+1.0;
 			sphere.color=point(1,1,1)/fade2;
 			sphere.position=*it;
 			sphere.radius=cRadius/fade2;
@@ -273,7 +273,7 @@ void ControlWidget::readPending()
 		fade=0;
 		while(it2!=extracted.end())
 		{
-			fade2=FADELENGTH-fade/2;
+			fade2=FADELENGTH/2.0-fade/2.0+1.0;
 			sphere.color=point(0,1,1)/fade2;
 			sphere.position=*it2;
 			sphere.radius=cRadius/fade2;
