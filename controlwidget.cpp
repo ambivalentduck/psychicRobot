@@ -58,14 +58,14 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	stimulusBox->insertItem(0,"Unstimulated");
 	stimulusBox->insertItem(1,"Stimulated");
 	stimulus=UNSTIMULATED;
-	connect(stimulusBox, SIGNAL(activated(int)), this, SLOT(setStimulus(int)));
+	connect(stimulusBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setStimulus(int)));
 	
 	layout->addRow("Acid Trails:",acidBox=new QComboBox(this));
 	acidBox->insertItem(0,"None");
 	acidBox->insertItem(1,"Extracted");
 	acidBox->insertItem(2,"Extracted and Handle");
 	trails=NEITHER;
-	connect(acidBox, SIGNAL(activated(int)), this, SLOT(setAcid(int)));
+	connect(acidBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setAcid(int)));
 	
 	layout->addRow(tr("Stimulus Gain:"), gainBox=new QDoubleSpinBox(this));
 	gainBox->setValue(0);
