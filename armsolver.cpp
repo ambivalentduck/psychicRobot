@@ -111,7 +111,7 @@ void ArmSolver::run()
 {
 	while(true)
 	{
-		if(!solvesemaphore.tryAcquire(1,3*17)) break; //Try for at least 3 frames to start solving
+		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving
 		double y[4];
 		y[0]=qst[0];
 		y[1]=qst[1];
@@ -145,6 +145,8 @@ void ArmSolver::run()
 				Kdm.clear();
 			}
 			seeded=false;
+			//Since we just emptied the queues, also empty the semaphore
+			solvesemaphore.acquire(solvesemaphore.available());
 			destructomutex.unlock();
 			break;
 		}
