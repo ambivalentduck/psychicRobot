@@ -10,8 +10,6 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADETIME 1.5
-#define FADELENGTH 200
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
@@ -61,12 +59,13 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	stimulus=UNSTIMULATED;
 	connect(stimulusBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setStimulus(int)));
 	
-	layout->addRow("Acid Trails:",acidBox=new QComboBox(this));
-	acidBox->insertItem(0,"None");
-	acidBox->insertItem(1,"Extracted");
-	acidBox->insertItem(2,"Extracted and Handle");
-	trails=BOTH;
-	connect(acidBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setAcid(int)));
+	layout->addRow(tr("Fade Time (s):"), fadeBox=new QDoubleSpinBox(this));
+	fadeBox->setValue(0);
+	fadeBox->setMaximum(5);
+	fadeBox->setMinimum(0);
+	fadeBox->setDecimals(2);
+	fadetime=0;
+	connect(fadeBox, SIGNAL(valueChanged(double)), this, SLOT(setFade(double)));
 	
 	layout->addRow(tr("Stimulus Gain:"), gainBox=new QDoubleSpinBox(this));
 	gainBox->setValue(0);
@@ -240,9 +239,8 @@ void ControlWidget::readPending()
 	
 	double fade;
 	double fade2;
-	std::deque<point>::iterator it;
-	std::deque<point>::iterator it2;
-	if((now-lastFade)>=(double(FADETIME)/double(FADELENGTH)))
+	unsigned int FADELENGTH=floor(fadetime/60l);
+	if((now-lastFade)>=(1l/60l))
 	{
 		lastFade=now;
 		handle.push_back(position);
@@ -250,41 +248,36 @@ void ControlWidget::readPending()
 		extracted.push_back(desposition);
 		while(extracted.size()>FADELENGTH) extracted.pop_front();
 	}
-	switch(trails)
+	
+	std::deque<point>::iterator it=handle.begin();
+	fade=0;
+	while(it!=handle.end())
 	{
-	case NEITHER:
-		break;
-	case BOTH:
-		it=handle.begin();
-		fade=0;
-		while(it!=handle.end())
-		{
-			fade2=.5*(1.0+fade/double(FADELENGTH));
-			sphere.color=point(1,1,1)*fade2;
-			sphere.position=*it;
-			sphere.radius=cRadius*fade2;
-			sphereVec.push_back(sphere);
-			fade++;
-			it++;
-		}
-		//Note no break, falls through
-	case EXTRACTED:
-		it2=extracted.begin();
-		fade=0;
-		while(it2!=extracted.end())
-		{
-			fade2=.5*(1.0+fade/double(FADELENGTH));
-			sphere.color=point(0,1,1)*fade2;
-			sphere.position=*it2;
-			sphere.radius=cRadius*fade2;
-			sphereVec.push_back(sphere);
-			fade++;
-			it2++;
-		}
+		fade2=.5*(1.0+fade/double(FADELENGTH));
+		sphere.color=point(1,1,1)*fade2;
+		sphere.position=*it;
+		sphere.radius=cRadius*fade2;
+		sphereVec.push_back(sphere);
+		fade++;
+		it++;
 	}
-	QString str;
-	str.setNum(pulls);
-	userWidget->setText(str);
+
+	std::deque<point>::iterator it2=extracted.begin();
+	fade=0;
+	while(it2!=extracted.end())
+	{
+		fade2=.5*(1.0+fade/double(FADELENGTH));
+		sphere.color=point(0,1,1)*fade2;
+		sphere.position=*it2;
+		sphere.radius=cRadius*fade2;
+		sphereVec.push_back(sphere);
+		fade++;
+		it2++;
+	}
+	
+	//QString str;
+	//str.setNum(pulls);
+	//userWidget->setText(str);
 	
 	userWidget->setSpheres(sphereVec);
 		
