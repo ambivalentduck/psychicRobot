@@ -229,7 +229,8 @@ void ControlWidget::readPending()
 	}
 	
 	//Cursor
-	while(armsolver->pull(desposition, 0));
+	int pulled;
+	while(armsolver->pull(desposition, 0)) pulled++;
 	cursor=desposition*(1l-eaGain)+position*eaGain;
 	sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
@@ -251,7 +252,7 @@ void ControlWidget::readPending()
 		fade=0;
 		while(it!=handle.end())
 		{
-			fade2=FADELENGTH-fade;
+			fade2=FADELENGTH-fade+1.0;
 			sphere.color=point(1,1,1)/fade2;
 			sphere.position=*it;
 			sphere.radius=cRadius/fade2;
@@ -267,7 +268,7 @@ void ControlWidget::readPending()
 		fade=0;
 		while(it2!=extracted.end())
 		{
-			fade2=FADELENGTH-fade;
+			fade2=FADELENGTH-fade+1.0;
 			sphere.color=point(0,1,1)/fade2;
 			sphere.position=*it2;
 			sphere.radius=cRadius/fade2;
@@ -276,6 +277,9 @@ void ControlWidget::readPending()
 			it2++;
 		}
 	}
+	QString str;
+	str.setNum(pulled);
+	userWidget->setText(str);
 	
 	userWidget->setSpheres(sphereVec);
 		
