@@ -58,7 +58,7 @@ private:
 	DisplayWidget::Sphere sphere;
 	
 	twoLinkArm::ArmParams params;
-	timespec zero, now, trialStart, targetAcquired, holdStart;
+	timespec zero, now, trialStart, targetAcquired, holdStart, lastFade;
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide, firstpush;
 	int trial, subject,lastStim, pulls;
 	point origin, cursor, desposition, position, velocity, accel, target, force, center;

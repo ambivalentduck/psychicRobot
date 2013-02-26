@@ -10,7 +10,8 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADELENGTH 1000
+#define FADETIME 1000
+#define FADELENGTH 50
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
@@ -241,13 +242,19 @@ void ControlWidget::readPending()
 	double fade2;
 	std::deque<point>::iterator it;
 	std::deque<point>::iterator it2;
+	if((now-lastFade)>=(double(FADETIME/FADELENGTH)))
+	{
+		lastFade=now;
+		handle.push_back(position);
+		while(handle.size()>FADELENGTH) handle.pop_front();
+		extracted.push_back(desposition);
+		while(extracted.size()>FADELENGTH) extracted.pop_front();
+	}
 	switch(trails)
 	{
 	case NEITHER:
 		break;
 	case BOTH:
-		handle.push_back(position);
-		while(handle.size()>FADELENGTH) handle.pop_front();
 		it=handle.begin();
 		fade=0;
 		while(it!=handle.end())
@@ -255,15 +262,13 @@ void ControlWidget::readPending()
 			fade2=FADELENGTH-fade+1.0;
 			sphere.color=point(1,1,1)/fade2;
 			sphere.position=*it;
-			sphere.radius=cRadius/fade2;
+			sphere.radius=(cRadius/fade2)*.5+.5;
 			sphereVec.push_back(sphere);
 			fade++;
 			it++;
 		}
 		//Note no break, falls through
 	case EXTRACTED:
-		extracted.push_back(desposition);
-		while(extracted.size()>FADELENGTH) extracted.pop_front();
 		it2=extracted.begin();
 		fade=0;
 		while(it2!=extracted.end())
@@ -271,7 +276,7 @@ void ControlWidget::readPending()
 			fade2=FADELENGTH-fade+1.0;
 			sphere.color=point(0,1,1)/fade2;
 			sphere.position=*it2;
-			sphere.radius=cRadius/fade2;
+			sphere.radius=(cRadius/fade2)*.5+.5;
 			sphereVec.push_back(sphere);
 			fade++;
 			it2++;
@@ -347,6 +352,7 @@ void ControlWidget::startClicked()
 	lastStim=0;
 	smalls=0;
 	bigs=0;
+	lastFade=zero;
 }
 
 void ControlWidget::closeEvent(QCloseEvent *event)
