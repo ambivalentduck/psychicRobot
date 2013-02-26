@@ -10,10 +10,11 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADELENGTH 600
+#define FADELENGTH 1000
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
+	pulls=0;
 	//Take care of window and input initialization.
 	setFocus(); //Foreground window that gets all X input
 	
@@ -229,8 +230,7 @@ void ControlWidget::readPending()
 	}
 	
 	//Cursor
-	int pulled;
-	while(armsolver->pull(desposition, 0)) pulled++;
+	while(armsolver->pull(desposition, 0)) pulls++;
 	cursor=desposition*(1l-eaGain)+position*eaGain;
 	sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
@@ -278,7 +278,7 @@ void ControlWidget::readPending()
 		}
 	}
 	QString str;
-	str.setNum(pulled);
+	str.setNum(pulls);
 	userWidget->setText(str);
 	
 	userWidget->setSpheres(sphereVec);

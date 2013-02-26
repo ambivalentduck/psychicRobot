@@ -60,7 +60,7 @@ private:
 	twoLinkArm::ArmParams params;
 	timespec zero, now, trialStart, targetAcquired, holdStart;
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, leftSide, firstpush;
-	int trial, subject,lastStim;
+	int trial, subject,lastStim, pulls;
 	point origin, cursor, desposition, position, velocity, accel, target, force, center;
 	
 signals:
