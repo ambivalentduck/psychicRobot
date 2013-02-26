@@ -68,28 +68,28 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(gainBox, SIGNAL(valueChanged(double)), this, SLOT(setGain(double)));
 	
 	layout->addRow(tr("EA Gain:"), eaGainBox=new QDoubleSpinBox(this));
-	gainBox->setValue(1);
-	gainBox->setMaximum(5);
-	gainBox->setMinimum(-5);
-	gainBox->setDecimals(3);
+	eaGainBox->setValue(1);
+	eaGainBox->setMaximum(5);
+	eaGainBox->setMinimum(-5);
+	eaGainBox->setDecimals(3);
 	eaGain=1;
 	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
 	
 	params=twoLinkArm::defaultParams();
 	
 	layout->addRow(tr("Forearm Length  (meters):"), l2Box=new QDoubleSpinBox(this));
-	gainBox->setValue(params.l2);
-	gainBox->setMaximum(1);
-	gainBox->setMinimum(0);
-	gainBox->setDecimals(4);
-	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setl2(double)));
+	l2Box->setValue(params.l2);
+	l2Box->setMaximum(1);
+	l2Box->setMinimum(0);
+	l2Box->setDecimals(4);
+	connect(l2Box, SIGNAL(valueChanged(double)), this, SLOT(setl2(double)));
 	
 	layout->addRow(tr("Upper Arm Length (meters):"), l1Box=new QDoubleSpinBox(this));
-	gainBox->setValue(params.l1);
-	gainBox->setMaximum(1);
-	gainBox->setMinimum(0);
-	gainBox->setDecimals(4);
-	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
+	l1Box->setValue(params.l1);
+	l1Box->setMaximum(1);
+	l1Box->setMinimum(0);
+	l1Box->setDecimals(4);
+	connect(l1Box, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
 	
 	setLayout(layout);
 	
