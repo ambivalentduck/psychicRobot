@@ -239,7 +239,7 @@ void ControlWidget::readPending()
 	
 	double fade;
 	double fade2;
-	unsigned int FADELENGTH=floor(fadetime/.06l);
+	unsigned int FADELENGTH=floor(60l*fadetime);
 	if((now-lastFade)>=(1l/60l))
 	{
 		lastFade=now;
