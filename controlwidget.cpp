@@ -10,8 +10,8 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADETIME 2
-#define FADELENGTH 100
+#define FADETIME 4
+#define FADELENGTH 200
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
@@ -242,7 +242,7 @@ void ControlWidget::readPending()
 	double fade2;
 	std::deque<point>::iterator it;
 	std::deque<point>::iterator it2;
-	if((now-lastFade)>=(double(FADETIME/FADELENGTH)))
+	if((now-lastFade)>=(double(FADETIME)/double(FADELENGTH)))
 	{
 		lastFade=now;
 		handle.push_back(position);
