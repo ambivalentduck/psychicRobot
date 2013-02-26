@@ -394,7 +394,7 @@ point ControlWidget::loadTrial(int T)
 	if(!firstpush)
 	{
 		firstpush=true;
-		armsolver->firstPush(xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+		armsolver->push(xpcTime, position, velocity, accel, force, mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	}
 	else armsolver->setParams(params);
 		

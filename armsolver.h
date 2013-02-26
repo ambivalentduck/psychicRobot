@@ -23,8 +23,7 @@ public:
 	~ArmSolver();
 	int func(double t, const double y[], double f[]);
 	void setParams(twoLinkArm::ArmParams P);
-	void firstPush(double t, point p, point v, point a, point force, mat2 kp, mat2 kd);
-	void push(double t, point p, point v, point a, point force);
+	void push(double t, point p, point v, point a, point force, mat2 kp=mat2(0,0,0,0), mat2 kd=mat2(0,0,0,0));
 	bool pull(point &p, int timeout=-1);
 	void solve();
 	void run();
@@ -50,7 +49,7 @@ private:
 	std::deque<double> times, stimes;
 	mat2 Kd, Kp;
 	QSemaphore solvesemaphore, grabsemaphore;
-	QMutex destructomutex;
+	QMutex destructomutex, paramsMutex;
 	point qst, qstdot;
 };
 

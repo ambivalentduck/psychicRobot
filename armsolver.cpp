@@ -49,8 +49,10 @@ int ArmSolver::func(double t, const double y[], double f[])
 	
 	point qsDDot;
 	
+	paramsMutex.lock();
 	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
 	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
+	paramsMutex.unlock();
 	
 	f[2]=qsDDot[0];
 	f[3]=qsDDot[1];
@@ -59,60 +61,45 @@ int ArmSolver::func(double t, const double y[], double f[])
 }
 
 void ArmSolver::setParams(twoLinkArm::ArmParams P)
+{	
+	paramsMutex.lock();
+	arm->setParams(P); 
+	paramsMutex.unlock();
+}
+
+void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
 {
 	destructomutex.lock();
+	point q;
+	while(!arm->ikin(p,q)) {paramsMutex.lock(); arm->moveShoulder(point(0,-.01)); paramsMutex.unlock();}
+	qm.push_back(q);
 	
-	arm->setParams(P);
+	mat2 fJ=arm->jacobian(q);
+	point qdot=fJ/v;
+	qmdot.push_back(qdot);
 	
+	point qddot=arm->getQDDot(q,qdot,a);
+	qmddot.push_back(qddot);
+	
+	point torque=(fJ.transpose())*force;
+	torquem.push_back(torque);
+	
+	times.push_back(t);
+	
+	if(!constImp)
+	{
+		Kpm.push_back(kp);
+		Kdm.push_back(kd);
+	}
+	
+	if(!seeded)
+	{
+		qst=q;
+		qstdot=qdot;
+		if(constImp){Kp=kp; Kd=kd;}
+	}
+	else solvesemaphore.release();	
 	destructomutex.unlock();
-}
-
-void ArmSolver::firstPush(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
-{
-	if(seeded) return;
-	point q;
-	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
-	qm.push_back(q);
-	
-	mat2 fJ=arm->jacobian(q);
-	point qdot=fJ/v;
-	qmdot.push_back(qdot);
-	
-	point qddot=arm->getQDDot(q,qdot,a);
-	qmddot.push_back(qddot);
-	
-	point torque=(fJ.transpose())*force;
-	torquem.push_back(torque);
-	
-	times.push_back(t);
-	
-	Kd=kd;
-	Kp=kp;
-	
-	seeded=true;
-}
-
-
-void ArmSolver::push(double t, point p, point v, point a, point force)
-{
-	if(!seeded) return;
-	point q;
-	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
-	qm.push_back(q);
-	
-	mat2 fJ=arm->jacobian(q);
-	point qdot=fJ/v;
-	qmdot.push_back(qdot);
-	
-	point qddot=arm->getQDDot(q,qdot,a);
-	qmddot.push_back(qddot);
-	
-	point torque=(fJ.transpose())*force;
-	torquem.push_back(torque);
-	
-	times.push_back(t);
-	
-	solvesemaphore.release();
 }
 
 void ArmSolver::solve()
@@ -124,9 +111,7 @@ void ArmSolver::run()
 {
 	while(true)
 	{
-		destructomutex.lock();
 		if(!solvesemaphore.tryAcquire(1,3*17)) break; //Try for at least 3 frames to start solving
-		destructomutex.unlock();
 		double y[4];
 		y[0]=qst[0];
 		y[1]=qst[1];
@@ -142,9 +127,28 @@ void ArmSolver::run()
 		while(t<tk)
 		{
 			status = gsl_odeiv_evolve_apply(odeevolve,odecontrol,odestep,&sys,&t,tk,&h,y);
+			if(status!=GSL_SUCCESS) break; //Don't lock up on a crash
 		}
 		#endif
-		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
+		if(status!=GSL_SUCCESS)
+		{
+			std::cout<<"Oops. Cuh-rash."<<std::endl;
+			destructomutex.lock();
+			qm.clear();
+			qmdot.clear();
+			qmddot.clear();
+			torquem.clear();
+			times.clear();
+			if(!constImp)
+			{
+				Kpm.clear();
+				Kdm.clear();
+			}
+			seeded=false;
+			destructomutex.unlock();
+			break;
+		}
+		
 		qst=point(y[0],y[1]);
 		qstdot=point(y[2],y[3]);
 		
@@ -158,6 +162,11 @@ void ArmSolver::run()
 		qmddot.pop_front();
 		torquem.pop_front();
 		times.pop_front();
+		if(!constImp)
+		{
+			Kpm.pop_front();
+			Kdm.pop_front();
+		}
 	}
 }
 
