@@ -78,6 +78,7 @@ public slots:
 	void setl1(double l) {params.l1=l;}
 	void setl2(double l) {params.l2=l;}
 	void setMass(double m) {mass=m;}
+	void setAcid(int i) {trails=AcidTrails(i);}
 };
 
 #endif
