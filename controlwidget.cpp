@@ -10,7 +10,7 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
-#define FADETIME 4
+#define FADETIME 1.5
 #define FADELENGTH 200
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
