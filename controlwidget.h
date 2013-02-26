@@ -26,9 +26,9 @@ public:
 	
 private:
 	QSpinBox *trialNumBox, *subjectBox;
-	QDoubleSpinBox *gainBox, *eaGainBox, *l1Box, *l2Box;
+	QDoubleSpinBox *gainBox, *eaGainBox, *l1Box, *l2Box, *massBox;
 	QPushButton *startButton; 	
-	QComboBox *stimulusBox;
+	QComboBox *stimulusBox, *acidBox;
 	QFormLayout * layout;
 		
 	DisplayWidget * userWidget;
@@ -46,13 +46,15 @@ private:
 	QFile contFile;
 	QTextStream outStream;
 	
-	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime;
+	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime, mass;
 	enum stimuli {UNSTIMULATED=0, STIMULATED=1} stimulus;
 	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
+	enum AcidTrails {NEITHER=0, EXTRACTED=1, BOTH=2} trails;
 	std::vector<QWidget*> grayList;
 	std::vector<DisplayWidget::Sphere> sphereVec;
 	std::deque<timespec> times;
 	std::deque<QByteArray> data;
+	std::deque<point> extracted, handle;
 	DisplayWidget::Sphere sphere;
 	
 	twoLinkArm::ArmParams params;
@@ -75,6 +77,7 @@ public slots:
 	void setEAGain(double g) {eaGain=g;}
 	void setl1(double l) {params.l1=l;}
 	void setl2(double l) {params.l2=l;}
+	void setMass(double m) {mass=m;}
 };
 
 #endif

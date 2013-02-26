@@ -10,6 +10,7 @@
 #define tRadius min/40
 #define calRadius min/40
 #define TAB << "\t" <<
+#define FADELENGTH 60
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
 {
@@ -58,6 +59,13 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	stimulus=UNSTIMULATED;
 	connect(stimulusBox, SIGNAL(activated(int)), this, SLOT(setStimulus(int)));
 	
+	layout->addRow("Acid Trails:",acidBox=new QComboBox(this));
+	acidBox->insertItem(0,"None");
+	acidBox->insertItem(1,"Extracted");
+	acidBox->insertItem(2,"Extracted and Handle");
+	trails=NEITHER;
+	connect(acidBox, SIGNAL(activated(int)), this, SLOT(setAcid(int)));
+	
 	layout->addRow(tr("Stimulus Gain:"), gainBox=new QDoubleSpinBox(this));
 	gainBox->setValue(0);
 	gainBox->setMaximum(5);
@@ -90,6 +98,14 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	l1Box->setMinimum(0);
 	l1Box->setDecimals(4);
 	connect(l1Box, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
+	
+	layout->addRow(tr("Mass (kg):"), massBox=new QDoubleSpinBox(this));
+	massBox->setValue(3);
+	massBox->setMaximum(10);
+	massBox->setMinimum(-1);
+	massBox->setDecimals(3);
+	connect(massBox, SIGNAL(valueChanged(double)), this, SLOT(setMass(double)));
+	mass=3;
 	
 	setLayout(layout);
 	
@@ -166,7 +182,6 @@ void ControlWidget::readPending()
 	us->readDatagram(in.data(), in.size());
 	
 	double reset_=0;
-	double mass_=3;
 	
 	//Make sure pva is seeded.
 	xpcTime=*reinterpret_cast<double*>(in.data());
@@ -185,7 +200,7 @@ void ControlWidget::readPending()
 		gain=sigGain;
 		out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 		out.append(reinterpret_cast<char*>(&gain),sizeof(double));
-		out.append(reinterpret_cast<char*>(&mass_),sizeof(double));
+		out.append(reinterpret_cast<char*>(&mass),sizeof(double));
 		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
@@ -221,6 +236,47 @@ void ControlWidget::readPending()
 	sphere.radius=cRadius;
 	sphereVec.push_back(sphere);
 	
+	double fade;
+	double fade2;
+	std::deque<point>::iterator it;
+	std::deque<point>::iterator it2;
+	switch(trails)
+	{
+	case NEITHER:
+		break;
+	case BOTH:
+		handle.push_back(position);
+		while(handle.size()>FADELENGTH) handle.pop_front();
+		it=handle.begin();
+		fade=0;
+		while(it!=handle.end())
+		{
+			fade2=FADELENGTH-fade;
+			sphere.color=point(1,1,1)/fade2;
+			sphere.position=*it;
+			sphere.radius=cRadius/fade2;
+			sphereVec.push_back(sphere);
+			fade++;
+			it++;
+		}
+		//Note no break, falls through
+	case EXTRACTED:
+		extracted.push_back(desposition);
+		while(extracted.size()>FADELENGTH) extracted.pop_front();
+		it2=extracted.begin();
+		fade=0;
+		while(it2!=extracted.end())
+		{
+			fade2=FADELENGTH-fade;
+			sphere.color=point(0,1,1)/fade2;
+			sphere.position=*it2;
+			sphere.radius=cRadius/fade2;
+			sphereVec.push_back(sphere);
+			fade++;
+			it2++;
+		}
+	}
+	
 	userWidget->setSpheres(sphereVec);
 		
 	switch(state)
@@ -249,11 +305,10 @@ void ControlWidget::readPending()
 	}
 	
 	reset_=1;
-	mass_=0;
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&gain),sizeof(double));
-	out.append(reinterpret_cast<char*>(&mass_),sizeof(double));
+	out.append(reinterpret_cast<char*>(&mass),sizeof(double));
 	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 	
 	//This will require additional appends for other stimuli
