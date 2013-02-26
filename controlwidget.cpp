@@ -65,7 +65,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	acidBox->insertItem(0,"None");
 	acidBox->insertItem(1,"Extracted");
 	acidBox->insertItem(2,"Extracted and Handle");
-	trails=NEITHER;
+	trails=BOTH;
 	connect(acidBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setAcid(int)));
 	
 	layout->addRow(tr("Stimulus Gain:"), gainBox=new QDoubleSpinBox(this));
