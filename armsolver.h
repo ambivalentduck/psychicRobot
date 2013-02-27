@@ -43,7 +43,7 @@ private:
 		
 	void * voidpointer;
 	twoLinkArm * arm;
-	bool solveDes, constImp, seeded;
+	bool solveDes, constImp, seeded, impSeeded;
 	std::deque<point> qm,qs,qmdot,qsdot,qmddot,torquem;
 	std::deque<mat2> Kpm,Kdm;
 	std::deque<double> times, stimes;

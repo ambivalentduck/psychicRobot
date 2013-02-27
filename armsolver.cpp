@@ -4,6 +4,7 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 {
 	solveDes=solveIntent;
 	constImp=constImpedance;
+	impSeeded=false;
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
@@ -91,6 +92,7 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 		Kpm.push_back(kp);
 		Kdm.push_back(kd);
 	}
+	else if(!impSeeded) {Kd=kd; Kp=kp;}
 	
 	if(!seeded)
 	{
@@ -148,7 +150,7 @@ void ArmSolver::run()
 			//Since we just emptied the queues, also empty the semaphore
 			solvesemaphore.acquire(solvesemaphore.available());
 			destructomutex.unlock();
-			break;
+			break; //We just emptied the semaphore
 		}
 		
 		qst=point(y[0],y[1]);
