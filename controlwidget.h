@@ -26,7 +26,7 @@ public:
 	
 private:
 	QSpinBox *trialNumBox, *subjectBox;
-	QDoubleSpinBox *gainBox, *eaGainBox, *l1Box, *l2Box, *massBox, *fadeBox;
+	QDoubleSpinBox *gainBox, *eaGainBox, *l1Box, *l2Box, *massBox, *fadeBox, *whiteBox;
 	QPushButton *startButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
@@ -46,7 +46,7 @@ private:
 	QFile contFile;
 	QTextStream outStream;
 	
-	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime, mass, fadetime;
+	double sigGain, gain, min, smalls, bigs, eaGain, xpcTime, mass, fadetime, white;
 	enum stimuli {UNSTIMULATED=0, STIMULATED=1} stimulus;
 	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
 	enum AcidTrails {NEITHER=0, EXTRACTED=1, BOTH=2} trails;
@@ -79,6 +79,7 @@ public slots:
 	void setl2(double l) {params.l2=l;}
 	void setMass(double m) {mass=m;}
 	void setFade(double m) {fadetime=m;}
+	void setWhite(double m) {white=m;}
 };
 
 #endif

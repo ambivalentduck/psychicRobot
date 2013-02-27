@@ -108,6 +108,14 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(massBox, SIGNAL(valueChanged(double)), this, SLOT(setMass(double)));
 	mass=3;
 	
+	layout->addRow(tr("White Multiplier (N):"), whiteBox=new QDoubleSpinBox(this));
+	whiteBox->setValue(0);
+	whiteBox->setMaximum(10);
+	whiteBox->setMinimum(0);
+	whiteBox->setDecimals(3);
+	connect(whiteBox, SIGNAL(valueChanged(double)), this, SLOT(setWhite(double)));
+	white=0;
+	
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
@@ -203,6 +211,7 @@ void ControlWidget::readPending()
 		out.append(reinterpret_cast<char*>(&gain),sizeof(double));
 		out.append(reinterpret_cast<char*>(&mass),sizeof(double));
 		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
+		out.append(reinterpret_cast<char*>(&white),sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
@@ -312,6 +321,7 @@ void ControlWidget::readPending()
 	out.append(reinterpret_cast<char*>(&gain),sizeof(double));
 	out.append(reinterpret_cast<char*>(&mass),sizeof(double));
 	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
+	out.append(reinterpret_cast<char*>(&white),sizeof(double));
 	
 	//This will require additional appends for other stimuli
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
