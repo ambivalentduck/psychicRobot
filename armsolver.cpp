@@ -92,7 +92,6 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 		Kpm.push_back(kp);
 		Kdm.push_back(kd);
 	}
-	else if(!impSeeded) {Kd=kd; Kp=kp;}
 	
 	if(!seeded)
 	{
