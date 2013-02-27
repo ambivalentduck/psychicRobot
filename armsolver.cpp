@@ -98,6 +98,7 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 		qst=q;
 		qstdot=qdot;
 		if(constImp){Kp=kp; Kd=kd;}
+		seeded=true;
 	}
 	else solvesemaphore.release();	
 	destructomutex.unlock();
