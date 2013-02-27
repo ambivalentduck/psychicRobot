@@ -77,11 +77,11 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(gainBox, SIGNAL(valueChanged(double)), this, SLOT(setGain(double)));
 	
 	layout->addRow(tr("EA Gain:"), eaGainBox=new QDoubleSpinBox(this));
-	eaGainBox->setValue(1);
+	eaGainBox->setValue(0);
 	eaGainBox->setMaximum(5);
 	eaGainBox->setMinimum(-5);
 	eaGainBox->setDecimals(3);
-	eaGain=1;
+	eaGain=0;
 	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
 	
 	params=twoLinkArm::defaultParams();
@@ -109,12 +109,12 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	mass=3;
 	
 	layout->addRow(tr("White Multiplier (N):"), whiteBox=new QDoubleSpinBox(this));
-	whiteBox->setValue(0);
+	whiteBox->setValue(.25);
 	whiteBox->setMaximum(10);
 	whiteBox->setMinimum(0);
 	whiteBox->setDecimals(3);
 	connect(whiteBox, SIGNAL(valueChanged(double)), this, SLOT(setWhite(double)));
-	white=0;
+	white=.25;
 	
 	setLayout(layout);
 	
