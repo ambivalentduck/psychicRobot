@@ -215,7 +215,7 @@ void ControlWidget::readPending()
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
-	armsolver->push(xpcTime, position, velocity, accel, force+accel*mass,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	armsolver->push(xpcTime, position, velocity, accel, accel*-mass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	armsolver->solve();
 	
 	if (!leftOrigin) trialStart=now;
