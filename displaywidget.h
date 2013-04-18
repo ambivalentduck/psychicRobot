@@ -34,6 +34,8 @@ public:
 		point color;
 	};
 	
+	enum Shapes {TRIANGLE=0, SQUARE=1, CIRCLE=2, INFSIGN=3};
+	
 	DisplayWidget(QWidget *parent=0, bool FullScreen=false);
 	~DisplayWidget();
 	void initializeGL();
@@ -46,9 +48,13 @@ public:
 	void setSpheres(std::vector<Sphere> s) {dataMutex.lock(); spheres=s; dataMutex.unlock();}
 	void setBars(std::deque<double> t) {dataMutex.lock(); times=t; dataMutex.unlock();}
 	void setText(QString t) {dataMutex.lock(); text=t; dataMutex.unlock();}
+	void setShape(Shapes s, bool on) {drawShapes[s]=on;}
+	void setShapes(bool triangle, bool square, bool circle, bool infsign) {drawShapes[0]=triangle; drawShapes[1]=square; drawShapes[2]=circle; drawShapes[3]=infsign;}
+	
 	
 private:
-	GLuint sphereList, dyntexture;
+	GLuint sphereList, dyntexture, shapelist[4];
+	bool drawShapes[4];
 	int W, H;
 	QBasicTimer timer;
 	std::vector<Sphere> spheres;

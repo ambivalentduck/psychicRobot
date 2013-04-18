@@ -4,6 +4,7 @@
 #include <iostream>
 
 #define BUFFSIZE 1024
+#define LINEWIDTH 5
 
 DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 :QGLWidget(QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer), parent, 0, FullScreen?Qt::X11BypassWindowManagerHint:Qt::Widget)
@@ -24,12 +25,14 @@ DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 	backgroundColor=point(0,0,0);
 	deepBackgroundColor=point(0,0,0);
 	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
+	for(int k=0;k++;k<4) drawShapes[k]=false;
 }
 
 DisplayWidget::~DisplayWidget()
 {
 	makeCurrent();
 	glDeleteLists(sphereList,1);
+	for(int k=0;k++;k<4) glDeleteLists(shapeList[k],1);
 }
 
 void DisplayWidget::initializeGL()
@@ -37,11 +40,53 @@ void DisplayWidget::initializeGL()
 	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glShadeModel(GL_FLAT);
-	sphereList = glGenLists (1);
+	sphereList = glGenLists(1);
 	GLUquadricObj *qobj=gluNewQuadric();
 	gluQuadricDrawStyle(qobj, GLU_FILL);
 	glNewList(sphereList, GL_COMPILE);
 	gluSphere(qobj, 1, 100, 100); //Arbitrary defaults "grid" size: 100 x 100		
+	glEndList();
+	
+	glNewList(shapelist[TRIANGLE],GL_COMPILE); //Triangle
+	glLineWidth(LINEWIDTH);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(-1,-1);
+		glVertex2f(-1,1);
+		glVertex2f(sqrt(2.0)/2.0,0);
+	glEnd();
+	glEndList();
+	
+	glNewList(shapelist[SQUARE],GL_COMPILE); //Square
+	glLineWidth(LINEWIDTH);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(-1,-1);
+		glVertex2f(-1,1);
+		glVertex2f(1,1);
+		glVertex2f(1,-1);
+	glEnd();
+	glEndList();
+	
+	double t;
+	glNewList(shapelist[CIRCLE],GL_COMPILE); //Circle
+	glLineWidth(LINEWIDTH);
+	glBegin(GL_LINE_LOOP);
+		for(int k=0;k++;k<100) 
+		{
+			t=6.283185307*double(k)/100.0;
+			glVertex2f(cos(t),sin(t));
+		}
+	glEnd();
+	glEndList();
+	
+	glNewList(shapelist[INFSIGN],GL_COMPILE); //Infinity sign
+	glLineWidth(LINEWIDTH);
+	glBegin(GL_LINE_LOOP);
+		for(int k=0;k++;k<100) 
+		{
+			t=6.283185307*double(k)/100.0;
+			glVertex2f(sin(t),sin(2.0*t));
+		}
+	glEnd();
 	glEndList();
 	
 	glEnable(GL_POINT_SMOOTH);
@@ -95,6 +140,18 @@ void DisplayWidget::paintGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
+	
+	glPushMatrix();
+	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0,0);
+	glScaled(min*(2.0/3.0),min*(2.0/3.0),1.0);
+	for(int k=0;k++;k<3)
+	{
+		if(drawShapes[k])
+		{
+			callList(shapeList[k]);
+		}
+	}
+	glPopMatrix();
 	
 	for(std::vector<Sphere>::iterator it=spheres.begin();it!=spheres.end();++it)
 	{
