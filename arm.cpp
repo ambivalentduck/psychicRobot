@@ -161,18 +161,25 @@ bool twoLinkArm::unitTests()
 	return 1;
 }
 
-twoLinkArm::ArmParams twoLinkArm::defaultParams()
+twoLinkArm::ArmParams twoLinkArm::calcParams(double weight, double height, point x0)
+{
+	double h=0.0254*height;
+	return calcParms(weight,.186*h,.1964*h,x0);
+}
+
+twoLinkArm::ArmParams twoLinkArm::calcParams(double weight, double l1, double l2, point x0)
 {
 	ArmParams P;
-	P.x0=point(-.0062791,.9087526);
-	P.l1=.2450;
-	P.l2=.3350;
-	P.lc1=.1225;
-	P.lc2=.1872;
-	P.m1=1.93;
-	P.m2=1.52;
-	P.I1=.0141;
-	P.I2=.0188;
+	double m=0.453592*weight;
+	P.x0=x0;
+	P.l1=l1;
+	P.l2=l2;
+	P.lc1=.436*l1;
+	P.lc2=.682*l2;
+	P.m1=.028*m;
+	P.m2=.022*m
+	P.I1=P.m1*pow(.322*l1,2);
+	P.I2=P.m2*pow(.468*l2,2);
 	return P;
 }
 
