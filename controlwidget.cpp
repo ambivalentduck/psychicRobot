@@ -243,6 +243,11 @@ void ControlWidget::readPending()
 	cursor=position;
 	
 	double white=blwnGain;
+	double originTargetLine[4];
+	originTargetLine[0]=0;
+	originTargetLine[1]=0;
+	originTargetLine[2]=0;
+	originTargetLine[3]=-1; //Initialized pointing into the wall AND unreachable
 	
 	if(ignoreInput) //Send something back out so that XPC doesn't choke/stall/worse
 	{
@@ -252,6 +257,7 @@ void ControlWidget::readPending()
 		out.append(reinterpret_cast<char*>(&white),sizeof(double));
 		out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
 		out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
+		out.append(reinterpret_cast<char*>(&originTargetLine),4*sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
@@ -259,7 +265,7 @@ void ControlWidget::readPending()
 	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	armsolver->solve();
 	
-	if (!leftOrigin) trialStart=now;
+	if (!leftOrigin) {trialStart=now;
 	if (!leftOrigin) if (cursor.dist(origin)>(oRadius+cRadius)) leftOrigin=true;
 	
 	sphereVec.clear();
@@ -380,13 +386,18 @@ void ControlWidget::readPending()
 	reset_=1;
 	white=perturbGain*blwnGain;
 	
+	originTargetLine[0]=origin.X();
+	originTargetLine[1]=origin.Y();
+	originTargetLine[2]=target.X();
+	originTargetLine[3]=target.Y();
+	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
 	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 	out.append(reinterpret_cast<char*>(&white),sizeof(double));
 	out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
 	out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
-	
+	out.append(reinterpret_cast<char*>(&originTargetLine),4*sizeof(double));
 	//This will require additional appends for other stimuli
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 	
