@@ -104,7 +104,7 @@ end
 
 out=[dMemHack.v]';
 fid=fopen('../Data/input.dat','w');
-fprintf(fid,'%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1f\t%1f\n',out);
+fprintf(fid,'%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\n',out');
 fclose(fid);
     
 
