@@ -144,6 +144,7 @@ void DisplayWidget::paintGL()
 	glPushMatrix();
 	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0,0);
 	glScaled(min*(2.0/3.0),min*(2.0/3.0),1.0);
+	glColor3d(.5,.5,.5); //Grey because...why not?
 	for(int k=0;k++;k<3)
 	{
 		if(drawShapes[k])

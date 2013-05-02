@@ -5,7 +5,7 @@
 
 #define targetDuration .5
 #define HOLDTIME .5
-#define oRadius min/80
+#define oRadius min/40
 #define cRadius min/40
 #define tRadius min/40
 #define calRadius min/40
@@ -42,79 +42,119 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	subjectBox->setMaximum(1000);
 	subjectBox->setMinimum(0);
 	grayList.push_back(subjectBox);
-	connect(subjectBox, SIGNAL(valueChanged(int)), this, SLOT(setSubject(int)));
 	subject=0;
+	connect(subjectBox, SIGNAL(valueChanged(int)), this, SLOT(setSubject(int)));
 	
 	layout->addRow(tr("Trial Number:"), trialNumBox=new QSpinBox(this));
 	trialNumBox->setValue(1);
 	trialNumBox->setMaximum(10000);
 	trialNumBox->setMinimum(0);
-	grayList.push_back(trialNumBox);
-	connect(trialNumBox, SIGNAL(valueChanged(int)), this, SLOT(setTrialNum(int)));
+	grayList.push_back(trialNumBox
 	trial=1;
+	connect(trialNumBox, SIGNAL(valueChanged(int)), this, SLOT(setTrialNum(int)));
 	
-	layout->addRow("Stimulus:",stimulusBox=new QComboBox(this));
-	stimulusBox->insertItem(0,"Unstimulated");
-	stimulusBox->insertItem(1,"Stimulated");
-	stimulus=UNSTIMULATED;
-	connect(stimulusBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setStimulus(int)));
+	layout->addRow("EA Gain:",eaGainBox=new QDoubleSpinBox(this));
+	eaGainBox->setValue(1);
+	eaGainBox->setMaximum(5);
+	eaGainBox->setMinimum(0);
+	eaGainBox->setDecimals(3);
+	eaGain=1;
+	connect(eaGainBox, SIGNAL(currentIndexChanged(double)), this, SLOT(setEAGain(double)));
 	
-	layout->addRow(tr("Fade Time (s):"), fadeBox=new QDoubleSpinBox(this));
+	layout->addRow(tr("Cursor Fade Time (s):"), cursorFadeBox=new QDoubleSpinBox(this));
 	fadeBox->setValue(0);
 	fadeBox->setMaximum(5);
 	fadeBox->setMinimum(0);
-	fadeBox->setDecimals(2);
-	fadetime=0;
-	connect(fadeBox, SIGNAL(valueChanged(double)), this, SLOT(setFade(double)));
+	fadeBox->setDecimals(3);
+	cursorFadetime=0;
+	connect(cursorFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setCursorFade(double)));
 	
-	layout->addRow(tr("Stimulus Gain:"), gainBox=new QDoubleSpinBox(this));
-	gainBox->setValue(0);
-	gainBox->setMaximum(5);
-	gainBox->setMinimum(-5);
-	gainBox->setDecimals(3);
-	sigGain=0;
-	gain=0;
-	connect(gainBox, SIGNAL(valueChanged(double)), this, SLOT(setGain(double)));
+	layout->addRow(tr("Extraction Fade Time (s):"), extractionFadeBox=new QDoubleSpinBox(this));
+	extractionFadeBox->setValue(0);
+	extractionFadeBox->setMaximum(5);
+	extractionFadeBox->setMinimum(0);
+	extractionFadeBox->setDecimals(3);
+	extractionFadetime=0;
+	connect(extractionFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setExtractionFade(double)));
 	
-	layout->addRow(tr("EA Gain:"), eaGainBox=new QDoubleSpinBox(this));
-	eaGainBox->setValue(0);
-	eaGainBox->setMaximum(5);
-	eaGainBox->setMinimum(-5);
-	eaGainBox->setDecimals(3);
-	eaGain=0;
-	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
+	layout->addRow(tr("Handle Fade Time (s):"), rawFadeBox=new QDoubleSpinBox(this));
+	rawFadeBox->setValue(0);
+	rawFadeBox->setMaximum(5);
+	rawFadeBox->setMinimum(0);
+	rawFadeBox->setDecimals(3);
+	rawFadetime=0;
+	connect(rawFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setRawFade(double)));
 	
-	params=twoLinkArm::defaultParams();
+	layout->addRow(tr("Forearm Length (meters):"), armL2Box=new QDoubleSpinBox(this));
+	armL2Box->setValue(.34);
+	armL2Box->setMaximum(2);
+	armL2Box->setMinimum(0);
+	armL2Box->setDecimals(4);
+	connect(armL2Box, SIGNAL(valueChanged(double)), this, SLOT(setl2(double)));
 	
-	layout->addRow(tr("Forearm Length  (meters):"), l2Box=new QDoubleSpinBox(this));
-	l2Box->setValue(params.l2);
-	l2Box->setMaximum(1);
-	l2Box->setMinimum(0);
-	l2Box->setDecimals(4);
-	connect(l2Box, SIGNAL(valueChanged(double)), this, SLOT(setl2(double)));
+	layout->addRow(tr("Upper Arm Length (meters):"), armL1Box=new QDoubleSpinBox(this));
+	armL1Box->setValue(.33);
+	armL1Box->setMaximum(2);
+	armL1Box->setMinimum(0);
+	armL1Box->setDecimals(4);
+	connect(armL1Box, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
 	
-	layout->addRow(tr("Upper Arm Length (meters):"), l1Box=new QDoubleSpinBox(this));
-	l1Box->setValue(params.l1);
-	l1Box->setMaximum(1);
-	l1Box->setMinimum(0);
-	l1Box->setDecimals(4);
-	connect(l1Box, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
+	layout->addRow(tr("Subject Weight (lbs):"), weightBox=new QDoubleSpinBox(this));
+	weightBox->setValue(160);
+	weightBox->setMaximum(400);
+	weightBox->setMinimum(0);
+	weightBox->setDecimals(4);
+	weight=160;
+	connect(weightBox, SIGNAL(valueChanged(double)), this, SLOT(setWeight(double)));
 	
-	layout->addRow(tr("Mass (kg):"), massBox=new QDoubleSpinBox(this));
-	massBox->setValue(3);
-	massBox->setMaximum(10);
-	massBox->setMinimum(-1);
-	massBox->setDecimals(3);
-	connect(massBox, SIGNAL(valueChanged(double)), this, SLOT(setMass(double)));
-	mass=3;
+	layout->addRow(tr("Subject Shoulder Pos X (m):"), x0xBox=new QDoubleSpinBox(this));
+	x0xBox->setValue(0);
+	x0xBox->setMaximum(2);
+	x0xBox->setMinimum(2);
+	x0xBox->setDecimals(4);
+	x0.X()=0;
+	connect(x0xBox, SIGNAL(valueChanged(double)), this, SLOT(setX0x(double)));
 	
-	layout->addRow(tr("White Multiplier (N):"), whiteBox=new QDoubleSpinBox(this));
-	whiteBox->setValue(.25);
-	whiteBox->setMaximum(10);
-	whiteBox->setMinimum(0);
-	whiteBox->setDecimals(3);
-	connect(whiteBox, SIGNAL(valueChanged(double)), this, SLOT(setWhite(double)));
-	white=.25;
+	layout->addRow(tr("Subject Shoulder Pos X (m):"), x0yBox=new QDoubleSpinBox(this));
+	x0yBox->setValue(0);
+	x0yBox->setMaximum(2);
+	x0yBox->setMinimum(2);
+	x0yBox->setDecimals(4);
+	x0.Y()=0;
+	connect(x0yBox, SIGNAL(valueChanged(double)), this, SLOT(setX0y(double)));
+	params=twoLinkArm::calcParams(160,.33,.34,x0);
+	
+	layout->addRow(tr("Virtual Mass (kg):"), virtualMassBox=new QDoubleSpinBox(this));
+	virtualMassBox->setValue(5);
+	virtualMassBox->setMaximum(10);
+	virtualMassBox->setMinimum(-1);
+	virtualMassBox->setDecimals(3);
+	virtualMass=5;
+	connect(virtualMassBox, SIGNAL(valueChanged(double)), this, SLOT(setVirtualMass(double)));
+	                                                  
+	layout->addRow(tr("Early Pulse Gain (N):"), earlyPulseGainBox=new QDoubleSpinBox(this));
+	earlyPulseGainBox->setValue(0);
+	earlyPulseGainBox->setMaximum(40);
+	earlyPulseGainBox->setMinimum(-40);
+	earlyPulseGainBox->setDecimals(3);
+	earlyPulseGain=0;
+	connect(earlyPulseGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEarlyPulseGain(double)));
+	
+	layout->addRow(tr("Late Pulse Gain (N):"), latePulseGainBox=new QDoubleSpinBox(this));
+	latePulseGainBox->setValue(0);
+	latePulseGainBox->setMaximum(40);
+	latePulseGainBox->setMinimum(-40);
+	latePulseGainBox->setDecimals(3);
+	latePulseGain=0;
+	connect(latePulseGainBox, SIGNAL(valueChanged(double)), this, SLOT(setLatePulseGain(double)));
+	
+	layout->addRow(tr("Band-Limited White Stdev (N):"), blwnGainBox=new QDoubleSpinBox(this));
+	blwnGainBox->setValue(0);
+	blwnGainBox->setMaximum(20);
+	blwnGainBox->setMinimum(0);
+	blwnGainBox->setDecimals(3);
+	blwnGain=0;
+	connect(blwnGainBox, SIGNAL(valueChanged(double)), this, SLOT(setBLWNGain(double)));
 	
 	setLayout(layout);
 	
@@ -131,9 +171,6 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
 	userWidget->show();
-	
-	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params,true,true);
 	
 	//Set up a "calibration" field. Should be a 1/4 circle in each corner
 	sphereVec.clear();
@@ -177,6 +214,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget->setDeepBGColor(point(1,0,0));
 	
 	inSize=0;
+	perturbGain=1;
 	
 	//Initialize everything UPD-related to values that prevent problems
 	ExperimentRunning=false;
@@ -204,17 +242,22 @@ void ControlWidget::readPending()
 	force.Y()=*reinterpret_cast<double*>(in.data()+8*sizeof(double));
 	cursor=position;
 	
+	double white=blwnmag;
+	
 	if(ignoreInput) //Send something back out so that XPC doesn't choke/stall/worse
 	{
 		gain=sigGain;
 		out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 		out.append(reinterpret_cast<char*>(&gain),sizeof(double));
-		out.append(reinterpret_cast<char*>(&mass),sizeof(double));
+		out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
 		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 		out.append(reinterpret_cast<char*>(&white),sizeof(double));
+		out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
+		out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
+	
 	armsolver->push(xpcTime, position, velocity, accel, accel*-mass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	armsolver->solve();
 	
@@ -223,7 +266,7 @@ void ControlWidget::readPending()
 	
 	sphereVec.clear();
 	//Target
-	if(state!=hold)
+	if((state!=hold)&&leftOrigin)
 	{
 		if(state!=inTarget) sphere.color=point(1,0,0); //Red
 		else //Yellow -> too slow, White -> too fast
@@ -248,21 +291,27 @@ void ControlWidget::readPending()
 	
 	double fade;
 	double fade2;
-	unsigned int FADELENGTH=floor(60l*fadetime);
-	if((now-lastFade)>=(1l/60l))
+	double fadeL;
+	if((now-lastFade)>=(1l/60l)) //Ie. Resolution no GREATER than seconds since we don't sample faster.
 	{
 		lastFade=now;
-		handle.push_back(position);
-		while(handle.size()>FADELENGTH) handle.pop_front();
-		extracted.push_back(desposition);
-		while(extracted.size()>FADELENGTH) extracted.pop_front();
+		handleD.push_back(position);
+		fadeL=floor(60l*rawFadetime);
+		while(handleD.size()>fadeL) handleD.pop_front();
+		extractedD.push_back(desposition);
+		fadeL=floor(60l*extractedFadetime);
+		while(extractedD.size()>fadeL) extractedD.pop_front();
+		cursorD.push_back(cursor);
+		fadeL=floor(60l*cursorFadetime);
+		while(cursorD.size()>fadeL) cursorD.pop_front();
 	}
 	
-	std::deque<point>::iterator it=handle.begin();
+	std::deque<point>::iterator it=handleD.begin();
 	fade=0;
-	while(it!=handle.end())
+	fadeL=floor(60l*rawFadetime);
+	while(it!=handleD.end())
 	{
-		fade2=.5*(1.0+fade/double(FADELENGTH));
+		fade2=.5*(1.0+fade/fadeL);
 		sphere.color=point(1,1,1)*fade2;
 		sphere.position=*it;
 		sphere.radius=cRadius*fade2;
@@ -271,11 +320,12 @@ void ControlWidget::readPending()
 		it++;
 	}
 
-	std::deque<point>::iterator it2=extracted.begin();
+	std::deque<point>::iterator it2=extractedD.begin();
 	fade=0;
-	while(it2!=extracted.end())
+	fadeL=floor(60l*extractedFadetime);
+	while(it2!=extractedD.end())
 	{
-		fade2=.5*(1.0+fade/double(FADELENGTH));
+		fade2=.5*(1.0+fade/fadeL);
 		sphere.color=point(0,1,1)*fade2;
 		sphere.position=*it2;
 		sphere.radius=cRadius*fade2;
@@ -284,20 +334,34 @@ void ControlWidget::readPending()
 		it2++;
 	}
 	
-	//QString str;
-	//str.setNum(pulls);
-	//userWidget->setText(str);
+	std::deque<point>::iterator it2=cursorD.begin();
+	fade=0;
+	fadeL=floor(60l*cursorFadetime);
+	while(it2!=cursorD.end())
+	{
+		fade2=.5*(1.0+fade/fadeL);
+		sphere.color=point(0,1,1)*fade2;
+		sphere.position=*it2;
+		sphere.radius=cRadius*fade2;
+		sphereVec.push_back(sphere);
+		fade++;
+		it2++;
+	}
 	
 	userWidget->setSpheres(sphereVec);
-		
+	
 	switch(state)
 	{
 	case acquireTarget:
-		gain=sigGain;
-		if (cursor.dist(target)<(tRadius+cRadius)) {state=inTarget; targetAcquired=now;}
+		perturbGain=1;
+		if ((cursor.dist(target)<(tRadius+cRadius))&&leftOrigin)
+		{
+			state=inTarget;
+			targetAcquired=now;
+		}
 		break;
 	case inTarget:
-		gain=sigGain;
+		perturbGain=0;
 		if (cursor.dist(target)<(tRadius+cRadius))
 		{
 			if((now-targetAcquired)>=targetDuration)
@@ -311,29 +375,38 @@ void ControlWidget::readPending()
 		break;
 	case hold:
 		if((now-holdStart)>HOLDTIME) state=acquireTarget;
-		gain=sigGain*evalSigmoid((now-holdStart),.4);
+		perturbGain=evalSigmoid((now-holdStart),.4);
 		break;
 	}
 	
 	reset_=1;
+	white=perturbGain*blwnGain;
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&gain),sizeof(double));
 	out.append(reinterpret_cast<char*>(&mass),sizeof(double));
 	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 	out.append(reinterpret_cast<char*>(&white),sizeof(double));
+	out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
+	out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
 	
 	//This will require additional appends for other stimuli
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 	
-	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain << endl;
+	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() << endl;
 }
 
 void ControlWidget::startClicked()
 {
+	//Get the armsolver class initialized with default blah.
+	armsolver=new ArmSolver(params,true,true);
+	
+	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
 	goGray();
 	startButton->setText("Experiment running...");
+	
+	//Get a file open and recording...or not.
 	if(subject>0)
 	{
 		char fname[200];
@@ -341,6 +414,13 @@ void ControlWidget::startClicked()
 		contFile.setFileName(fname);
 		contFile.open(QIODevice::Append);
 		outStream.setDevice(&contFile);
+		std::sprintf(fname, "./Data/input.dat");
+		trialFile.setFileName(fname);
+		if(trialFile.exists()) {trialFile.open(QIODevice::ReadOnly); target=loadTrial(trial);}
+		else
+		{
+			QMessageBox::critical(this, "File Not Found!", "File not found, please select a different file.");
+		}
 	}
 	else
 	{
@@ -352,9 +432,6 @@ void ControlWidget::startClicked()
 	ExperimentRunning=true;
 	ignoreInput=false;
 	zero=getTime(); //Get first time point.
-	lastStim=0;
-	smalls=0;
-	bigs=0;
 	lastFade=zero;
 }
 
@@ -374,37 +451,54 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 
 point ControlWidget::loadTrial(int T)
 {
+	if subject>0
+	{
 	trial=T;
-	if((smalls+bigs)>=8) emit(endApp());
+	if(trialFile.atEnd()) emit(endApp());
 
-	if(trial==1)
+	char line[201];
+	std::string qline;
+	int tempmeta,tempshape;
+	double tempx, tempy, tempEarly, tempLate, tempWhite;
+	std::cout << "Loading Trial " << T << std::endl;
+	do
 	{
-		leftSide=true;
-	}
+		trialFile.readLine(line,200);
+		std::cout << line << std::endl;
+		if(sscanf(line, "%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempmeta));
+		else
+		{
+			std::cout << "Complete failure to read line: " << line << std::endl; return center;
+		}
+	} while ((temptrial < T)&&(!trialFile.atEnd()));
+	origin=target;
+	target=point(tempx,tempy);
+	earlyPulseGain=tempEarly;
+	earlyPulseGainBox->setValue(tempEarly);
+	latePulseGain=tempLate;
+	latePulseGainBox->setValue(tempLate);
+	blwnGain=tempWhite;
+	blwnGainBox->setValue(tempWhite);
+	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
 	
-	double mean=.1;
-	if(leftSide) {mean*=-1; leftSide=false;}
-	else leftSide=true;
-	target=point(mean+randb(-.05,.05),center.Y());
-	
-	sigGain=0;
-	if(((T>20)&&((T-lastStim)>=3)&&(randd()<.333))||((T>20)&&((T-lastStim)>=9))) 
-	{
-		lastStim=T;
-		if(randd()<=((4l-smalls)/(8l-smalls-bigs))) {sigGain=1; smalls+=1;}
-		else {sigGain=2.5; bigs+=1;}
-	}
-	
-	
-	if (sigGain>0) {stimulus=stimuli(1); stimulusBox->setCurrentIndex(1);}
-	else {stimulus=stimuli(0); stimulusBox->setCurrentIndex(0);}
 	trialNumBox->setValue(T);
-	gainBox->setValue(sigGain);
-	
-	armsolver->setParams(params);
+	std::cout << "Finished Loading Trial " << temptrial << std::endl;
+	}
+	else
+	{
+		if(trial==1)
+		{
+			leftSide=true;
+		}
 		
-	state=hold;
-	holdStart=now;
+		double mean=.1;
+		if(leftSide) {mean*=-1; leftSide=false;}
+		else leftSide=true;
+		target=point(mean+randb(-.05,.05),center.Y());
+			
+		state=hold;
+		holdStart=now;
+	}
 	return target;
 }
 
