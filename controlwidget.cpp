@@ -49,7 +49,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	trialNumBox->setValue(1);
 	trialNumBox->setMaximum(10000);
 	trialNumBox->setMinimum(0);
-	grayList.push_back(trialNumBox
+	grayList.push_back(trialNumBox);
 	trial=1;
 	connect(trialNumBox, SIGNAL(valueChanged(int)), this, SLOT(setTrialNum(int)));
 	
@@ -62,11 +62,11 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(eaGainBox, SIGNAL(currentIndexChanged(double)), this, SLOT(setEAGain(double)));
 	
 	layout->addRow(tr("Cursor Fade Time (s):"), cursorFadeBox=new QDoubleSpinBox(this));
-	fadeBox->setValue(0);
-	fadeBox->setMaximum(5);
-	fadeBox->setMinimum(0);
-	fadeBox->setDecimals(3);
-	cursorFadetime=0;
+	cursorFadeBox->setValue(0);
+	cursorFadeBox->setMaximum(5);
+	cursorFadeBox->setMinimum(0);
+	cursorFadeBox->setDecimals(3);
+	cursorFadeTime=0;
 	connect(cursorFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setCursorFade(double)));
 	
 	layout->addRow(tr("Extraction Fade Time (s):"), extractionFadeBox=new QDoubleSpinBox(this));
@@ -74,7 +74,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	extractionFadeBox->setMaximum(5);
 	extractionFadeBox->setMinimum(0);
 	extractionFadeBox->setDecimals(3);
-	extractionFadetime=0;
+	extractionFadeTime=0;
 	connect(extractionFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setExtractionFade(double)));
 	
 	layout->addRow(tr("Handle Fade Time (s):"), rawFadeBox=new QDoubleSpinBox(this));
@@ -82,7 +82,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	rawFadeBox->setMaximum(5);
 	rawFadeBox->setMinimum(0);
 	rawFadeBox->setDecimals(3);
-	rawFadetime=0;
+	rawFadeTime=0;
 	connect(rawFadeBox, SIGNAL(valueChanged(double)), this, SLOT(setRawFade(double)));
 	
 	layout->addRow(tr("Forearm Length (meters):"), armL2Box=new QDoubleSpinBox(this));
@@ -242,13 +242,11 @@ void ControlWidget::readPending()
 	force.Y()=*reinterpret_cast<double*>(in.data()+8*sizeof(double));
 	cursor=position;
 	
-	double white=blwnmag;
+	double white=blwnGain;
 	
 	if(ignoreInput) //Send something back out so that XPC doesn't choke/stall/worse
 	{
-		gain=sigGain;
 		out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
-		out.append(reinterpret_cast<char*>(&gain),sizeof(double));
 		out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
 		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 		out.append(reinterpret_cast<char*>(&white),sizeof(double));
@@ -258,7 +256,7 @@ void ControlWidget::readPending()
 		return;
 	}
 	
-	armsolver->push(xpcTime, position, velocity, accel, accel*-mass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	armsolver->solve();
 	
 	if (!leftOrigin) trialStart=now;
@@ -296,19 +294,19 @@ void ControlWidget::readPending()
 	{
 		lastFade=now;
 		handleD.push_back(position);
-		fadeL=floor(60l*rawFadetime);
+		fadeL=floor(60l*rawFadeTime);
 		while(handleD.size()>fadeL) handleD.pop_front();
 		extractedD.push_back(desposition);
-		fadeL=floor(60l*extractedFadetime);
+		fadeL=floor(60l*extractionFadeTime);
 		while(extractedD.size()>fadeL) extractedD.pop_front();
 		cursorD.push_back(cursor);
-		fadeL=floor(60l*cursorFadetime);
+		fadeL=floor(60l*cursorFadeTime);
 		while(cursorD.size()>fadeL) cursorD.pop_front();
 	}
 	
 	std::deque<point>::iterator it=handleD.begin();
 	fade=0;
-	fadeL=floor(60l*rawFadetime);
+	fadeL=floor(60l*rawFadeTime);
 	while(it!=handleD.end())
 	{
 		fade2=.5*(1.0+fade/fadeL);
@@ -320,32 +318,32 @@ void ControlWidget::readPending()
 		it++;
 	}
 
-	std::deque<point>::iterator it2=extractedD.begin();
+	it=extractedD.begin();
 	fade=0;
-	fadeL=floor(60l*extractedFadetime);
-	while(it2!=extractedD.end())
+	fadeL=floor(60l*extractionFadeTime);
+	while(it!=extractedD.end())
 	{
 		fade2=.5*(1.0+fade/fadeL);
 		sphere.color=point(0,1,1)*fade2;
-		sphere.position=*it2;
+		sphere.position=*it;
 		sphere.radius=cRadius*fade2;
 		sphereVec.push_back(sphere);
 		fade++;
-		it2++;
+		it++;
 	}
 	
-	std::deque<point>::iterator it2=cursorD.begin();
+	it=cursorD.begin();
 	fade=0;
-	fadeL=floor(60l*cursorFadetime);
-	while(it2!=cursorD.end())
+	fadeL=floor(60l*cursorFadeTime);
+	while(it!=cursorD.end())
 	{
 		fade2=.5*(1.0+fade/fadeL);
 		sphere.color=point(0,1,1)*fade2;
-		sphere.position=*it2;
+		sphere.position=*it;
 		sphere.radius=cRadius*fade2;
 		sphereVec.push_back(sphere);
 		fade++;
-		it2++;
+		it++;
 	}
 	
 	userWidget->setSpheres(sphereVec);
@@ -383,8 +381,7 @@ void ControlWidget::readPending()
 	white=perturbGain*blwnGain;
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
-	out.append(reinterpret_cast<char*>(&gain),sizeof(double));
-	out.append(reinterpret_cast<char*>(&mass),sizeof(double));
+	out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
 	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
 	out.append(reinterpret_cast<char*>(&white),sizeof(double));
 	out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
@@ -451,21 +448,21 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 
 point ControlWidget::loadTrial(int T)
 {
-	if subject>0
+	if (subject>0)
 	{
 	trial=T;
 	if(trialFile.atEnd()) emit(endApp());
 
 	char line[201];
 	std::string qline;
-	int tempmeta,tempshape;
+	int tempmeta,tempshape,temptrial;
 	double tempx, tempy, tempEarly, tempLate, tempWhite;
 	std::cout << "Loading Trial " << T << std::endl;
 	do
 	{
 		trialFile.readLine(line,200);
 		std::cout << line << std::endl;
-		if(sscanf(line, "%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempmeta));
+		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempmeta));
 		else
 		{
 			std::cout << "Complete failure to read line: " << line << std::endl; return center;

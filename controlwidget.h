@@ -76,17 +76,16 @@ public slots:
 	void setCursorFade(double f) {cursorFadeTime=f;}
 	void setRawFade(double f) {rawFadeTime=f;}
 	void setExtractionFade(double f) {extractionFadeTime=f;}
-	void setl1(double l) {params=calcParams(weight,l,params.l2,x0)
-	void setl2(double l) {params=calcParams(weight,params.l1,l,x0)
-	void setHeight(double h) {params=calcParams(weight,h,x0)}
-	void setWeight(double w) {weight=w; params=calcParams(w,params.l1,params.l2,x0)}
+	void setl1(double l) {params=twoLinkArm::calcParams(weight,l,params.l2,x0);}
+	void setl2(double l) {params=twoLinkArm::calcParams(weight,params.l1,l,x0);}
+	void setHeight(double h) {params=twoLinkArm::calcParams(weight,h,x0);}
+	void setWeight(double w) {weight=w; params=twoLinkArm::calcParams(w,params.l1,params.l2,x0);}
 	void setVirtualMass(double m) {virtualMass=m;}
 	void setEarlyPulseGain(double g) {earlyPulseGain=g;}
 	void setLatePulseGain(double g) {latePulseGain=g;}
 	void setBLWNGain(double g) {blwnGain=g;}
 	void setX0x(double p) {x0.X()=p;}
 	void setX0y(double p) {x0.Y()=p;}
-	void setWhite(double m) {white=m;}
 };
 
 #endif

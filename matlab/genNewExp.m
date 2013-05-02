@@ -103,8 +103,9 @@ for k=1:4*50
 end
 
 out=[dMemHack.v]';
+out=[(1:size(out,1))' out]
 fid=fopen('../Data/input.dat','w');
-fprintf(fid,'%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\n',out');
+fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\n',out');
 fclose(fid);
     
 

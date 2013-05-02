@@ -25,14 +25,14 @@ DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 	backgroundColor=point(0,0,0);
 	deepBackgroundColor=point(0,0,0);
 	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
-	for(int k=0;k++;k<4) drawShapes[k]=false;
+	for(int k=0;k<4;k++) drawShapes[k]=false;
 }
 
 DisplayWidget::~DisplayWidget()
 {
 	makeCurrent();
 	glDeleteLists(sphereList,1);
-	for(int k=0;k++;k<4) glDeleteLists(shapeList[k],1);
+	for(int k=0;k<4;k++) glDeleteLists(shapeList[k],1);
 }
 
 void DisplayWidget::initializeGL()
@@ -47,7 +47,7 @@ void DisplayWidget::initializeGL()
 	gluSphere(qobj, 1, 100, 100); //Arbitrary defaults "grid" size: 100 x 100		
 	glEndList();
 	
-	glNewList(shapelist[TRIANGLE],GL_COMPILE); //Triangle
+	glNewList(shapeList[TRIANGLE],GL_COMPILE); //Triangle
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
 		glVertex2f(-1,-1);
@@ -56,7 +56,7 @@ void DisplayWidget::initializeGL()
 	glEnd();
 	glEndList();
 	
-	glNewList(shapelist[SQUARE],GL_COMPILE); //Square
+	glNewList(shapeList[SQUARE],GL_COMPILE); //Square
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
 		glVertex2f(-1,-1);
@@ -67,10 +67,10 @@ void DisplayWidget::initializeGL()
 	glEndList();
 	
 	double t;
-	glNewList(shapelist[CIRCLE],GL_COMPILE); //Circle
+	glNewList(shapeList[CIRCLE],GL_COMPILE); //Circle
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
-		for(int k=0;k++;k<100) 
+		for(int k=0;k<100;k++) 
 		{
 			t=6.283185307*double(k)/100.0;
 			glVertex2f(cos(t),sin(t));
@@ -78,10 +78,10 @@ void DisplayWidget::initializeGL()
 	glEnd();
 	glEndList();
 	
-	glNewList(shapelist[INFSIGN],GL_COMPILE); //Infinity sign
+	glNewList(shapeList[INFSIGN],GL_COMPILE); //Infinity sign
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
-		for(int k=0;k++;k<100) 
+		for(int k=0;k<100;k++) 
 		{
 			t=6.283185307*double(k)/100.0;
 			glVertex2f(sin(t),sin(2.0*t));
@@ -145,11 +145,11 @@ void DisplayWidget::paintGL()
 	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0,0);
 	glScaled(min*(2.0/3.0),min*(2.0/3.0),1.0);
 	glColor3d(.5,.5,.5); //Grey because...why not?
-	for(int k=0;k++;k<3)
+	for(int k=0;k<3;k++)
 	{
 		if(drawShapes[k])
 		{
-			callList(shapeList[k]);
+			glCallList(shapeList[k]);
 		}
 	}
 	glPopMatrix();

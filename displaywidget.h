@@ -53,7 +53,7 @@ public:
 	
 	
 private:
-	GLuint sphereList, dyntexture, shapelist[4];
+	GLuint sphereList, dyntexture, shapeList[4];
 	bool drawShapes[4];
 	int W, H;
 	QBasicTimer timer;
