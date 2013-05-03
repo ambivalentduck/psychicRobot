@@ -59,7 +59,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	eaGainBox->setMinimum(0);
 	eaGainBox->setDecimals(3);
 	eaGain=1;
-	connect(eaGainBox, SIGNAL(currentIndexChanged(double)), this, SLOT(setEAGain(double)));
+	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));
 	
 	layout->addRow(tr("Cursor Fade Time (s):"), cursorFadeBox=new QDoubleSpinBox(this));
 	cursorFadeBox->setValue(0);
@@ -100,10 +100,10 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(armL1Box, SIGNAL(valueChanged(double)), this, SLOT(setl1(double)));
 	
 	layout->addRow(tr("Subject Weight (lbs):"), weightBox=new QDoubleSpinBox(this));
-	weightBox->setValue(160);
 	weightBox->setMaximum(400);
 	weightBox->setMinimum(0);
 	weightBox->setDecimals(4);
+	weightBox->setValue(160);
 	weight=160;
 	connect(weightBox, SIGNAL(valueChanged(double)), this, SLOT(setWeight(double)));
 	
@@ -257,16 +257,16 @@ void ControlWidget::readPending()
 		out.append(reinterpret_cast<char*>(&white),sizeof(double));
 		out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
 		out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
-		out.append(reinterpret_cast<char*>(&originTargetLine),4*sizeof(double));
+		out.append(reinterpret_cast<char*>(originTargetLine),4*sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 		return;
 	}
 	
 	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
 	armsolver->solve();
-	
-	if (!leftOrigin) {trialStart=now;
-	if (!leftOrigin) if (cursor.dist(origin)>(oRadius+cRadius)) leftOrigin=true;
+
+	if (!leftOrigin) trialStart=now;
+	if ((!leftOrigin)&&(cursor.dist(origin)>(oRadius+cRadius))) leftOrigin=true;
 	
 	sphereVec.clear();
 	//Target
@@ -379,7 +379,7 @@ void ControlWidget::readPending()
 		break;
 	case hold:
 		if((now-holdStart)>HOLDTIME) state=acquireTarget;
-		perturbGain=evalSigmoid((now-holdStart),.4);
+		perturbGain=0; //evalSigmoid((now-holdStart),.4);
 		break;
 	}
 	
