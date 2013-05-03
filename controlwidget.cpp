@@ -387,7 +387,6 @@ void ControlWidget::readPending()
 		break;
 	}
 	
-	reset_=1;
 	white=perturbGain*blwnGain;
 	
 	originTargetLine[0]=origin.X();
