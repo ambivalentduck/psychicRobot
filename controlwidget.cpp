@@ -156,6 +156,10 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	blwnGain=0;
 	connect(blwnGainBox, SIGNAL(valueChanged(double)), this, SLOT(setBLWNGain(double)));
 	
+	layout->addRow(resetTGButton=new QPushButton("Reset Target"));
+	connect(resetTGButton, SIGNAL(clicked()), this, SLOT(resetTGClicked()));
+	resetTG=1;
+	
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
@@ -228,8 +232,6 @@ void ControlWidget::readPending()
 	if(inSize != s) in.resize(s);
 	us->readDatagram(in.data(), in.size());
 	
-	double reset_=0;
-	
 	//Make sure pva is seeded.
 	xpcTime=*reinterpret_cast<double*>(in.data());
 	position.X()=*reinterpret_cast<double*>(in.data()+sizeof(double));
@@ -253,12 +255,14 @@ void ControlWidget::readPending()
 	{
 		out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 		out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
-		out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
+		out.append(reinterpret_cast<char*>(&resetTG),sizeof(double));
 		out.append(reinterpret_cast<char*>(&white),sizeof(double));
 		out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
 		out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
 		out.append(reinterpret_cast<char*>(originTargetLine),4*sizeof(double));
 		us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
+		
+		if(resetTG>0) resetTG=0;
 		return;
 	}
 	
@@ -400,6 +404,8 @@ void ControlWidget::readPending()
 	out.append(reinterpret_cast<char*>(&originTargetLine),4*sizeof(double));
 	//This will require additional appends for other stimuli
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
+	
+	if (resetTG>0) resetTG=0;
 	
 	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() << endl;
 }

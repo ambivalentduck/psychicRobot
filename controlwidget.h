@@ -30,7 +30,7 @@ private:
 	QDoubleSpinBox *eaGainBox, *cursorFadeBox, *extractionFadeBox, *rawFadeBox;
 	QDoubleSpinBox *heightBox, *weightBox, *armL1Box, *armL2Box;
 	QDoubleSpinBox *x0xBox, *x0yBox;
-	QPushButton *startButton; 	
+	QPushButton *startButton, *resetTGButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
 		
@@ -48,7 +48,7 @@ private:
 	QFile contFile, trialFile;
 	QTextStream outStream;
 	
-	double min, perturbGain, weight, eaGain, xpcTime, virtualMass, cursorFadeTime, extractionFadeTime, rawFadeTime, blwnGain, earlyPulseGain, latePulseGain;
+	double resetTG, min, perturbGain, weight, eaGain, xpcTime, virtualMass, cursorFadeTime, extractionFadeTime, rawFadeTime, blwnGain, earlyPulseGain, latePulseGain;
 	enum GameState {acquireTarget=0, inTarget=1, hold=2} state;
 	std::vector<QWidget*> grayList;
 	std::vector<DisplayWidget::Sphere> sphereVec;
@@ -69,6 +69,7 @@ signals:
 public slots:
 	void readPending();
 	void startClicked();
+	void resetTGClicked() {resetTG=1;}
 	void setTrialNum(int i) {trial=i;}
 	void setSubject(int i) {subject=i;}
 	double evalSigmoid(double t, double risetime) {double a=10l/risetime; t-=risetime/2l; return (a*t/sqrt(1l+pow(a*t,2))+1l)/2l;}
