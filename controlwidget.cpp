@@ -397,7 +397,7 @@ void ControlWidget::readPending()
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
-	out.append(reinterpret_cast<char*>(&reset_),sizeof(double));
+	out.append(reinterpret_cast<char*>(&resetTG),sizeof(double));
 	out.append(reinterpret_cast<char*>(&white),sizeof(double));
 	out.append(reinterpret_cast<char*>(&earlyPulseGain),sizeof(double));
 	out.append(reinterpret_cast<char*>(&latePulseGain),sizeof(double));
