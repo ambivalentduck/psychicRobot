@@ -512,6 +512,7 @@ point ControlWidget::loadTrial(int T)
 			
 		state=hold;
 		holdStart=now;
+		trial=T;
 	}
 	return target;
 }
