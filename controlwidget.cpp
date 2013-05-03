@@ -508,6 +508,7 @@ point ControlWidget::loadTrial(int T)
 		double mean=.1;
 		if(leftSide) {mean*=-1; leftSide=false;}
 		else leftSide=true;
+		origin=target;
 		target=point(mean+randb(-.05,.05),center.Y());
 			
 		state=hold;
