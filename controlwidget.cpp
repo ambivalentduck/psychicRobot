@@ -174,6 +174,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
+	userWidget->setShapes(true,true,true,true);
 	userWidget->show();
 	
 	//Set up a "calibration" field. Should be a 1/4 circle in each corner
@@ -416,6 +417,7 @@ void ControlWidget::startClicked()
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
+	userWidget->setShapes(false,false,false,false);
 	goGray();
 	startButton->setText("Experiment running...");
 	
@@ -499,6 +501,7 @@ point ControlWidget::loadTrial(int T)
 	}
 	else
 	{
+		userWidget->setShapes(true,true,true,true);
 		if(trial==1)
 		{
 			leftSide=true;
