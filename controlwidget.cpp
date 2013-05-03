@@ -110,15 +110,15 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	layout->addRow(tr("Subject Shoulder Pos X (m):"), x0xBox=new QDoubleSpinBox(this));
 	x0xBox->setValue(0);
 	x0xBox->setMaximum(2);
-	x0xBox->setMinimum(2);
+	x0xBox->setMinimum(-2);
 	x0xBox->setDecimals(4);
 	x0.X()=0;
 	connect(x0xBox, SIGNAL(valueChanged(double)), this, SLOT(setX0x(double)));
 	
 	layout->addRow(tr("Subject Shoulder Pos X (m):"), x0yBox=new QDoubleSpinBox(this));
-	x0yBox->setValue(0);
+	x0yBox->setValue(.8);
 	x0yBox->setMaximum(2);
-	x0yBox->setMinimum(2);
+	x0yBox->setMinimum(0);
 	x0yBox->setDecimals(4);
 	x0.Y()=0;
 	connect(x0yBox, SIGNAL(valueChanged(double)), this, SLOT(setX0y(double)));
