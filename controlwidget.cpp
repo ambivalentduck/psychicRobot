@@ -5,10 +5,10 @@
 
 #define targetDuration .5
 #define HOLDTIME .5
-#define oRadius min/40
-#define cRadius min/40
-#define tRadius min/40
-#define calRadius min/40
+#define oRadius min/40.0
+#define cRadius min/40.0
+#define tRadius min/40.0
+#define calRadius min/40.0
 #define TAB << "\t" <<
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
@@ -174,8 +174,8 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
-	userWidget->setShapes(true,true,true,true);
 	userWidget->show();
+	userWidget->setShapes(true,true,true,true);
 	
 	//Set up a "calibration" field. Should be a 1/4 circle in each corner
 	sphereVec.clear();
@@ -275,9 +275,9 @@ void ControlWidget::readPending()
 	
 	sphereVec.clear();
 	//Target
-	if((state!=hold)&&leftOrigin)
+	if(state!=hold)
 	{
-		if(state!=inTarget) sphere.color=point(1,0,0); //Red
+		if((state!=inTarget)||(!leftOrigin)) sphere.color=point(1,0,0); //Red
 		else //Yellow -> too slow, White -> too fast
 		{
 			double acquire_time=targetAcquired-trialStart;
@@ -296,7 +296,8 @@ void ControlWidget::readPending()
 	sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
 	sphere.radius=cRadius;
-	sphereVec.push_back(sphere);
+	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
+		sphereVec.push_back(sphere);
 	
 	double fade;
 	double fade2;
@@ -406,7 +407,7 @@ void ControlWidget::readPending()
 	us->writeDatagram(out.data(),out.size(),QHostAddress("192.168.1.2"),25000);
 	
 	if (resetTG>0) resetTG=0;
-	
+		
 	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() << endl;
 }
 
@@ -495,13 +496,18 @@ point ControlWidget::loadTrial(int T)
 	blwnGain=tempWhite;
 	blwnGainBox->setValue(tempWhite);
 	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
+	if(tempshape>=0) {target=point(min/6.0,center.Y()); hideCursor=true;}
+	else hideCursor=false;
 	
 	trialNumBox->setValue(T);
 	std::cout << "Finished Loading Trial " << temptrial << std::endl;
+	
+	state=hold;
+	holdStart=now;
 	}
 	else
 	{
-		userWidget->setShapes(true,true,true,true);
+		userWidget->setShapes(false,false,false,false);
 		if(trial==1)
 		{
 			leftSide=true;
@@ -516,6 +522,7 @@ point ControlWidget::loadTrial(int T)
 		state=hold;
 		holdStart=now;
 		trial=T;
+		hideCursor=false;
 	}
 	return target;
 }

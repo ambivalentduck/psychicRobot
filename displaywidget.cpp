@@ -47,15 +47,17 @@ void DisplayWidget::initializeGL()
 	gluSphere(qobj, 1, 100, 100); //Arbitrary defaults "grid" size: 100 x 100		
 	glEndList();
 	
+	shapeList[TRIANGLE] = glGenLists(1);
 	glNewList(shapeList[TRIANGLE],GL_COMPILE); //Triangle
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
-		glVertex2f(-1,-1);
-		glVertex2f(-1,1);
-		glVertex2f(sqrt(2.0)/2.0,0);
+		glVertex2f(1,-1);
+		glVertex2f(1,1);
+		glVertex2f(-sqrt(2.0)/2.0,0);
 	glEnd();
 	glEndList();
 	
+	shapeList[SQUARE] = glGenLists(1);
 	glNewList(shapeList[SQUARE],GL_COMPILE); //Square
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
@@ -67,6 +69,7 @@ void DisplayWidget::initializeGL()
 	glEndList();
 	
 	double t;
+	shapeList[CIRCLE] = glGenLists(1);
 	glNewList(shapeList[CIRCLE],GL_COMPILE); //Circle
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
@@ -78,13 +81,14 @@ void DisplayWidget::initializeGL()
 	glEnd();
 	glEndList();
 	
+	shapeList[INFSIGN] = glGenLists(1);
 	glNewList(shapeList[INFSIGN],GL_COMPILE); //Infinity sign
 	glLineWidth(LINEWIDTH);
 	glBegin(GL_LINE_LOOP);
 		for(int k=0;k<100;k++) 
 		{
 			t=6.283185307*double(k)/100.0;
-			glVertex2f(sin(t),sin(2.0*t));
+			glVertex2f(sin(t),.5*sin(2.0*t));
 		}
 	glEnd();
 	glEndList();
@@ -143,9 +147,9 @@ void DisplayWidget::paintGL()
 	
 	glPushMatrix();
 	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0,0);
-	glScaled(min*(2.0/3.0),min*(2.0/3.0),1.0);
+	glScaled(min*(1.0/6.0),min*(1.0/6.0),1.0);
 	glColor3d(.5,.5,.5); //Grey because...why not?
-	for(int k=0;k<3;k++)
+	for(int k=0;k<4;k++)
 	{
 		if(drawShapes[k])
 		{
