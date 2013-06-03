@@ -24,6 +24,7 @@ public:
 	~twoLinkArm();
 	void moveShoulder(point x0);
 	void setShoulder(point x0);
+	void setParams(ArmParams P);
 	point fkin(point q);
 	void fkin(point q, point &x, point &x1);
 	bool ikin(point x, point &q);
@@ -36,8 +37,8 @@ public:
 	void crapMat(mat2 m);
 	bool unitTests();
 	
-	static ArmParams defaultParams();
-	
+	static ArmParams calcParams(double weight, double height, point x0);
+	static ArmParams calcParams(double weight, double l1, double l2, point x0);
 private:
 	 ArmParams params;
 		

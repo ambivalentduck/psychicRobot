@@ -47,6 +47,15 @@ mat2 mat2::operator =(mat2 m2)
 	return *this;
 }
 
+mat2 mat2::operator =(double d)
+{
+	m[0]=d;
+	m[1]=d;
+	m[2]=d;
+	m[3]=d;
+	return *this;
+}
+
 mat2 mat2::transpose()
 {
 	return mat2(m[0],m[2],m[1],m[3]);

@@ -4,6 +4,7 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 {
 	solveDes=solveIntent;
 	constImp=constImpedance;
+	impSeeded=false;
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
@@ -49,8 +50,10 @@ int ArmSolver::func(double t, const double y[], double f[])
 	
 	point qsDDot;
 	
+	paramsMutex.lock();
 	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
 	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
+	paramsMutex.unlock();
 	
 	f[2]=qsDDot[0];
 	f[3]=qsDDot[1];
@@ -58,31 +61,24 @@ int ArmSolver::func(double t, const double y[], double f[])
 	return GSL_SUCCESS;
 }
 
-void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+void ArmSolver::setParams(twoLinkArm::ArmParams P)
+{	
+	paramsMutex.lock();
+	arm->setParams(P); 
+	paramsMutex.unlock();
+}
+
+void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
 {
 	//Why do you need to block in THIS thread?
 	destructomutex.lock();
-	seeded=false;
-	int av=solvesemaphore.available();
-	solvesemaphore.acquire(av);
-	
-	times.clear();
-	qm.clear();
-	qmdot.clear();
-	qmddot.clear();
-	torquem.clear();
-	
-	arm->setShoulder(P.x0);
-	
 	point q;
-	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
+	while(!arm->ikin(p,q)) {paramsMutex.lock(); arm->moveShoulder(point(0,-.01)); paramsMutex.unlock();}
 	qm.push_back(q);
-	qst=q;
 	
 	mat2 fJ=arm->jacobian(q);
 	point qdot=fJ/v;
 	qmdot.push_back(qdot);
-	qstdot=qdot;
 	
 	point qddot=arm->getQDDot(q,qdot,a);
 	qmddot.push_back(qddot);
@@ -92,33 +88,21 @@ void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, p
 	
 	times.push_back(t);
 	
-	Kd=kd;
-	Kp=kp;
+	if(!constImp)
+	{
+		Kpm.push_back(kp);
+		Kdm.push_back(kd);
+	}
 	
-	seeded=true;
+	if(!seeded)
+	{
+		qst=q;
+		qstdot=qdot;
+		if(constImp){Kp=kp; Kd=kd;}
+		seeded=true;
+	}
+	else solvesemaphore.release();	
 	destructomutex.unlock();
-}
-
-void ArmSolver::push(double t, point p, point v, point a, point force)
-{
-	if(!seeded) return;
-	point q;
-	while(!arm->ikin(p,q)) arm->moveShoulder(point(0,-.01));
-	qm.push_back(q);
-	
-	mat2 fJ=arm->jacobian(q);
-	point qdot=fJ/v;
-	qmdot.push_back(qdot);
-	
-	point qddot=arm->getQDDot(q,qdot,a);
-	qmddot.push_back(qddot);
-	
-	point torque=(fJ.transpose())*force;
-	torquem.push_back(torque);
-	
-	times.push_back(t);
-	
-	solvesemaphore.release();
 }
 
 void ArmSolver::solve()
@@ -130,9 +114,7 @@ void ArmSolver::run()
 {
 	while(true)
 	{
-		destructomutex.lock();
-		if(!solvesemaphore.tryAcquire(1,3*17)) break; //Try for at least 3 frames to start solving
-		destructomutex.unlock();
+		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving
 		double y[4];
 		y[0]=qst[0];
 		y[1]=qst[1];
@@ -148,9 +130,30 @@ void ArmSolver::run()
 		while(t<tk)
 		{
 			status = gsl_odeiv_evolve_apply(odeevolve,odecontrol,odestep,&sys,&t,tk,&h,y);
+			if(status!=GSL_SUCCESS) break; //Don't lock up on a crash
 		}
 		#endif
-		if(status!=GSL_SUCCESS) {std::cout<<"Oops. Cuh-rash."<<std::endl;}
+		if(status!=GSL_SUCCESS)
+		{
+			std::cout<<"Oops. Cuh-rash."<<std::endl;
+			destructomutex.lock();
+			qm.clear();
+			qmdot.clear();
+			qmddot.clear();
+			torquem.clear();
+			times.clear();
+			if(!constImp)
+			{
+				Kpm.clear();
+				Kdm.clear();
+			}
+			seeded=false;
+			//Since we just emptied the queues, also empty the semaphore
+			solvesemaphore.acquire(solvesemaphore.available());
+			destructomutex.unlock();
+			break; //We just emptied the semaphore
+		}
+		
 		qst=point(y[0],y[1]);
 		qstdot=point(y[2],y[3]);
 		
@@ -164,6 +167,11 @@ void ArmSolver::run()
 		qmddot.pop_front();
 		torquem.pop_front();
 		times.pop_front();
+		if(!constImp)
+		{
+			Kpm.pop_front();
+			Kdm.pop_front();
+		}
 	}
 }
 
