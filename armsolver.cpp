@@ -60,6 +60,7 @@ int ArmSolver::func(double t, const double y[], double f[])
 
 void ArmSolver::cleanpush(twoLinkArm::ArmParams P, double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
 {
+	//Why do you need to block in THIS thread?
 	destructomutex.lock();
 	seeded=false;
 	int av=solvesemaphore.available();
