@@ -93,7 +93,7 @@ end
 SnMag=zeros(2,50*4);
 for d=1:4
     for n=1:50
-        SnMag(:,(d-1)*50+n)=[4*mod(n,10)/9;d];
+        SnMag(:,(d-1)*50+n)=[mod(n,10)/3;d];
     end
 end
 SnMag=SnMag(:,randperm(4*50));
