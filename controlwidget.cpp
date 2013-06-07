@@ -291,9 +291,11 @@ void ControlWidget::readPending()
 	}
 	
 	//Cursor
-	while(armsolver->pull(desposition, 0)) pulls++;
+	bool cursorDodgy;
+	while(armsolver->pull(desposition, cursorDodgy, 0)) pulls++;
 	cursor=desposition*(1l-eaGain)+position*eaGain;
-	sphere.color=point(0,0,1); //Blue
+	if((eaGain!=1)&&(cursorDodgy)) sphere.color=point(.5,.5,1); //Dark blue
+	else sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
 	sphere.radius=cRadius;
 	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
@@ -474,14 +476,14 @@ point ControlWidget::loadTrial(int T)
 
 	char line[201];
 	std::string qline;
-	int tempmeta,tempshape,temptrial;
+	int tempShowCursor,tempshape,temptrial;
 	double tempx, tempy, tempEarly, tempLate, tempWhite;
 	std::cout << "Loading Trial " << T << std::endl;
 	do
 	{
 		trialFile.readLine(line,200);
 		std::cout << line << std::endl;
-		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempmeta));
+		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor));
 		else
 		{
 			std::cout << "Complete failure to read line: " << line << std::endl; return center;
@@ -496,12 +498,14 @@ point ControlWidget::loadTrial(int T)
 	blwnGain=tempWhite;
 	blwnGainBox->setValue(tempWhite);
 	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
-	if(tempshape>=0) {target=point(min/6.0,center.Y()); hideCursor=true;}
-	else hideCursor=false;
+	if(tempshape>=0) target=point(min/6.0,center.Y());
+	if(tempShowCursor>0) hideCursor=false;
+	else hideCursor=true;
 	
 	trialNumBox->setValue(T);
 	std::cout << "Finished Loading Trial " << temptrial << std::endl;
 	
+	armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	state=hold;
 	holdStart=now;
 	}

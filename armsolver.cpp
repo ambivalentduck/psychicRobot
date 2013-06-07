@@ -70,10 +70,10 @@ void ArmSolver::setParams(twoLinkArm::ArmParams P)
 
 void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
 {
-	//Why do you need to block in THIS thread?
-	destructomutex.lock();
+	destructomutex.lock(); //We block here just in case we push at the moment of a crash.
 	point q;
-	while(!arm->ikin(p,q)) {paramsMutex.lock(); arm->moveShoulder(point(0,-.01)); paramsMutex.unlock();}
+	if(arm->ikin(p,q)) questionable.push_back(false);
+	else {arm->ikinAbs(p,q); questionable.push_back(true);}
 	qm.push_back(q);
 	
 	mat2 fJ=arm->jacobian(q);
@@ -107,7 +107,8 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 
 void ArmSolver::solve()
 {
-	if(!isRunning()) start();
+	if(!isRunning())
+		start();
 }
 
 void ArmSolver::run()
@@ -136,7 +137,7 @@ void ArmSolver::run()
 		if(status!=GSL_SUCCESS)
 		{
 			std::cout<<"Oops. Cuh-rash."<<std::endl;
-			destructomutex.lock();
+			destructomutex.lock(); //We lock a mutex so that we can safely remove extant solutions.
 			qm.clear();
 			qmdot.clear();
 			qmddot.clear();
@@ -160,6 +161,7 @@ void ArmSolver::run()
 		qs.push_back(qst);
 		qsdot.push_back(qstdot);
 		stimes.push_back(t);
+		questionableGrab.push_back(questionable.front());
 		grabsemaphore.release();
 		
 		qm.pop_front();
@@ -167,6 +169,7 @@ void ArmSolver::run()
 		qmddot.pop_front();
 		torquem.pop_front();
 		times.pop_front();
+		questionable.pop_front();
 		if(!constImp)
 		{
 			Kpm.pop_front();
@@ -175,10 +178,12 @@ void ArmSolver::run()
 	}
 }
 
-bool ArmSolver::pull(point &p, int timeout)
+bool ArmSolver::pull(point &p, bool &dodgy, int timeout)
 {
 	if(!grabsemaphore.tryAcquire(1,timeout)) return false;
 	p=arm->fkin(qs.front()); //Update with braindead q+qdot*delta(t)?
+	dodgy=questionableGrab.front();
+	questionableGrab.pop_front();
 	qs.pop_front();
 	qsdot.pop_front();
 	stimes.pop_front();

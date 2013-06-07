@@ -24,7 +24,7 @@ public:
 	int func(double t, const double y[], double f[]);
 	void setParams(twoLinkArm::ArmParams P);
 	void push(double t, point p, point v, point a, point force, mat2 kp=mat2(0,0,0,0), mat2 kd=mat2(0,0,0,0));
-	bool pull(point &p, int timeout=-1);
+	bool pull(point &p, bool &dodgy, int timeout=-1);
 	void solve();
 	void run();
 	static int statfunc(double t, const double y[], double f[], void *params);
@@ -47,6 +47,7 @@ private:
 	std::deque<point> qm,qs,qmdot,qsdot,qmddot,torquem;
 	std::deque<mat2> Kpm,Kdm;
 	std::deque<double> times, stimes;
+	std::deque<bool> questionable, questionableGrab;
 	mat2 Kd, Kp;
 	QSemaphore solvesemaphore, grabsemaphore;
 	QMutex destructomutex, paramsMutex;

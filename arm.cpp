@@ -49,6 +49,14 @@ bool twoLinkArm::ikin(point x, point &q)
 	return true;
 }
 
+void twoLinkArm::ikinAbs(point x, point &q)
+{
+	x=x-params.x0;
+	double S=(std::pow(params.l1+params.l2,2)-(std::pow(x.X(),2)+std::pow(x.Y(),2)))/(std::pow(x.X(),2)+std::pow(x.Y(),2)-std::pow(params.l1-params.l2,2));
+	q[1]=-2.0*std::atan(std::sqrt(std::abs(S))); //Negative sign indicates elbow right.
+	q[0]=std::atan2(x.Y(),x.X())-std::atan2(params.l2*std::sin(q[1]),params.l1+params.l2*std::cos(q[1]));
+}
+
 void twoLinkArm::computeInertiaCoriolis(point q, point qdot, mat2 &D, point &C)
 {
 	double c2=std::cos(q.Y());
