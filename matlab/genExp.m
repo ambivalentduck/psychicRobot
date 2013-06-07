@@ -111,14 +111,14 @@ plot(1:len,y,dist,y(dist),'rx')
 length(out)
 size([out.dat])
 
-for s=1:4 %5 warmups on each, cursor shown
+for s=0:3 %5 warmups on each, cursor shown
     for k=1:5
         c=c+1;
         out(c).dat=[0; 0; 0; 0; 0; s; 1];
     end
 end
 
-for s=1:4 %5 warmups on each, cursor not shown
+for s=0:3 %5 warmups on each, cursor not shown
     for k=1:5
         c=c+1;
         out(c).dat=[0; 0; 0; 0; 0; s; 0];
@@ -127,7 +127,7 @@ end
 
 SnMag=zeros(2,4*5*20);
 k=0;
-for s=1:4
+for s=0:3
     for n=linspace(0,3,5)
         for ITER=1:20
             k=k+1;
