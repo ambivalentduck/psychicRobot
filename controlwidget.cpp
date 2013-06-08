@@ -498,7 +498,7 @@ point ControlWidget::loadTrial(int T)
 	blwnGain=tempWhite;
 	blwnGainBox->setValue(tempWhite);
 	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
-	if(tempshape>=0) target=point(min/6.0,center.Y());
+	if(tempshape>=0) target=point(center.X()+min/6.0,center.Y()+.05);
 	if(tempShowCursor>0) hideCursor=false;
 	else hideCursor=true;
 	
