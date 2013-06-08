@@ -392,11 +392,11 @@ void ControlWidget::readPending()
 	}
 	
 	white=perturbGain*blwnGain;
-	
+
 	originTargetLine[0]=origin.X();
 	originTargetLine[1]=origin.Y();
-	originTargetLine[2]=target.X();
-	originTargetLine[3]=target.Y();
+	originTargetLine[2]=claimedTarget.X();
+	originTargetLine[3]=claimedTarget.Y();
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
@@ -498,7 +498,8 @@ point ControlWidget::loadTrial(int T)
 	blwnGain=tempWhite;
 	blwnGainBox->setValue(tempWhite);
 	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
-	if(tempshape>=0) target=point(center.X()+min/6.0,center.Y()+.05);
+	if(tempshape>=0) {target=point(center.X()+min/6.0,center.Y()+.05); claimedTarget=center;}
+	else claimedTarget=target;
 	if(tempShowCursor>0) hideCursor=false;
 	else hideCursor=true;
 	
@@ -527,6 +528,7 @@ point ControlWidget::loadTrial(int T)
 		holdStart=now;
 		trial=T;
 		hideCursor=false;
+		claimedTarget=target;
 	}
 	return target;
 }

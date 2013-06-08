@@ -61,7 +61,7 @@ private:
 	timespec zero, now, trialStart, targetAcquired, holdStart, lastFade;
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, firstpush, leftSide, hideCursor;
 	int trial, subject, pulls;
-	point x0, origin, cursor, desposition, position, velocity, accel, target, force, center;
+	point x0, origin, cursor, desposition, position, velocity, accel, claimedTarget, target, force, center;
 	
 signals:
 	void endApp();
