@@ -1,10 +1,10 @@
 %function success=addSubject(name)
-name='1'
+name='3'
 
 disp(['Loading Data for Subject ',name])
 
 output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input_o.dat']);
+input=load(['../Data/input_jim.dat']);
 
 global fJ getAlpha x0
 
@@ -33,8 +33,8 @@ a=f; %unique(input(f,1));
 success=zeros(length(a),5);
 
 for k=1:length(a)
-    K=a(k);
-    fo=find(output(:,1)==K);
+    K=a(k)
+    fo=find(output(:,1)==K-1);
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
@@ -50,8 +50,8 @@ for k=1:length(a)
     gT=.01; %Known a priori
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
-    trials(k).force=output(fo,[9 10]);
-    trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
+    trials(k).force=-output(fo,[9 10]);
+    %trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
 
     trials(k).dist=[0; cumsum(sqrt(sum((trials(k).pos(2:end,:)-trials(k).pos(1:end-1,:)).^2,2)))];
     trials(k).speed=sqrt(sum(trials(k).vel.^2,2));

@@ -6,4 +6,9 @@ switch num
         l2=.34;
         mass=160;
         shoulder=[0 .54];
+    case '3'
+        l1=.36;
+        l2=.31;
+        mass=225;
+        shoulder=[0 .55];
 end
