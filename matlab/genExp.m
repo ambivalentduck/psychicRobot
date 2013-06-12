@@ -18,29 +18,34 @@ harshness=5; %Trade-off is structure vs balance. In theory, dynamic harshness de
 %shape (-1=none,0=triangle,1=square, 2=circle, 3=inf desired)
 %cursor shown (0/1 false/true)
 
-for k=2:len
-    if y(k-1)==0
-        if rand<signbalance
-            y(k)=-1;
-            signbalance=signbalance-harshness*1/len;
+cost=inf;
+
+while cost>3
+    for k=2:len
+        if y(k-1)==0
+            if rand<signbalance
+                y(k)=-1;
+                signbalance=signbalance-harshness*1/len;
+            else
+                y(k)=1;
+                signbalance=signbalance+harshness*1/len;
+            end
         else
-            y(k)=1;
-            signbalance=signbalance+harshness*1/len;
-        end
-    else
-        if rand<onevtwo
-            y(k)=0;
-            onevtwo=onevtwo-harshness*2/len;
-        else
-            y(k)=-y(k-1);
-            onevtwo=onevtwo+harshness*1/len;
+            if rand<onevtwo
+                y(k)=0;
+                onevtwo=onevtwo-harshness*2/len;
+            else
+                y(k)=-y(k-1);
+                onevtwo=onevtwo+harshness*1/len;
+            end
         end
     end
+    diffs=y(2:end)-y(1:end-1);
+    signbalance_=sum(diffs<0)-sum(diffs>0)
+    onevtwo_=sum(abs(diffs)==1)-sum(abs(diffs)==2)
+    cost=abs(onevtwo_)+abs(signbalance_);
 end
 
-diffs=y(2:end)-y(1:end-1);
-signbalance=sum(diffs<0)-sum(diffs>0)
-onevtwo=sum(abs(diffs)==1)-sum(abs(diffs)==2)
 
 
 x=[y [0;sign(diffs)] [0;abs(diffs)]];
@@ -82,7 +87,7 @@ while c<len
     if (sum(x(c,2:3)'==deck(1:2,d))~=2)&&(k>5)
         deck(:,d:end)=deck(:,d-1+randperm(sd2-d+1));
     end
-    if sum(x(c,2:3)'==deck(1:2,d))~=2
+    if sum(x(c,2:3)'==deck(1:2,d))==2
         out(c).dat=[y(c); .5; 0; 0; 0; -1; 1];
         continue
     end
@@ -111,6 +116,9 @@ plot(1:len,y,dist,y(dist),'rx')
 length(out)
 size([out.dat])
 
+[h]=hist(dist(2:end)-dist(1:end-1),5:11);
+[(5:11)' h']
+
 for s=0:3 %5 warmups on each, cursor shown
     for k=1:5
         c=c+1;
@@ -128,7 +136,7 @@ end
 SnMag=zeros(2,4*5*20);
 k=0;
 for s=0:3
-    for n=linspace(0,3,5)
+    for n=linspace(0,3,2.5)
         for ITER=1:20
             k=k+1;
             SnMag(:,k)=[n;s];

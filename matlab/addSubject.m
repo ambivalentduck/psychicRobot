@@ -4,7 +4,7 @@ name='1'
 disp(['Loading Data for Subject ',name])
 
 output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input.dat']);
+input=load(['../Data/input_o.dat']);
 
 global fJ getAlpha x0
 
@@ -28,7 +28,7 @@ x0_=x0;
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
 f=find(sum(abs(input(1:730,4:6)),2)>0);
-a=unique(input(f,1));
+a=f; %unique(input(f,1));
 
 success=zeros(length(a),5);
 
@@ -42,6 +42,11 @@ for k=1:length(a)
         
     trials(k).time=linspace(output(fo(1),2),output(fo(end),2),length(fo))';
     trials(k).pos=output(fo,[3 4]);
+    if norm(trials(k).pos(1,:)-trials(k).pos(end,:))<.25
+        trials(k).long=0;
+    else
+        trials(k).long=1;
+    end
     gT=.01; %Known a priori
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
