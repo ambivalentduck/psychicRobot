@@ -119,6 +119,7 @@ size([out.dat])
 [h]=hist(dist(2:end)-dist(1:end-1),5:11);
 [(5:11)' h']
 
+out(c).dat=[0; 0; 0; 0; 0; 0; 1]; %Extra copy of the first shape to allow target acquisition
 for s=0:3 %5 warmups on each, cursor shown
     for k=1:5
         c=c+1;
