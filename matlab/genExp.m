@@ -137,7 +137,7 @@ end
 SnMag=zeros(2,4*5*20);
 k=0;
 for s=0:3
-    for n=linspace(0,2.5,5)
+    for n=linspace(0,1,5)
         for ITER=1:20
             k=k+1;
             SnMag(:,k)=[n;s];
