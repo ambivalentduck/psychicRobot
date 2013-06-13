@@ -6,7 +6,7 @@ load ../Data/3extracted.mat
 
 types=[trials.type];
 
-STIFFNESS=1;
+STIFFNESS=3;
 
 for k=1:3
     figure(k)
@@ -20,7 +20,7 @@ SATURATE=.7;
 for k=1:length(trials)
    figure(trials(k).type)
    xoff=-trials(k).pos(1,1);
-   yoff=0;
+   yoff=trials(k).updown/50;
    if ~trials(k).long
        xoff=xoff+1;
    end

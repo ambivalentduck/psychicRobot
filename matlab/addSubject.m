@@ -38,6 +38,7 @@ for k=1:length(a)
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
+    trials(k).updown=sum(input(K,4:6));
     trials(k).type=find(input(K,4:6)~=0);
         
     trials(k).time=linspace(output(fo(1),2),output(fo(end),2),length(fo))';
@@ -47,7 +48,7 @@ for k=1:length(a)
     else
         trials(k).long=1;
     end
-    gT=.01; %Known a priori
+    gT=mean(gradient(trials(k).time));
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
     trials(k).force=-output(fo,[9 10]);
@@ -95,11 +96,12 @@ for k=1:length(a)
     trials(k).target=[trials(k).pos(end,1) origin(2)];
     trials(k).targetCat=trials(k).pos(end,1)>0;
 
-    f=find((trials(k).time-trials(k).time(1))<.5,1,'last');
+    f=find((trials(k).time-trials(k).time(1))<.5,1,'last'); 
     trials(k).first=f;
     trials(k).last=length(trials(k).time);
     
-    trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
+    %Should adjust to LOW velocity/acceleration threshold, not just mean.
+    %trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
 
     success(k,5)=trials(k).first;
 end
