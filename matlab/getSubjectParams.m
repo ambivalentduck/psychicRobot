@@ -6,7 +6,7 @@ switch num
         l2=.34;
         mass=160;
         shoulder=[0 .54];
-    case '3'
+    case {'3','9','10'}
         l1=.36;
         l2=.31;
         mass=225;

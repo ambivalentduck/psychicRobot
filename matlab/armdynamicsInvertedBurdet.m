@@ -18,8 +18,11 @@ omega_desired=qi(lqi/2+1:end);
 [D_real,C_real]=computeDC(theta_real,omega_real);
 [D_expected,C_expected]=computeDC(theta_desired,omega_desired);
 
-kp=kp0+
-kd=kp/12;
+kp0=[10.8 2.83; 2.51 8.67];
+kp1=[3.18 2.15; 2.34 6.18];
+torque_kp=D_real*alpha_real+C_real+torque_outside;
+kp=kp0+kp1*abs(torque_kp);
+kd=1/12;
 torque_fb=kp*((theta_real-theta_desired) + kd*(omega_real-omega_desired));
 
 %Update the change in desired state

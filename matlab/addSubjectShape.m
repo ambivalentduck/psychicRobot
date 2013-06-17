@@ -1,10 +1,10 @@
 %function success=addSubject(name)
-name='3'
+name='10'
 
 disp(['Loading Data for Subject ',name])
 
 output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input_jim.dat']);
+input=load(['../Data/input.dat']);
 
 global fJ getAlpha x0
 
@@ -27,8 +27,7 @@ x0_=x0;
 
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
-f=find(sum(abs(input(1:730,4:6)),2)>0);
-a=f; %unique(input(f,1));
+a=1001:output(end,1);
 
 success=zeros(length(a),5);
 
@@ -102,7 +101,7 @@ for k=1:length(a)
     trials(k).last=length(trials(k).time);
     
     %Should adjust to LOW velocity/acceleration threshold, not just mean.
-    trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
+    %trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
 
     success(k,5)=trials(k).first;
 end
