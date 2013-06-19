@@ -4,7 +4,7 @@ name='3'
 disp(['Loading Data for Subject ',name])
 
 output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input_jim.dat']);
+input=load(['../Data/input.dat']);
 
 global fJ getAlpha x0
 

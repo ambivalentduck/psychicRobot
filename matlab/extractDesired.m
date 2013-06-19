@@ -40,7 +40,8 @@ for k=1:lT
     for g=1:length(gains)
         kp=gains{g};
 
-        [T,X]=ode45(@armdynamics_inverted,measuredTime,[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)']);
+        %[T,X]=ode45(@armdynamics_inverted,measuredTime,[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)']);
+        [T,X]=ode45(@armdynamicsInvertedBurdet,measuredTime,[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)']);
 
         desiredTime=T;
 

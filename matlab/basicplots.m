@@ -6,7 +6,7 @@ load ../Data/3extracted.mat
 
 types=[trials.type];
 
-STIFFNESS=3;
+STIFFNESS=1;
 
 for k=1:3
     figure(k)
@@ -19,10 +19,10 @@ SATURATE=.7;
 
 for k=1:length(trials)
    figure(trials(k).type)
-   xoff=-trials(k).pos(1,1);
-   yoff=trials(k).updown/50;
+   xoff=trials(k).pos(1,1)+.4*sign(trials(k).updown);
+   yoff=0; %trials(k).updown/50;
    if ~trials(k).long
-       xoff=xoff+1;
+       yoff=yoff+.25;
    end
    x=desiredTrajectories(k,STIFFNESS).xDesired(1:SPACE:end,1)-xoff;
    y=desiredTrajectories(k,STIFFNESS).xDesired(1:SPACE:end,2)-desiredTrajectories(k,STIFFNESS).xDesired(1,2);
