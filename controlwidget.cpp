@@ -280,15 +280,16 @@ void ControlWidget::readPending()
 		if((state!=inTarget)||(!leftOrigin)) sphere.color=point(1,0,0); //Red
 		else //Yellow -> too slow, White -> too fast
 		{
-			double acquire_time=targetAcquired-trialStart;
+			/* double acquire_time=targetAcquired-trialStart;
 			if (acquire_time<.4) sphere.color=point(1,1,0);
 			else if (acquire_time>.6) sphere.color=point(1,1,1);
-			else sphere.color=point(0,1,0);
+			else sphere.color=point(0,1,0); */
+			sphere.color=point(0,1,0); //Switched to "natural" pace.
 		}
 		sphere.position=target;
 		sphere.radius=tRadius;
 		sphereVec.push_back(sphere);
-	}
+	} //In the hold case, the target is not drawn.
 	
 	//Cursor
 	bool cursorDodgy;
@@ -374,16 +375,20 @@ void ControlWidget::readPending()
 		break;
 	case inTarget:
 		perturbGain=0;
-		if (cursor.dist(target)<(tRadius+cRadius))
+		if (acquisitionsNeeded<=1)
 		{
-			if((now-targetAcquired)>=targetDuration)
+			if (cursor.dist(target)<(tRadius+cRadius))
 			{
-				origin=target;
-				loadTrial(trial+1);
-				leftOrigin=false;
+				if((now-targetAcquired)>=targetDuration)
+				{
+					origin=target;
+					loadTrial(trial+1);
+					leftOrigin=false;
+				}
 			}
+			else state=acquireTarget;
 		}
-		else state=acquireTarget;
+		else if (cursor.dist(target)>(tRadius+cRadius)) acquisitionsNeeded--;
 		break;
 	case hold:
 		if((now-holdStart)>HOLDTIME) state=acquireTarget;
@@ -410,7 +415,7 @@ void ControlWidget::readPending()
 	
 	if (resetTG>0) resetTG=0;
 		
-	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() << endl;
+	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() << endl;
 }
 
 void ControlWidget::startClicked()
@@ -476,19 +481,20 @@ point ControlWidget::loadTrial(int T)
 
 	char line[201];
 	std::string qline;
-	int tempShowCursor,tempshape,temptrial;
+	int tempShowCursor,tempshape,temptrial,tempAcquisitionsNeeded;
 	double tempx, tempy, tempEarly, tempLate, tempWhite;
 	std::cout << "Loading Trial " << T << std::endl;
 	do
 	{
 		trialFile.readLine(line,200);
 		std::cout << line << std::endl;
-		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor));
+		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
 		else
 		{
 			std::cout << "Complete failure to read line: " << line << std::endl; return center;
 		}
 	} while ((temptrial < T)&&(!trialFile.atEnd()));
+	acquisitionsNeeded=tempAcquisitionsNeeded;
 	origin=target;
 	target=point(tempx,tempy);
 	earlyPulseGain=tempEarly;
@@ -523,7 +529,7 @@ point ControlWidget::loadTrial(int T)
 		else leftSide=true;
 		origin=target;
 		target=point(mean+randb(-.05,.05),center.Y());
-			
+		acquisitionsNeeded=1;
 		state=hold;
 		holdStart=now;
 		trial=T;
