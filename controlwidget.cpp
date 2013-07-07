@@ -492,7 +492,7 @@ point ControlWidget::loadTrial(int T)
 	{
 		trialFile.readLine(line,200);
 		std::cout << line << std::endl;
-		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
+		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
 		else
 		{
 			std::cout << "Complete failure to read line: " << line << std::endl; return center;
