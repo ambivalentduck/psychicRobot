@@ -388,7 +388,11 @@ void ControlWidget::readPending()
 			}
 			else state=acquireTarget;
 		}
-		else if (cursor.dist(target)>(tRadius+cRadius)) acquisitionsNeeded--;
+		else if (cursor.dist(target)>(tRadius+cRadius)) //Decrement on leaving and get state machine ready for next encounter with target.
+		{
+			acquisitionsNeeded--;
+			state=acquireTarget;
+		}
 		break;
 	case hold:
 		if((now-holdStart)>HOLDTIME) state=acquireTarget;

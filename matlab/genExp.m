@@ -17,6 +17,7 @@ harshness=5; %Trade-off is structure vs balance. In theory, dynamic harshness de
 %pseudorandom white noise magnitude
 %shape (-1=none,0=triangle,1=square, 2=circle, 3=inf desired)
 %cursor shown (0/1 false/true)
+%acquisitions needed
 
 cost=inf;
 
@@ -79,7 +80,7 @@ while c<len
     c=c+1;
     k=k+1;
     if (k<5)||(c<30)||(d>sd2)
-        out(c).dat=[y(c); .5; 0; 0; 0; -1; 1];
+        out(c).dat=[y(c); .5; 0; 0; 0; -1; 1; 1];
         continue
     end
 
@@ -88,7 +89,7 @@ while c<len
         deck(:,d:end)=deck(:,d-1+randperm(sd2-d+1));
     end
     if sum(x(c,2:3)'==deck(1:2,d))==2
-        out(c).dat=[y(c); .5; 0; 0; 0; -1; 1];
+        out(c).dat=[y(c); .5; 0; 0; 0; -1; 1; 1];
         continue
     end
 
@@ -97,15 +98,15 @@ while c<len
     k=0;
     switch deck(3,d)
         case 1
-            out(c).dat=[y(c); .5; 1; 0; 0; -1; 1];
+            out(c).dat=[y(c); .5; 1; 0; 0; -1; 1; 1];
         case 2
-            out(c).dat=[y(c); .5; -1; 0; 0; -1; 1];
+            out(c).dat=[y(c); .5; -1; 0; 0; -1; 1; 1];
         case 3
-            out(c).dat=[y(c); .5; 0; 1; 0; -1; 1];
+            out(c).dat=[y(c); .5; 0; 1; 0; -1; 1; 1];
         case 4
-            out(c).dat=[y(c); .5; 0; -1; 0; -1; 1];
+            out(c).dat=[y(c); .5; 0; -1; 0; -1; 1; 1];
         case 5
-            out(c).dat=[y(c); .5; 0; 0; 1; -1; 1];
+            out(c).dat=[y(c); .5; 0; 0; 1; -1; 1; 1];
     end
     d=d+1;
 end
@@ -119,18 +120,16 @@ size([out.dat])
 [h]=hist(dist(2:end)-dist(1:end-1),5:11);
 [(5:11)' h']
 
-out(c).dat=[0; 0; 0; 0; 0; 0; 1]; %Extra copy of the first shape to allow target acquisition
+out(c).dat=[0; 0; 0; 0; 0; 0; 1; 1]; %Extra copy of the first shape to allow target acquisition
 for s=0:3 %5 warmups on each, cursor shown
-    for k=1:5
         c=c+1;
-        out(c).dat=[0; 0; 0; 0; 0; s; 1];
-    end
+        out(c).dat=[0; 0; 0; 0; 0; s; 1; 5];
 end
 
-for s=0:3 %5 warmups on each, cursor not shown
+for s=0:3 %5 more warmups on each, cursor shown
     for k=1:5
         c=c+1;
-        out(c).dat=[0; 0; 0; 0; 0; s; 0];
+        out(c).dat=[0; 0; 0; 0; 0; s; 1; 5]; 
     end
 end
 
@@ -138,7 +137,7 @@ SnMag=zeros(2,4*5*20);
 k=0;
 for s=0:3
     for n=linspace(0,1,5)
-        for ITER=1:20
+        for ITER=1:4
             k=k+1;
             SnMag(:,k)=[n;s];
         end
@@ -146,9 +145,9 @@ for s=0:3
 end
 SnMag=SnMag(:,randperm(4*5*20));
 
-for k=1:4*5*20
+for k=1:4*5*4
     c=c+1;
-    out(c).dat=[0; 0; 0; 0; SnMag(:,k); 0];
+    out(c).dat=[0; 0; 0; 0; SnMag(:,k); 1; 5];
 end
 
 o=[out.dat]';
