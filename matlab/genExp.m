@@ -131,7 +131,7 @@ for s=0:3 %5 more warmups on each, cursor shown
         out(c).dat=[0; 0; 0; 0; 0; s; 1; 5]; 
 end
 
-SnMag=zeros(2,4*5*20);
+SnMag=zeros(2,4*5*4);
 k=0;
 for s=0:3
     for n=linspace(0,1,5)
@@ -141,7 +141,7 @@ for s=0:3
         end
     end
 end
-SnMag=SnMag(:,randperm(4*5*20));
+SnMag=SnMag(:,randperm(k));
 
 for k=1:4*5*4
     c=c+1;
