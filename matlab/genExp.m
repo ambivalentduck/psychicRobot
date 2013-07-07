@@ -156,5 +156,5 @@ o(:,3:4)=o(:,3:4)*30;
 o(1:730,5)=o(1:730,5)*2;
 o=[(1:length(out))' o];
 fid=fopen('../Data/input.dat','w');
-fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\n',o');
+fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\t%1.0f\n',o');
 fclose(fid);
