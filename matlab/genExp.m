@@ -127,10 +127,8 @@ for s=0:3 %5 warmups on each, cursor shown
 end
 
 for s=0:3 %5 more warmups on each, cursor shown
-    for k=1:5
         c=c+1;
         out(c).dat=[0; 0; 0; 0; 0; s; 1; 5]; 
-    end
 end
 
 SnMag=zeros(2,4*5*20);
