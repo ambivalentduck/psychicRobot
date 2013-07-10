@@ -1,10 +1,10 @@
 %function success=addSubject(name)
-name='3'
+name='11'
 
 disp(['Loading Data for Subject ',name])
 
 output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input.dat']);
+input=load(['../Data/input',name,'.dat']);
 
 global fJ getAlpha x0
 
@@ -34,7 +34,7 @@ success=zeros(length(a),5);
 
 for k=1:length(a)
     K=a(k)
-    fo=find(output(:,1)==K-1);
+    fo=find(output(:,1)==K);
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
@@ -44,6 +44,7 @@ for k=1:length(a)
         
     trials(k).time=linspace(output(fo(1),2),output(fo(end),2),length(fo))';
     trials(k).pos=output(fo,[3 4]);
+    trials(k).des=output(fo,[11 12]);
     if norm(trials(k).pos(1,:)-trials(k).pos(end,:))<.25
         trials(k).long=0;
     else
