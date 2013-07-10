@@ -1,9 +1,8 @@
 #include "armsolver.h"
 
-ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpedance)
+ArmSolver::ArmSolver(twoLinkArm::ArmParams P, SOLVETYPE SolType)
 {
-	solveDes=solveIntent;
-	constImp=constImpedance;
+	solType=SolType;
 	impSeeded=false;
 	arm=new twoLinkArm(P);
 	voidpointer=(void*) this;
