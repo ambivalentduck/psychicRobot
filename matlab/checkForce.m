@@ -16,9 +16,6 @@ for k=[1 2 4]
 end
 f=find((val<.01)&inTarget);
 
-figure(20)
-plot(output11(f,3),output11(f,4),'.')
-
 figure(1)
 subplot(2,2,1)
 hold on
