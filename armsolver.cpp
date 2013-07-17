@@ -50,6 +50,9 @@ int ArmSolver::func(double t, const double y[], double f[])
 	point qsDDot;
 	
 	paramsMutex.lock();
+	switch solType
+	{
+		
 	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
 	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
 	paramsMutex.unlock();
