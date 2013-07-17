@@ -1,6 +1,6 @@
 %function extractDesired(name, debug)
 
-name='11'
+name='12'
 disp(['Extracting Desired Trajectories for Subject ',name])
 
 %if nargin<2
@@ -8,7 +8,7 @@ disp(['Extracting Desired Trajectories for Subject ',name])
 %end
 
 load(['../Data/',name,'.mat']);
-global kp measuredVals measuredTime x0 fJ getAccel desiredVals desiredTime
+global measuredVals measuredTime x0 fJ desiredTime
 
 params
 
@@ -22,7 +22,6 @@ end
 %Do the extraction on trials where forces were on
 lT=length(trials);
 for k=1:lT
-    length(trials)
     k/lT %#ok<NOPRT>
 
     inds=trials(k).first:trials(k).last;
@@ -40,7 +39,7 @@ for k=1:lT
         hold on
     end
 
-    [T,X]=ode45(@armdynamicsInvertedBurdet,measuredTime,[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)']);
+    [T,X]=ode45(@armdynamicsInvertedBurdet,measuredTime(1):.005:measuredTime(end),[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)']);
     
     desiredTime=T;
 
@@ -51,9 +50,6 @@ for k=1:lT
     desired.aDesired=zeros(length(T),2);
     desired.time=measuredTime;
 
-    desiredVals=zeros(length(T),8);
-    desiredVals(:,1:4)=X;
-
     for kk=1:length(T)
         desired.xDesired(kk,:)=fkin(desired.qDesired(kk,:));
         desired.vDesired(kk,:)=(fJ(desired.qDesired(kk,:))*desired.qdotDesired(kk,:)')';
@@ -61,7 +57,7 @@ for k=1:lT
 
     desiredTrajectories(k,1)=desired; %#ok<NASGU>
 
-    [T,X]=extractionReflexHelper(measuredTime,[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)'],[ikin(trials(k).des(1,:))' 0 0]');
+    [T,X]=extractionReflexHelper(measuredTime(1):.005:measuredTime(end),[trials(k).q(inds(1),:)';trials(k).qdot(inds(1),:)'],[ikin(trials(k).des(1,:))' 0 0]');
     desiredTime=T;
 
     desired.qDesired=X(:,1:2);
@@ -71,10 +67,7 @@ for k=1:lT
     desired.aDesired=zeros(length(T),2);
     desired.time=measuredTime;
 
-    desiredVals=zeros(length(T),8);
-    desiredVals(:,1:4)=X;
-
-    for kk=1:length(T)
+    for kk=1:size(X,1)
         desired.xDesired(kk,:)=fkin(desired.qDesired(kk,:));
         desired.vDesired(kk,:)=(fJ(desired.qDesired(kk,:))*desired.qdotDesired(kk,:)')';
     end

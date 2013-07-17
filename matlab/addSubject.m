@@ -1,5 +1,5 @@
 %function success=addSubject(name)
-name='11'
+name='12'
 
 disp(['Loading Data for Subject ',name])
 
@@ -27,7 +27,8 @@ x0_=x0;
 
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
-f=find(sum(abs(input(1:730,4:6)),2)>0);
+%f=find(sum(abs(input(1:730,4:6)),2)>0);
+f=731:818;
 a=f; %unique(input(f,1));
 
 success=zeros(length(a),5);
@@ -35,6 +36,9 @@ success=zeros(length(a),5);
 for k=1:length(a)
     K=a(k)
     fo=find(output(:,1)==K);
+    trials(k).rawnum=K;
+    trials(k).target=input(K,[2 3]);
+    trials(k).origin=input(K-1,[2 3]);
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
@@ -42,17 +46,19 @@ for k=1:length(a)
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
         
-    trials(k).time=linspace(output(fo(1),2),output(fo(end),2),length(fo))';
+    trials(k).time=output(fo,2);
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
+    gT=(output(fo(end),2)-output(fo(1),2))/length(fo);
+    trials(k).desvel=[gradient(trials(k).des(:,1))./gT gradient(trials(k).des(:,2))./gT];
     if norm(trials(k).pos(1,:)-trials(k).pos(end,:))<.25
         trials(k).long=0;
     else
         trials(k).long=1;
     end
-    gT=mean(gradient(trials(k).time));
-    trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
-    trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
+
+    trials(k).vel=output(fo,[5 6]);
+    trials(k).accel=output(fo,[7 8]);
     trials(k).force=output(fo,[9 10]);
     %trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
 
@@ -77,7 +83,7 @@ for k=1:length(a)
             trials(k).qddot(kk,:)=getAlpha(trials(k).q(kk,:)',trials(k).qdot(kk,:)',trials(k).accel(kk,:)');
             trials(k).torque(kk,:)=((fJ(trials(k).q(kk,:))')*(trials(k).force(kk,:)'))';
         end
-        %trials(k).qdot=[gradient(trials(k).q(:,1))./gT gradient(trials(k).q(:,2))./gT];
+        %trials(k).qdot=[gradient(trials(k).q(:,1))./gT gradient(trials(k).q(:,2))./gT];clc
         %trials(k).qddot=[gradient(trials(k).qdot(:,1))./gT gradient(trials(k).qdot(:,2))./gT];
         success(k,1:4)=[k K isreal(trials(k).q) x0(2)];
         if success(k,3)
@@ -95,7 +101,6 @@ for k=1:length(a)
     warning on all
 
     trials(k).x0=x0;
-    trials(k).target=[trials(k).pos(end,1) origin(2)];
     trials(k).targetCat=trials(k).pos(end,1)>0;
 
     f=find((trials(k).time-trials(k).time(1))<.5,1,'last'); 
