@@ -14,7 +14,7 @@ inTarget=zeros(size(val));
 for k=[1 2 4]
     inTarget=inTarget|abs(output11(:,3)-a(k))<.0125;
 end
-f=find((val<.01)&inTarget);
+f=find((val<.1)&inTarget);
 
 figure(1)
 subplot(2,2,1)
