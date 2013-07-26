@@ -11,4 +11,9 @@ switch num
         l2=.31;
         mass=225;
         shoulder=[0 .55];
+    case {'11','12'}
+        l1=.3;
+        l2=.32;
+        mass=213;
+        shoulder=[0 .52];
 end

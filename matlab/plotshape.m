@@ -1,78 +1,64 @@
 clc
 clear all
+close all
 
-load ../Data/10.mat
-load ../Data/10extracted.mat
+load ../Data/12.mat
+load ../Data/12extracted.mat
 
 types=[trials.type];
-
-STIFFNESS=1;
 
 for k=1:4
     figure(k)
     clf
 end
 
-G=unique([trials.updown]);
+G=unique([trials(1:88).white]);
 
 marker='-';
 SPACE=2;
 SATURATE=.3;
 
-for k=1:length(trials)
-   figure(trials(k).shape+1)
-   F=find(G==trials(k).updown);
-   subplot(length(G),3,3*F)
+for k=1:87
+   %figure(k)
+   figure(trials(k+1).shape+1)
+   F=find(G==trials(k+1).updown);
    xoff=0;
    yoff=0;
+
+   subplot(length(G),4,4*F-3)
    hold on
-   pos=[trials(k).pos(1:SPACE:end,1)-xoff,trials(k).pos(1:SPACE:end,2)-trials(k).pos(1,2)+yoff];
-   plot(pos(:,1),pos(:,2),'b-')
+   plot(trials(k).pos(1:SPACE:end,1),trials(k).pos(1:SPACE:end,2),'b-')
    %quiver(pos(:,1),pos(:,2),trials(k).force(1:SPACE:end,1),trials(k).force(1:SPACE:end,2),'b-')
    axis equal
    ylabel(num2str(G(F)))
-end
-
-load ../Data/9.mat
-load ../Data/9extracted.mat
-
-types=[trials.type];
-
-STIFFNESS=1;
-
-G=unique([trials.updown]);
-
-marker='-';
-SPACE=2;
-SATURATE=.3;
-
-for k=1:length(trials)
-   figure(trials(k).shape+1)
-   F=find(G==trials(k).updown);
-   xoff=0;
-   yoff=0;
-   subplot(length(G),3,3*F-1)
-   x=desiredTrajectories(k,STIFFNESS).xDesired(1:SPACE:end,1)-xoff;
-   y=desiredTrajectories(k,STIFFNESS).xDesired(1:SPACE:end,2)-desiredTrajectories(k,STIFFNESS).xDesired(1,2);
+   
+   subplot(length(G),4,4*F-2)
    hold on
-   plot(x,y+yoff,marker)
-   pos=[trials(k).pos(1:SPACE:end,1)-xoff,trials(k).pos(1:SPACE:end,2)-trials(k).pos(1,2)+yoff];
-      subplot(length(G),3,3*F-2)
-      hold on
-   plot(pos(:,1),pos(:,2),marker,'Color',[1, SATURATE SATURATE])
-   %quiver(pos(:,1),pos(:,2),trials(k).force(1:SPACE:end,1),trials(k).force(1:SPACE:end,2),marker,'Color',[1, SATURATE SATURATE])
+   plot(trials(k).des(1:SPACE:end,1),trials(k).des(1:SPACE:end,2),'b-')
    axis equal
-   ylabel(num2str(G(F)))
+   
+   subplot(length(G),4,4*F-1)
+   hold on
+   plot(desiredTrajectories(k,1).xDesired(:,1),desiredTrajectories(k,1).xDesired(:,2),'b-')
+   axis equal
+   
+   subplot(length(G),4,4*F)
+   hold on
+   plot(desiredTrajectories(k,2).xDesired(:,1),desiredTrajectories(k,2).xDesired(:,2),'b-')
+   axis equal
 end
+
 
 for k=1:4
     figure(k)
-    subplot(5,3,1)
-    title('Hand - No Vision')
-    subplot(5,3,2)
-    title('Extracted - No Vision')
-    subplot(5,3,3)
-    title('Extracted - Shown')
+    subplot(5,4,1)
+    title('Hand')
+    subplot(5,4,2)
+    title('Extracted Shad')
+    subplot(5,4,3)
+    title('Extracted Burdet')
+    subplot(5,4,4)
+    title('Extracted BurdetReflexes')
 end
 
     
