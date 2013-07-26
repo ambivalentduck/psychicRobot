@@ -419,13 +419,13 @@ void ControlWidget::readPending()
 	
 	if (resetTG>0) resetTG=0;
 		
-	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() << endl;
+	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() << xpcTime << endl;
 }
 
 void ControlWidget::startClicked()
 {
 	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params,true,true);
+	armsolver=new ArmSolver(params,true);
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
