@@ -6,8 +6,8 @@
 #define targetDuration .5
 #define HOLDTIME .5
 #define oRadius min/40.0
-#define cRadius min/40.0
-#define tRadius min/40.0
+#define cRadius min/10.0
+#define tRadius min/10.0
 #define calRadius min/40.0
 #define TAB << "\t" <<
 
