@@ -19,7 +19,7 @@
 class ArmSolver : public QThread
 {
 public:
-	ArmSolver(twoLinkArm::ArmParams P, bool solveIntent=true, bool constImpedance=true);
+	ArmSolver(twoLinkArm::ArmParams P, bool solveIntent=true);
 	~ArmSolver();
 	int func(double t, const double y[], double f[]);
 	void setParams(twoLinkArm::ArmParams P);
