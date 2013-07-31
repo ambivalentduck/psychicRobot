@@ -169,7 +169,7 @@ ylabel('Steady-State Error')
 title('Corrected Error by Trial')
 
 figure(7)
-bar(bins*100,[counts/sum(counts);counts2/sum(counts2)]');
+bar(bins*100,[counts/sum(counts);counts2/sum(counts2)]'); %apples and oranges
 ylabel('Frequency')
 xlabel('Steady-state Error, cm')
 legend('Without correction','Subtracting off the most recent clump')
