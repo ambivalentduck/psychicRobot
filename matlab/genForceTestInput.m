@@ -1,6 +1,8 @@
 clc
 clear all
 
+KICKMAG=15;
+
 %x
 %y
 %early pulse mag and +/- direction
@@ -28,9 +30,9 @@ for k=11:30
         x=-.15;
     end
     if rand>.5
-        kick=30;
+        kick=KICKMAG;
     else
-        kick=-30;
+        kick=-KICKMAG;
     end
     if rand>.5
         early=kick;
@@ -49,12 +51,12 @@ for k=31:50
     else
         x=-.15;
     end
-    out(k).dat=[x; .5; 0; 0; rand; -1; 1; 1];
+    out(k).dat=[x; .5; 0; 0; 1.5; -1; 1; 1];
 end
     
 
 o=[out.dat]';
-o=[(1:length(out))' o];
+o=[(1:length(out))' o]
 fid=fopen('../Data/input.dat','w');
 fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\t%1.0f\n',o');
 fclose(fid);

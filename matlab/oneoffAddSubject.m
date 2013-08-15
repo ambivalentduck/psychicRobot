@@ -1,11 +1,11 @@
 %function success=addSubject(name)
 clc
 clear all
-name='500'
+name='21'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output500.dat']);
+output=load(['../Data/output21.dat']);
 input=load(['../Data/input_forcetest.dat']);
 
 global fJ getAlpha x0
@@ -30,8 +30,7 @@ x0_=x0;
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
 %f=find(sum(abs(input(1:730,4:6)),2)>0);
-f=9:50;
-a=f; %unique(input(f,1));
+a=2:50;
 
 success=zeros(length(a),5);
 
@@ -48,7 +47,7 @@ for k=1:length(a)
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
         
-    trials(k).time=output(fo,2);
+    trials(k).time=output(fo,12);
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
     gT=(output(fo(end),2)-output(fo(1),2))/length(fo);
@@ -59,8 +58,11 @@ for k=1:length(a)
         trials(k).long=1;
     end
 
-    trials(k).vel=output(fo,[5 6]);
-    trials(k).accel=output(fo,[7 8]);
+    %trials(k).vel=output(fo,[5 6]);
+    gT=.005; %output(fo,[12]);
+    trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
+    %trials(k).accel=output(fo,[7 8]);
+    trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
     trials(k).force=output(fo,[9 10]);
     %trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
 
