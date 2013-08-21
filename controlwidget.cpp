@@ -363,6 +363,8 @@ void ControlWidget::readPending()
 	
 	userWidget->setSpheres(sphereVec);
 	
+	QString showText;
+	
 	switch(state)
 	{
 	case acquireTarget:
@@ -377,6 +379,8 @@ void ControlWidget::readPending()
 		perturbGain=0;
 		if (acquisitionsNeeded<=1)
 		{
+			showText.clear();
+			userWidget->setText(showText,point()); //Offscreen empty string
 			if (cursor.dist(target)<(tRadius+cRadius))
 			{
 				if((now-targetAcquired)>=targetDuration)
@@ -391,6 +395,8 @@ void ControlWidget::readPending()
 		else if (cursor.dist(target)>(tRadius+cRadius)) //Decrement on leaving and get state machine ready for next encounter with target.
 		{
 			acquisitionsNeeded--;
+			showText.setNum(acquisitionsNeeded);
+			userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
 			state=acquireTarget;
 		}
 		break;
@@ -499,6 +505,19 @@ point ControlWidget::loadTrial(int T)
 		}
 	} while ((temptrial < T)&&(!trialFile.atEnd()));
 	acquisitionsNeeded=tempAcquisitionsNeeded;
+	
+	QString showText;
+	if(acquisitionsNeeded>1)
+	{
+		showText.setNum(acquisitionsNeeded);
+		userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
+	}
+	else
+	{
+		showText.clear();
+		userWidget->setText(showText,point());
+	}
+			
 	origin=target;
 	target=point(tempx,tempy);
 	earlyPulseGain=tempEarly;

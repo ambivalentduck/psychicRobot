@@ -1,6 +1,6 @@
 clc
 clear all
-load ../Data/21.mat
+load ../Data/31.mat
 close all
 
 global kp kd
@@ -43,19 +43,20 @@ for k=1:length(trials)-1
     forcecalib=trials(k).force(still,:);
     mforce=mean(forcecalib);
     force=[trials(k).force(:,1)-mforce(1) trials(k).force(:,2)-mforce(2)];
-    xvaf=[trials(k).pos trials(k).vel trials(k).accel -2*force];
-    y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
-%     if trials(k).rawnum<30
-%         figure(trials(k).rawnum)
-%         clf
-%         subplot(2,1,1)
-%         hold on
-%         plot(trials(k).pos(:,1),trials(k).pos(:,2))
-%         plot(y(:,1),y(:,2),'r')
-%         axis equal
-%         subplot(2,1,2)
-%         plot(t,vecmag(y(:,3:4)))
-%     end
+    xvaf=[trials(k).pos trials(k).vel trials(k).accel -force];
+    %y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
+    y=extract(t,xvaf,params,@armdynamics_inverted);
+    if trials(k).rawnum>=30
+        figure(trials(k).rawnum)
+        clf
+        subplot(2,1,1)
+        hold on
+        plot(trials(k).pos(:,1),trials(k).pos(:,2))
+        plot(y(:,1),y(:,2),'r')
+        axis equal
+        subplot(2,1,2)
+        plot(t,vecmag(y(:,3:4)))
+    end
 
     if trials(k).rawnum<10
         figure(5000)
@@ -81,3 +82,5 @@ for k=1:length(trials)-1
     end
     axis equal
 end
+
+cleanup

@@ -190,7 +190,7 @@ void DisplayWidget::paintGL()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	
-	renderText(0,.4,0,text);
+	renderText(textLocation.X(),textLocation.Y(),textLocation.Z(),text);
 	
 	dataMutex.unlock();
 	swapBuffers();

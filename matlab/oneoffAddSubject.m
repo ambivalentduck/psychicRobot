@@ -1,12 +1,12 @@
 %function success=addSubject(name)
 clc
 clear all
-name='21'
+name='31'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output21.dat']);
-input=load(['../Data/input_forcetest.dat']);
+output=load(['../Data/output31.dat']);
+input=load(['../Data/input_smallerforces.dat']);
 
 global fJ getAlpha x0
 
@@ -16,14 +16,14 @@ TOP=.18;
 BOTTOM=.68;
 origin=[(LEFT+RIGHT)/2,(TOP+BOTTOM)/2];
 
-[l1, l2, shoulder,mass]=getSubjectParams('1');
+[l1, l2, shoulder,mass]=getSubjectParams(name);
 %Seems reasonable to measure arms, placement. Unreasonable to weigh.
 params.l1=l1;
 params.l2=l2;
 params.shoulder=shoulder;
 params.origin=origin;
 params.dimensions=2;
-params.mass=mass;
+params.mass=mass*.4535; %lbs to kg
 set2dGlobals(l1, l2, origin, shoulder,mass)
 x0_=x0;
 
@@ -47,7 +47,7 @@ for k=1:length(a)
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
         
-    trials(k).time=output(fo,12);
+    trials(k).time=output(fo,13);
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
     gT=(output(fo(end),2)-output(fo(1),2))/length(fo);
@@ -59,7 +59,7 @@ for k=1:length(a)
     end
 
     %trials(k).vel=output(fo,[5 6]);
-    gT=.005; %output(fo,[12]);
+    gT=gradient(trials(k).time); %output(fo,[12]);
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
     %trials(k).accel=output(fo,[7 8]);
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];

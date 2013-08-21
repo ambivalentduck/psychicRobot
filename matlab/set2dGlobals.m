@@ -12,7 +12,7 @@ l2=l2_;
 lc1=.436*l1;
 lc2=.682*l2;
 
-%model using parameters from shadmehr and mussa-ivaldi and Winters (1990)
+%model using parameters from shadmehr and mussa-ivaldi or from Winters (1990)
 if nargin<5
     m1=1.93;
     m2=1.52;

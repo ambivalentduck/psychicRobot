@@ -53,6 +53,19 @@ for k=31:50
     end
     out(k).dat=[x; .5; 0; 0; 1.5; -1; 1; 1];
 end
+
+for k=0:3
+    out(k+51).dat=[0; 0; 0; 0; 0; k; 1; 4];
+end
+for k=0:3
+    out(k+55).dat=[0; 0; 0; 0; 0; k; 0; 4];
+end
+for k=0:3
+    out(k+59).dat=[0; 0; 0; 0; 1; k; 0; 4];
+end
+for k=0:3
+    out(k+63).dat=[0; 0; 0; 0; 1.5; k; 0; 4];
+end
     
 
 o=[out.dat]';
