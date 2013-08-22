@@ -13,7 +13,7 @@ d22=m2*lc2^2+I2;
 h=-m2*l1*lc2*sin(theta(2));
 
 C=[2*h*omega(1)*omega(2)+h*omega(2)^2;
-    -h*omega(1)^2];
+    h*omega(1)^2]; %sign error
 
 D=[d11, d12;
     d21, d22];
