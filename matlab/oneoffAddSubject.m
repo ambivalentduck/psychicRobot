@@ -1,7 +1,7 @@
 %function success=addSubject(name)
 clc
 clear all
-name='31'
+name='32'
 
 disp(['Loading Data for Subject ',name])
 
