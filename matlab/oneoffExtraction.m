@@ -1,6 +1,6 @@
 clc
 clear all
-load ../Data/31.mat
+load ../Data/32.mat
 close all
 
 global kp kd
@@ -9,7 +9,8 @@ kp=SnMKpGainStruct(.5);
 kp=kp{1};
 %kp=[10.8 2.83; 2.51 8.67];
 
-for k=1:length(trials)-1
+for k=1:49
+    %continue
     if trials(k).rawnum<10
         figure(5001)
         if trials(k).pos(1,1)<0
@@ -46,17 +47,17 @@ for k=1:length(trials)-1
     xvaf=[trials(k).pos trials(k).vel trials(k).accel -force];
     %y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
     y=extract(t,xvaf,params,@armdynamics_inverted);
-    if trials(k).rawnum>=30
-        figure(trials(k).rawnum)
-        clf
-        subplot(2,1,1)
-        hold on
-        plot(trials(k).pos(:,1),trials(k).pos(:,2))
-        plot(y(:,1),y(:,2),'r')
-        axis equal
-        subplot(2,1,2)
-        plot(t,vecmag(y(:,3:4)))
-    end
+    %     if trials(k).rawnum>=30
+    %         figure(trials(k).rawnum)
+    %         clf
+    %         subplot(2,1,1)
+    %         hold on
+    %         plot(trials(k).pos(:,1),trials(k).pos(:,2))
+    %         plot(y(:,1),y(:,2),'r')
+    %         axis equal
+    %         subplot(2,1,2)
+    %         plot(t,vecmag(y(:,3:4)))
+    %     end
 
     if trials(k).rawnum<10
         figure(5000)
@@ -72,8 +73,8 @@ for k=1:length(trials)-1
         subplot(2,1,2)
     end
     hold on
-    plot(trials(k).pos(:,1),trials(k).pos(:,2))
-    plot(y(:,1),y(:,2),'r')
+    plot(trials(k).pos(:,1),trials(k).pos(:,2),'b-o','MarkerSize',2)
+    plot(y(:,1),y(:,2),'r-o','MarkerSize',2)
     try
         plot(trials(k).pos(still(end)+50,1),trials(k).pos(still(end)+50,2),'bx')
         plot(y(still(end)+50,1),y(still(end)+50,2),'rx')
@@ -83,4 +84,50 @@ for k=1:length(trials)-1
     axis equal
 end
 
-cleanup
+shapes=[trials(50:65).shape];
+us=unique(shapes);
+lus=length(us);
+mags=[trials(50:65).white];
+u=unique(mags);
+lu1=length(u)+1;
+
+% figure(20)
+% clf
+% for k=50:65
+% 
+%     mag=trials(k).white;
+%     f=find(u==mag);
+%     if trials(k).vision==0
+%         f=f+1;
+%     end
+%     subplot(lus,lu1,trials(k).shape+1+(f-1)*lus)
+%     hold on
+% 
+%     still=find(((trials(k).time-trials(k).time(1))<.3)&(vecmag(trials(k).vel)<.01));
+%     forcecalib=trials(k).force(still,:);
+%     mforce=mean(forcecalib);
+%     force=[trials(k).force(:,1)-mforce(1) trials(k).force(:,2)-mforce(2)];
+%     xvaf=[trials(k).pos trials(k).vel trials(k).accel -force];
+%     t=trials(k).time;
+%     t=linspace(t(1),t(end),length(t));
+%     %y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
+%     y=extract(t,xvaf,params,@armdynamics_inverted);
+% 
+%     plot(trials(k).pos(:,1),trials(k).pos(:,2))
+%     plot(y(:,1),y(:,2),'r')
+%     axis equal
+%     if trials(k).shape==0
+%         switch f
+%             case 1
+%                 ylabel('Vision')
+%             case 2
+%                 ylabel('No Vision')
+%             case 3
+%                 ylabel('No Vision + 1 BLWN')
+%             case 4
+%                 ylabel('No Vision + 1.5 BLWN')
+%         end
+%     end
+% end
+
+    cleanup

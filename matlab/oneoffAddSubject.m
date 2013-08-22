@@ -5,8 +5,8 @@ name='32'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output31.dat']);
-input=load(['../Data/input_smallerforces.dat']);
+output=load(['../Data/output_forcetestshapes.dat']);
+input=load(['../Data/input_forcetestshapes.dat']);
 
 global fJ getAlpha x0
 
@@ -30,7 +30,7 @@ x0_=x0;
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
 %f=find(sum(abs(input(1:730,4:6)),2)>0);
-a=2:50;
+a=2:66;
 
 success=zeros(length(a),5);
 
@@ -46,6 +46,7 @@ for k=1:length(a)
     trials(k).updown=sum(input(K,4:6));
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
+    trials(k).vision=input(K,8);
         
     trials(k).time=output(fo,13);
     trials(k).pos=output(fo,[3 4]);
@@ -58,13 +59,13 @@ for k=1:length(a)
         trials(k).long=1;
     end
 
-    %trials(k).vel=output(fo,[5 6]);
-    gT=gradient(trials(k).time); %output(fo,[12]);
+    
+    gT=.005; %gradient(trials(k).time);
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
-    %trials(k).accel=output(fo,[7 8]);
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
+%     trials(k).vel=output(fo,[5 6]);
+%     trials(k).accel=output(fo,[7 8]);
     trials(k).force=output(fo,[9 10]);
-    %trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
 
     trials(k).dist=[0; cumsum(sqrt(sum((trials(k).pos(2:end,:)-trials(k).pos(1:end-1,:)).^2,2)))];
     trials(k).speed=sqrt(sum(trials(k).vel.^2,2));

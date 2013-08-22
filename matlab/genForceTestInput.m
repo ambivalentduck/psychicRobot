@@ -3,14 +3,17 @@ clear all
 
 KICKMAG=15;
 
-%x
-%y
-%early pulse mag and +/- direction
-%late pulse mag and +/- direction
-%pseudorandom white noise magnitude
-%shape (-1=none,0=triangle,1=square, 2=circle, 3=inf desired)
-%cursor shown (0/1 false/true)
-%acquisitions needed
+%1 trial number
+%2 x
+%3 y
+%4 early pulse mag and +/- direction
+%5 late pulse mag and +/- direction
+%6 pseudorandom white noise magnitude
+%7 shape (-1=none,0=triangle,1=square, 2=circle, 3=inf desired)
+%8 cursor shown (0/1 false/true)
+%9 acquisitions needed
+
+
 
 %10 reaches unperturbed
 for k=1:10
