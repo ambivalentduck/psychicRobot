@@ -1,0 +1,24 @@
+Sanity checking and checking against known "correct" implementation.
+
+Stability and motor adaptation in human arm movements, Burdet, Milner, Franklin, Kawato. Trustworthy stuff.
+http://www.eng.cam.ac.uk/~dwf25/BurdetBiolCybern2006.pdf
+
+1. Check sign conventions on torques, joint angles, xy, etc.
+-Checks out. Quirk: my q1 = their q1 + 180 degrees. 
+XXXXX This can technically be a red flag later, but theoretically passes muster now.
+XXXXX Possibly quirks on force handle that cause the negation given the 180 degree rotation of the world. Appears to check out.
+
+2. ikin/fkin drift should be minimal.
+-Previously done, untouched.
+
+3. Basic dynamics/computeDC.m
+-Sign conventions appear identical, so should BE identical.
+XXXXX Caught a sign difference in the first element of the coriolis vector.
+
+4. Multiple implementations of the forward and inverse dyamics.
+-Static impedance (shad and muss)
+-Dynamic impedance (burdet)
+-Dynamic impedance + reflexes (also burdet)
+
+
+

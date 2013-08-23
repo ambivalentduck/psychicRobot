@@ -30,7 +30,7 @@ x0_=x0;
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
 %f=find(sum(abs(input(1:730,4:6)),2)>0);
-a=2:66;
+a=1:66;
 
 success=zeros(length(a),5);
 
@@ -39,7 +39,12 @@ for k=1:length(a)
     fo=find(output(:,1)==K);
     trials(k).rawnum=K;
     trials(k).target=input(K,[2 3]);
-    trials(k).origin=input(K-1,[2 3]);
+    if K>1
+        trials(k).origin=input(K-1,[2 3]);
+    else
+        trials(k).origin=input(fo(1),[3 4]);
+    end
+
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
@@ -47,7 +52,7 @@ for k=1:length(a)
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
     trials(k).vision=input(K,8);
-        
+
     trials(k).time=output(fo,13);
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
@@ -59,12 +64,12 @@ for k=1:length(a)
         trials(k).long=1;
     end
 
-    
+
     gT=.005; %gradient(trials(k).time);
     trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
     trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
-%     trials(k).vel=output(fo,[5 6]);
-%     trials(k).accel=output(fo,[7 8]);
+    %     trials(k).vel=output(fo,[5 6]);
+    %     trials(k).accel=output(fo,[7 8]);
     trials(k).force=output(fo,[9 10]);
 
     trials(k).dist=[0; cumsum(sqrt(sum((trials(k).pos(2:end,:)-trials(k).pos(1:end-1,:)).^2,2)))];
@@ -108,10 +113,10 @@ for k=1:length(a)
     trials(k).x0=x0;
     trials(k).targetCat=trials(k).pos(end,1)>0;
 
-    f=find((trials(k).time-trials(k).time(1))<.5,1,'last'); 
+    f=find((trials(k).time-trials(k).time(1))<.5,1,'last');
     trials(k).first=f;
     trials(k).last=length(trials(k).time);
-    
+
     %Should adjust to LOW velocity/acceleration threshold, not just mean.
     %trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
 

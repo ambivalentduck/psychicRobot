@@ -430,15 +430,6 @@ void ControlWidget::readPending()
 
 void ControlWidget::startClicked()
 {
-	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params,true);
-	
-	//Make UI Changes
-	userWidget->setDeepBGColor(point(0,0,0));
-	userWidget->setShapes(false,false,false,false);
-	goGray();
-	startButton->setText("Experiment running...");
-	
 	//Get a file open and recording...or not.
 	if(subject>0)
 	{
@@ -449,10 +440,11 @@ void ControlWidget::startClicked()
 		outStream.setDevice(&contFile);
 		std::sprintf(fname, "./Data/input.dat");
 		trialFile.setFileName(fname);
-		if(trialFile.exists()) {trialFile.open(QIODevice::ReadOnly); target=loadTrial(trial);}
-		else
+		if(trialFile.exists()) trialFile.open(QIODevice::ReadOnly);
+		else 
 		{
 			QMessageBox::critical(this, "File Not Found!", "File not found, please select a different file.");
+			return; //Should not start experiment with bad input file.
 		}
 	}
 	else
@@ -461,7 +453,16 @@ void ControlWidget::startClicked()
 		contFile.open(QIODevice::Append);
 		outStream.setDevice(&contFile);
 	}
-	target=loadTrial(trial);
+	//Get the armsolver class initialized with default blah.
+	armsolver=new ArmSolver(params,true);
+	
+	//Make UI Changes
+	userWidget->setDeepBGColor(point(0,0,0));
+	userWidget->setShapes(false,false,false,false);
+	goGray();
+	startButton->setText("Experiment running...");
+	
+	loadTrial(trial);
 	ExperimentRunning=true;
 	ignoreInput=false;
 	zero=getTime(); //Get first time point.
@@ -482,62 +483,63 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 
 
 
-point ControlWidget::loadTrial(int T)
+void ControlWidget::loadTrial(int T)
 {
-	if (subject>0)
-	{
-	trial=T;
-	if(trialFile.atEnd()) emit(endApp());
-
-	char line[201];
-	std::string qline;
-	int tempShowCursor,tempshape,temptrial,tempAcquisitionsNeeded;
-	double tempx, tempy, tempEarly, tempLate, tempWhite;
-	std::cout << "Loading Trial " << T << std::endl;
-	do
-	{
-		trialFile.readLine(line,200);
-		std::cout << line << std::endl;
-		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
-		else
-		{
-			std::cout << "Complete failure to read line: " << line << std::endl; return center;
-		}
-	} while ((temptrial < T)&&(!trialFile.atEnd()));
-	acquisitionsNeeded=tempAcquisitionsNeeded;
-	
-	QString showText;
-	if(acquisitionsNeeded>1)
-	{
-		showText.setNum(acquisitionsNeeded);
-		userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
-	}
-	else
-	{
-		showText.clear();
-		userWidget->setText(showText,point());
-	}
-			
-	origin=target;
-	target=point(tempx,tempy);
-	earlyPulseGain=tempEarly;
-	earlyPulseGainBox->setValue(tempEarly);
-	latePulseGain=tempLate;
-	latePulseGainBox->setValue(tempLate);
-	blwnGain=tempWhite;
-	blwnGainBox->setValue(tempWhite);
-	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
-	if(tempshape>=0) {target=point(center.X()+min/6.0,center.Y()+.05); claimedTarget=center;}
-	else claimedTarget=target;
-	if(tempShowCursor>0) hideCursor=false;
-	else hideCursor=true;
-	
-	trialNumBox->setValue(T);
-	std::cout << "Finished Loading Trial " << temptrial << std::endl;
-	
-	armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	state=hold;
 	holdStart=now;
+	
+	if (subject>0)
+	{
+		trial=T;
+		if(trialFile.atEnd()) {emit(endApp()); return;} //Hold begins so that app can end gracefully
+	
+		char line[201];
+		std::string qline;
+		int tempShowCursor,tempshape,temptrial,tempAcquisitionsNeeded;
+		double tempx, tempy, tempEarly, tempLate, tempWhite;
+		std::cout << "Loading Trial " << T << std::endl;
+		do
+		{
+			trialFile.readLine(line,200);
+			std::cout << line << std::endl;
+			if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
+			else
+			{
+				std::cout << "Complete failure to read line: " << line << std::endl; return center;
+			}
+		} while ((temptrial < T)&&(!trialFile.atEnd()));
+		acquisitionsNeeded=tempAcquisitionsNeeded;
+		
+		QString showText;
+		if(acquisitionsNeeded>1)
+		{
+			showText.setNum(acquisitionsNeeded);
+			userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
+		}
+		else
+		{
+			showText.clear();
+			userWidget->setText(showText,point());
+		}
+				
+		origin=target;
+		target=point(tempx,tempy);
+		earlyPulseGain=tempEarly;
+		earlyPulseGainBox->setValue(tempEarly);
+		latePulseGain=tempLate;
+		latePulseGainBox->setValue(tempLate);
+		blwnGain=tempWhite;
+		blwnGainBox->setValue(tempWhite);
+		userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
+		if(tempshape>=0) {target=point(center.X()+min/6.0,center.Y()+.05); claimedTarget=center;}
+		else claimedTarget=target;
+		if(tempShowCursor>0) hideCursor=false;
+		else hideCursor=true;
+		
+		trialNumBox->setValue(T);
+		std::cout << "Finished Loading Trial " << temptrial << std::endl;
+		
+		armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	}
 	else
 	{
@@ -553,13 +555,10 @@ point ControlWidget::loadTrial(int T)
 		origin=target;
 		target=point(mean+randb(-.05,.05),center.Y());
 		acquisitionsNeeded=1;
-		state=hold;
-		holdStart=now;
 		trial=T;
 		hideCursor=false;
 		claimedTarget=target;
 	}
-	return target;
 }
 
 
