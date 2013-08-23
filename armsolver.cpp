@@ -1,9 +1,11 @@
 #include "armsolver.h"
 
-ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent)
+#define REFLEXDELAY .06l
+
+ArmSolver::ArmSolver(twoLinkArm::ArmParams P, Models m, bool solveIntent)
 {
+	model=m;
 	solveDes=solveIntent;
-	impSeeded=false;
 	arm=new twoLinkArm(P); //This is where you should set the arm model, no switching later.
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
@@ -32,17 +34,50 @@ ArmSolver::~ArmSolver()
 
 int ArmSolver::func(double t, const double y[], double f[])
 {
+	//Standard linear interpolation
 	double s=(t-times[0])/(times[1]-times[0]);
 	double oms=1l-s;
 	point qmi=qm[0]*oms+qm[1]*s;
 	point qmdoti=qmdot[0]*oms+qmdot[1]*s;
 	point qmddoti=qmddot[0]*oms+qmddot[1]*s;
 	point torquemi=torquem[0]*oms+torquem[1]*s;
+	point esi, esdoti; //initialize to zeros
+	int etimesSize=etimes.size();
 	
-	mat2 kpi;
-	mat2 kdi;
-	if(constImp) {kpi=Kp; kdi=Kd;}
-	else {kpi=Kpm[0]*oms+Kpm[1]*s; kdi=Kdm[0]*oms+Kdm[1]*s;}
+	/*Because sampling is potentially extremely uneven, search starting from the back until NEXT time both exists and is larger than t-delay
+	We're quietly assuming that the front end of the array is getting trimmed intelligently. Probing for t=-1 would find 0<t<1 from t=[0 1 2...] */
+	bool flag=false;
+	int k=0;
+	while((k+2)<etimesSize()) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
+	{
+		if((t-REFLEXDELAY)<=etimes[k+1]) //Handles the corner case t-delay==a sampling time without requiring an additional sample
+		{
+			flag=true;
+			break;
+		}
+		k++;
+	}
+	
+	if(flag) //We have two points: the upper of which is past t-delay, the lower of which is not. 
+	{
+		s=((t-REFLEXDELAY)-etimes[k])/(etimes[k+1]-etimes[k]);
+		oms=1l-s;
+		point esi=qm[k]*oms+qm[k+1]*s;
+		point qmdoti=qmdot[k]*oms+qmdot[k+1]*s;
+	}
+	else //Absent data, assume error was zero.
+	{
+		esi=point(0,0);
+		esdoi=point(0,0);
+	}
+	
+	point torqueFB;
+	switch model
+	{
+	case CONSTIMP:
+		torqueFB=mat2();
+	}
+	
 	
 	f[0]=y[2];
 	f[1]=y[3];
@@ -68,11 +103,18 @@ void ArmSolver::setParams(twoLinkArm::ArmParams P)
 	paramsMutex.unlock();
 }
 
-void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+void ArmSolver::setModel(Models m)
+{	
+	paramsMutex.lock();
+	model=m;
+	paramsMutex.unlock();
+}
+
+void ArmSolver::push(double t, point p, point v, point a, point force)
 {
 	destructomutex.lock(); //We block here just in case we push at the moment of a crash.
 	point q;
-	if(arm->ikin(p,q)) questionable.push_back(false);
+	if(arm->ikin(p,q)) questionable.push_back(false); //Deal with what's usually trunk or shoulder motility allowing impossible reaches.
 	else {arm->ikinAbs(p,q); questionable.push_back(true);}
 	qm.push_back(q);
 	
@@ -88,17 +130,10 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 	
 	times.push_back(t);
 	
-	if(!constImp)
-	{
-		Kpm.push_back(kp);
-		Kdm.push_back(kd);
-	}
-	
-	if(!seeded)
+	if(!seeded) //Set the initial conditions to the measured conditions
 	{
 		qst=q;
 		qstdot=qdot;
-		if(constImp){Kp=kp; Kd=kd;}
 		seeded=true;
 	}
 	else solvesemaphore.release();	
@@ -107,15 +142,15 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 
 void ArmSolver::solve()
 {
-	if(!isRunning())
-		start();
+	if(!isRunning()) //If a thread is already active, don't deal in unnecessary concurrency. Solution is fundamentally serial. 
+		start(); //start() is inherited from QThread and executes run() in a new thread.
 }
 
 void ArmSolver::run()
 {
 	while(true)
 	{
-		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving
+		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving, in practice means single-threaded solution.
 		double y[4];
 		y[0]=qst[0];
 		y[1]=qst[1];
@@ -143,11 +178,9 @@ void ArmSolver::run()
 			qmddot.clear();
 			torquem.clear();
 			times.clear();
-			if(!constImp)
-			{
-				Kpm.clear();
-				Kdm.clear();
-			}
+			es.clear();
+			esdot.clear();
+			etimes.clear();
 			seeded=false;
 			//Since we just emptied the queues, also empty the semaphore
 			solvesemaphore.acquire(solvesemaphore.available());
@@ -155,7 +188,7 @@ void ArmSolver::run()
 			break; //We just emptied the semaphore
 		}
 		
-		qst=point(y[0],y[1]);
+		qst=point(y[0],y[1]); //Initial conditions for next run-through are final conditions from this one.
 		qstdot=point(y[2],y[3]);
 		
 		qs.push_back(qst);
@@ -170,10 +203,12 @@ void ArmSolver::run()
 		torquem.pop_front();
 		times.pop_front();
 		questionable.pop_front();
-		if(!constImp)
+		
+		if(etimes[1]<(tk-REFLEXDELAY)) //When the first point is no longer needed
 		{
-			Kpm.pop_front();
-			Kdm.pop_front();
+			etimes.pop_front();
+			es.pop_front();
+			esdot.pop_front();
 		}
 	}
 }
