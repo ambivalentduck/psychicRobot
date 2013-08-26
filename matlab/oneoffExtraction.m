@@ -1,6 +1,6 @@
 clc
 clear all
-load ../Data/32.mat
+load ../Data/55.mat
 close all
 
 global kp kd
@@ -11,7 +11,7 @@ kp=kp{1};
 
 for k=1:50
     %continue
-    if trials(k).rawnum<10
+    if trials(k).rawnum<11
         figure(5001)
         if trials(k).pos(1,1)<0
             subplot(2,1,1)
@@ -45,8 +45,8 @@ for k=1:50
     mforce=mean(forcecalib);
     force=[trials(k).force(:,1)-mforce(1) trials(k).force(:,2)-mforce(2)];
     xvaf=[trials(k).pos trials(k).vel trials(k).accel -force];
-    %y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
-    y=extract(t,xvaf,params,@armdynamics_inverted);
+    y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
+    %y=extract(t,xvaf,params,@armdynamics_inverted);
     %     if trials(k).rawnum>=30
     %         figure(trials(k).rawnum)
     %         clf
@@ -84,16 +84,16 @@ for k=1:50
     axis equal
 end
 
-shapes=[trials(50:65).shape];
+shapes=[trials(51:66).shape];
 us=unique(shapes);
 lus=length(us);
-mags=[trials(50:65).white];
+mags=[trials(51:66).white];
 u=unique(mags);
 lu1=length(u)+1;
 
 figure(20)
 clf
-for k=51:65
+for k=51:66
 
     mag=trials(k).white;
     f=find(u==mag);
@@ -130,4 +130,4 @@ for k=51:65
     end
 end
 
-    cleanup
+cleanup

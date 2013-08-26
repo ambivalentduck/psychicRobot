@@ -1,11 +1,11 @@
 %function success=addSubject(name)
 clc
 clear all
-name='32'
+name='55'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output_forcetestshapes.dat']);
+output=load(['../Data/output55.dat']);
 input=load(['../Data/input_forcetestshapes.dat']);
 
 global fJ getAlpha x0

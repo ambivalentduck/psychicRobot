@@ -17,7 +17,8 @@ for k=1:size(xvaf,1)
 end
 
 if nargin<=4
-    [T,X]=ode45(armdynamics,t,measuredVals(1,1:4));
+    %[T,X]=ode45(armdynamics,t,measuredVals(1,1:4));
+    [T,X]=extractionReflexHelper(t,measuredVals(1,1:4));
 else
     q=ikin(x0(1:2));
     q0=[q fJ(q)\x0(3:4)'];
@@ -25,6 +26,8 @@ else
 end
     
 y=X(:,1:4);
+size(y)
+length(T)
 
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));
