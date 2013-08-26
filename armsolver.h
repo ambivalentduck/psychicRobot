@@ -26,6 +26,7 @@ public:
 	int func(double t, const double y[], double f[]);
 	void setParams(twoLinkArm::ArmParams P);
 	void setModel(Models m);
+	void setImpedanceGain(double g) {impedanceGain=g;}
 	void push(double t, point p, point v, point a, point force);
 	bool pull(point &p, bool &dodgy, int timeout=-1);
 	void solve();
@@ -54,6 +55,7 @@ private:
 	QSemaphore solvesemaphore, grabsemaphore;
 	QMutex destructomutex, paramsMutex;
 	point qst, qstdot;
+	double impedanceGain;
 };
 
 

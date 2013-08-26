@@ -18,6 +18,7 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, Models m, bool solveIntent)
 	odeevolve=gsl_odeiv_evolve_alloc(4);
 	#endif
 	seeded=false;
+	impedanceGain=1;
 }
 
 ArmSolver::~ArmSolver()
@@ -41,7 +42,7 @@ int ArmSolver::func(double t, const double y[], double f[])
 	point qmdoti=qmdot[0]*oms+qmdot[1]*s;
 	point qmddoti=qmddot[0]*oms+qmddot[1]*s;
 	point torquemi=torquem[0]*oms+torquem[1]*s;
-	point esi, esdoti; //initialize to zeros
+	point eri, erdoti; //initialize reflex/delayed errors to zeros
 	int etimesSize=etimes.size();
 	
 	/*Because sampling is potentially extremely uneven, search starting from the back until NEXT time both exists and is larger than t-delay
@@ -62,22 +63,50 @@ int ArmSolver::func(double t, const double y[], double f[])
 	{
 		s=((t-REFLEXDELAY)-etimes[k])/(etimes[k+1]-etimes[k]);
 		oms=1l-s;
-		point esi=qm[k]*oms+qm[k+1]*s;
-		point qmdoti=qmdot[k]*oms+qmdot[k+1]*s;
+		eri=qm[k]*oms+qm[k+1]*s;
+		erdoti=qmdot[k]*oms+qmdot[k+1]*s;
 	}
 	else //Absent data, assume error was zero.
 	{
-		esi=point(0,0);
-		esdoi=point(0,0);
+		eri=point(0,0);
+		erdoti=point(0,0);
 	}
 	
 	point torqueFB;
+	point torqueReflex=point(0,0);
+	point e, edot;
+	//Direction of solve changes which variables contain real vs desired trajectories
+	if(solveDes) {e=point(y[0],y[1])-qmi; edot=point(y[2],y[3])-qmdoti;}
+	else {e=qmi-point(y[0],y[1]); edot=qmdoti-point(y[2],y[3]);}
+	
+	mat2 Dreal,Creal,kp,kp0,kp1;
+	point joint_torques;
 	switch model
 	{
 	case CONSTIMP:
-		torqueFB=mat2();
+		torqueFB=mat2(15,6,6,16)*e+mat2(2.3, .09, .09, 2.4)*edot;
+		break;
+	case TORQUESCALEDANDREFLEX:
+		torqueReflex=(eri+erdoti*2l)/50l;
+		//Explicitly choose NOT to call break so that we fall through into the next case.
+	case TORQUESCALEDIMP:
+		arm->computeInertiaCoriolis(qmi,qmdoti,Dreal,Creal);
+		/*Sign conventions work out so that muscle-generated torques (FF+FB) = external + inertial torques.
+		In the case that you measure the physical acceleration of the arm, this is well and good.
+		In the case that you know the intention a priori, you don't have access to the inertial torque OR the feedback torque until you've solved.
+		We look back a timestep and make the assumption that arm torque isn't changing quickly relative to our sampling rate.
+		Still, our simulation of realization from intent requires assumptions and/or hacks.*/
+		if(solveDes) jointTorques=Dreal*qmddoti+Creal+torquemi;
+		else jointTorques=Dreal*qstdot+Creal+torquemi;
+		joint_torques=point(std::abs(joint_torques.X()),std::abs(joint_torques.Y()));
+		kp0=mat2(10.8,2.83,2.51,8.67);
+		kp1=mat2(3.18l*jointTorques.X(),2.15l*jointTorques.Y(),2.34l*jointTorques.X(),6.18l*jointTorques.Y());
+		kp=kp0+kp1;
+		kd=1l/12l;
+		torqueFB=kp*((theta_real-theta_desired)+(omega_real-omega_desired)*kd+torqueReflex); //Unless we fell through, reflex torque is 0.
+		break;
 	}
-	
+	torque=torqueFB*impedanceGain;
 	
 	f[0]=y[2];
 	f[1]=y[3];
