@@ -10,6 +10,7 @@ XXXXX Possibly quirks on force handle that cause the negation given the 180 degr
 
 2. ikin/fkin drift should be minimal.
 -Previously done, untouched.
+-No observable drift over 5000 iterations
 
 3. Basic dynamics/computeDC.m
 -Sign conventions appear identical, so should BE identical.
@@ -20,7 +21,15 @@ XXXXX Caught a sign difference in the first element of the coriolis vector.
 -Dynamic impedance (burdet)
 -Dynamic impedance + reflexes (also burdet)
 
-5. Need to implement gainscaling in the controlwidget. Also a dropdown for model type
+5. Trivial to check differentiation of velocity and acceleration by setting forces to zero.
+-Passes
+-Extraction should be perfect atop measurement.
+
+6. Anthropomorphics generates a value very different from Shad and Muss for inertias.
+XXXXX Quadruple checked. Any reasonable "oops" fix actually makes it worse.
+
+
+99. Need to implement gainscaling in the controlwidget. Also a dropdown for model type
 
 
 

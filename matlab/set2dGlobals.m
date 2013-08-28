@@ -21,12 +21,15 @@ else
     m2=.022*mass;
 end
 %model using parameters from shadmehr and mussa-ivaldi and Winters (1990)
+%rog of gyration numbers from winters, rog=sqrt(I/m)
+% I'm getting numbers in the clouds. Triple checked. WHY?
 I1=m1*(.322*l1)^2;
 I2=m2*(.468*l2)^2;
+%I1=.0141;
+%I2=.0188;
 
 %Shoulder location
 x0=origin+shoulder;
-%Consequence: Workspace is a circle with center at 0, radius .67
 
 %Dynamic code modification requires random function names
 hash=floor(rand(5,1)*24+1);

@@ -1,6 +1,6 @@
 function [dqi,torque_outside]=armdynamics_inverted(t,qi)
 
-global kd kp measuredVals measuredTime
+global kpgain measuredVals measuredTime
 
 lqi=length(qi);
 
@@ -17,6 +17,9 @@ omega_desired=qi(lqi/2+1:end);
 %Compute alpha to torque relationship, eq. 7.87 in Spong's Robot Control and Modeling: pg 262
 [D_real,C_real]=computeDC(theta_real,omega_real);
 [D_expected,C_expected]=computeDC(theta_desired,omega_desired);
+
+kp=[15 6;6 16]*kpgain;
+kd=[2.3 .09; .09 2.4]*kpgain;
 
 torque_fb=kd*(omega_desired-omega_real)+kp*(theta_desired-theta_real);
 
