@@ -1,7 +1,7 @@
 function [l1, l2, shoulder,mass]=getSubjectParams(num)
 
 switch num
-    case {'1', '500', '21', '31','32','55'}
+    case {'1', '500', '21', '31','32','55','729'}
         l1=.33;
         l2=.34;
         mass=175;

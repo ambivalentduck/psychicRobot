@@ -41,6 +41,6 @@ fName=['fJ',hash];
 pause(.1)
 disp('Jacobians complete.')
 fJ=str2func(fName);
-feval(fName,[5 6])
+feval(fName,[5 6]);
 getAlpha=str2func(aName);
-feval(aName,[1 2]',[3 4]',[5 6]')
+feval(aName,[1 2]',[3 4]',[5 6]');

@@ -1,10 +1,12 @@
 %function success=addSubject(name)
-name='12'
+clc
+clear all
+name='729'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output',name,'.dat']);
-input=load(['../Data/input',name,'.dat']);
+output=load(['../Data/output729.dat']);
+input=load(['../Data/input.dat']);
 
 global fJ getAlpha x0
 
@@ -21,15 +23,14 @@ params.l2=l2;
 params.shoulder=shoulder;
 params.origin=origin;
 params.dimensions=2;
-params.mass=mass;
+params.mass=mass*.4535; %lbs to kg
 set2dGlobals(l1, l2, origin, shoulder,mass)
 x0_=x0;
 
 %trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
 
-%f=find(sum(abs(input(1:730,4:6)),2)>0);
-f=731:818;
-a=f; %unique(input(f,1));
+a=find(sum(abs(input(:,4:6)),2)>0);
+%a=1:66;
 
 success=zeros(length(a),5);
 
@@ -38,15 +39,22 @@ for k=1:length(a)
     fo=find(output(:,1)==K);
     trials(k).rawnum=K;
     trials(k).target=input(K,[2 3]);
-    trials(k).origin=input(K-1,[2 3]);
+    if K>1
+        trials(k).origin=input(K-1,[2 3]);
+    else
+        trials(k).origin=input(fo(1),[3 4]);
+    end
+
     trials(k).early=input(K,4);
     trials(k).late=input(K,5);
     trials(k).white=input(K,6);
     trials(k).updown=sum(input(K,4:6));
     trials(k).shape=input(K,7);
     trials(k).type=find(input(K,4:6)~=0);
-        
-    trials(k).time=output(fo,2);
+    trials(k).vision=input(K,8);
+
+    %trials(k).time=output(fo,13);
+    trials(k).time=linspace(output(fo(1),13),output(fo(end),13),length(fo));
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
     gT=(output(fo(end),2)-output(fo(1),2))/length(fo);
@@ -57,11 +65,21 @@ for k=1:length(a)
         trials(k).long=1;
     end
 
-    trials(k).vel=output(fo,[5 6]);
-    trials(k).accel=output(fo,[7 8]);
-    trials(k).force=output(fo,[9 10]);
-    %trials(k).force=[-trials(k).force(:,1) trials(k).force(:,2)];
 
+    gT=mean(gradient(trials(k).time));
+    trials(k).vel=[gradient(trials(k).pos(:,1))./gT gradient(trials(k).pos(:,2))./gT];
+    trials(k).accel=[gradient(trials(k).vel(:,1))./gT gradient(trials(k).vel(:,2))./gT];
+    %trials(k).vel=output(fo,[5 6]);
+    %trials(k).accel=output(fo,[7 8]);
+    trials(k).force=output(fo,[9 10]);
+    
+    for kk=1:length(trials(k).time)
+        trials(k).qRobot(kk,:)=ikinRobot(trials(k).pos(kk,:));
+        trials(k).qdotRobot(kk,:)=(robotfJ(trials(k).qRobot(kk,:))\(trials(k).vel(kk,:)'))';
+        trials(k).qddotRobot(kk,:)=robotAlpha(trials(k).qRobot(kk,:)',trials(k).qdotRobot(kk,:)',trials(k).accel(kk,:)');
+        trials(k).torqueRobot(kk,:)=((robotfJ(trials(k).qRobot(kk,:))')*(trials(k).force(kk,:)'))';
+    end
+        
     trials(k).dist=[0; cumsum(sqrt(sum((trials(k).pos(2:end,:)-trials(k).pos(1:end-1,:)).^2,2)))];
     trials(k).speed=sqrt(sum(trials(k).vel.^2,2));
 
@@ -73,8 +91,6 @@ for k=1:length(a)
     flag=1;
     x0=x0_;
     warning off all
-
-    gT=.01; %gradient(trials(k).time);
 
     while flag
         for kk=1:length(trials(k).time)
@@ -103,12 +119,12 @@ for k=1:length(a)
     trials(k).x0=x0;
     trials(k).targetCat=trials(k).pos(end,1)>0;
 
-    f=find((trials(k).time-trials(k).time(1))<.5,1,'last'); 
+    f=find((trials(k).time-trials(k).time(1))<.5,1,'last');
     trials(k).first=f;
     trials(k).last=length(trials(k).time);
-    
+
     %Should adjust to LOW velocity/acceleration threshold, not just mean.
-    trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
+    %trials(k).force=trials(k).force-ones(length(trials(k).time),1)*mean(trials(k).force(1:trials(k).first,:));
 
     success(k,5)=trials(k).first;
 end

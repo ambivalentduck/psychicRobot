@@ -1,4 +1,4 @@
-function y=extract(t,xvaf,params,armdynamics)
+function y=extract(t,xvaf,params,armdynamics,x0)
 
 global measuredVals measuredTime fJ getAlpha
 
@@ -16,15 +16,20 @@ for k=1:size(xvaf,1)
     measuredVals(k,:)=[q' qdot' qddot' torque'];
 end
 
-if strcmp(armdynamics,'reflex')
-    [T,X]=extractionReflexHelper(t,measuredVals(1,1:4));
+if nargin<5
+    q0=measuredVals(1,1:4);
 else
-    [T,X]=ode45(armdynamics,t,measuredVals(1,1:4));
+    q0=ikin(x0(1:2));
+    q0(3:4)=fJ(q0)\x0(3:4)';
+end
+
+if strcmp(armdynamics,'reflex')
+    [T,X]=extractionReflexHelper(t,q0);
+else
+    [T,X]=ode45(armdynamics,t,q0);
 end
     
 y=X(:,1:4);
-size(y)
-length(T)
 
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));

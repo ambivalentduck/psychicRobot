@@ -1,6 +1,6 @@
 clc
 clear all
-load ../Data/55.mat
+load ../Data/729.mat
 close all
 
 global kpgain
@@ -53,8 +53,8 @@ for k=1:50
     mforce=mean(forcecalib);
     force=[trials(k).force(:,1)-mforce(1) trials(k).force(:,2)-mforce(2)];
     xvaf=[trials(k).pos trials(k).vel trials(k).accel force];
-    y=extract(t,xvaf,params,'reflex');
-    %y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
+    %y=extract(t,xvaf,params,'reflex');
+    y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
     %y=extract(t,xvaf,params,@armdynamics_inverted);
     %     if trials(k).rawnum>=30
     %         figure(trials(k).rawnum)

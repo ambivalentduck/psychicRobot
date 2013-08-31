@@ -1,0 +1,10 @@
+function out=robotAlpha(theta,omega,accel)
+theta1=theta(1);
+theta2=theta(2);
+fJt1dx2=-46251./100000.*cos(theta1)-33521./100000.*cos(theta1+theta2);
+fJt1dy2=-33521./100000.*cos(theta1+theta2);
+fJt2dx2=-46251./100000.*sin(theta1)-33521./100000.*sin(theta1+theta2);
+fJt2dy2=-33521./100000.*sin(theta1+theta2);
+fJt1dxdy=-33521./100000.*cos(theta1+theta2);
+fJt2dxdy=-33521./100000.*sin(theta1+theta2);
+out=robotfJ(theta)\(accel-[fJt1dx2*omega(1)+fJt1dxdy*omega(2),fJt1dy2*omega(2)+fJt1dxdy*omega(1);fJt2dx2*omega(1)+fJt2dxdy*omega(2),fJt2dy2*omega(2)+fJt2dxdy*omega(1)]*omega);
