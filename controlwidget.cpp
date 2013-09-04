@@ -267,7 +267,7 @@ void ControlWidget::readPending()
 		return;
 	}
 	
-	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;
@@ -454,7 +454,7 @@ void ControlWidget::startClicked()
 		outStream.setDevice(&contFile);
 	}
 	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params,true);
+	armsolver=new ArmSolver(params);
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
@@ -505,7 +505,7 @@ void ControlWidget::loadTrial(int T)
 			if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
 			else
 			{
-				std::cout << "Complete failure to read line: " << line << std::endl; return center;
+				std::cout << "Complete failure to read line: " << line << std::endl; emit(endApp()); return;
 			}
 		} while ((temptrial < T)&&(!trialFile.atEnd()));
 		acquisitionsNeeded=tempAcquisitionsNeeded;

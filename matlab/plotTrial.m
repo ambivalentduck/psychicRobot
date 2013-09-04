@@ -40,7 +40,7 @@ subplot(3,1,2)
 hold on
 vmf=vecmag(force);
 plot(t,vmf)
-w=find((vmf<3)&(vmf>.2));
+w=find((vmf<3)&(vmf>.2)); %areas where force is middling
 
 subplot(3,1,3)
 X=[trial.qddotRobot trial.qdotRobot cos(trial.qdotRobot(:,2)).*(2*trial.qdotRobot(:,1)+trial.qdotRobot(:,2)) trial.qdotRobot(:,1).^2];
@@ -56,8 +56,8 @@ Xw=X(w,:);
 m=Xw\y(w,:)
 plot(t,y,t,X*m,'.')
 
-for k=1:length(t)
-    %force(k,:)=force(k,:)-(robotfJ(trial.qRobot(k,:))\(X(k,:)*m)')';
+for k=1:length(t) %Comment line below to skip accounting for robot dynamics
+    force(k,:)=force(k,:)-(robotfJ(trial.qRobot(k,:))\(X(k,:)*m)')';
 end
 
 subplot(3,1,2)
@@ -85,7 +85,7 @@ plot(t(f),v(f),'b.')
 
 [trash,i]=min(abs(t-.96));
 
-kpgain=.35;
+kpgain=1;
 y=extract(t,xvaf,params,@armdynamics_inverted);
 subplot(2,1,1)
 plot(y(:,1),y(:,2),'k-o','MarkerSize',2)
@@ -93,6 +93,8 @@ subplot(2,2,3)
 plot(y(:,1),vecmag(y(:,[3 4])),'k')
 subplot(2,2,4)
 plot(t,vecmag(y(:,[3 4])),'k')
+plot(t,vecmag(y(:,[3 4])-trial.vel),'k-.')
+
 
 y=extract(t,xvaf,params,@armdynamicsInvertedBurdet);
 subplot(2,1,1)
@@ -103,6 +105,7 @@ subplot(2,2,4)
 hold on
 plot(t,vecmag(y(:,[3 4])),'r')
 
+for kpgain=linspace(.15,5,20)
 y=extract(t,xvaf,params,'reflex');
 subplot(2,1,1)
 plot(y(:,1),y(:,2),'m-o','MarkerSize',2)
@@ -111,6 +114,7 @@ plot(y(:,1),vecmag(y(:,[3 4])),'m')
 subplot(2,2,4)
 hold on
 plot(t,vecmag(y(:,[3 4])),'m')
+end
 
 % kpgain=2;
 % y=extract(t(i:end),xvaf(i:end,:),params,@armdynamics_inverted,y(i,:));

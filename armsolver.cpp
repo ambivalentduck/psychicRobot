@@ -49,7 +49,7 @@ int ArmSolver::func(double t, const double y[], double f[])
 	We're quietly assuming that the front end of the array is getting trimmed intelligently. Probing for t=-1 would find 0<t<1 from t=[0 1 2...] */
 	bool flag=false;
 	int k=0;
-	while((k+2)<etimesSize()) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
+	while((k+2)<etimesSize) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
 	{
 		if((t-REFLEXDELAY)<=etimes[k+1]) //Handles the corner case t-delay==a sampling time without requiring an additional sample
 		{
@@ -76,12 +76,14 @@ int ArmSolver::func(double t, const double y[], double f[])
 	point torqueReflex=point(0,0);
 	point e, edot;
 	//Direction of solve changes which variables contain real vs desired trajectories
-	if(solveDes) {e=point(y[0],y[1])-qmi; edot=point(y[2],y[3])-qmdoti;}
-	else {e=qmi-point(y[0],y[1]); edot=qmdoti-point(y[2],y[3]);}
+	if(solveDes) {e=qmi-point(y[0],y[1]); edot=qmdoti-point(y[2],y[3]);}
+	else {e=point(y[0],y[1])-qmi; edot=point(y[2],y[3])-qmdoti;}
 	
-	mat2 Dreal,Creal,kp,kp0,kp1;
-	point joint_torques;
-	switch model
+	mat2 Dreal,kp,kp0,kp1;
+	point jointTorques, Creal;
+	double jt1, jt2;
+	
+	switch(model)
 	{
 	case CONSTIMP:
 		torqueFB=mat2(15,6,6,16)*e+mat2(2.3, .09, .09, 2.4)*edot;
@@ -98,15 +100,16 @@ int ArmSolver::func(double t, const double y[], double f[])
 		Still, our simulation of realization from intent requires assumptions and/or hacks.*/
 		if(solveDes) jointTorques=Dreal*qmddoti+Creal+torquemi;
 		else jointTorques=Dreal*qstdot+Creal+torquemi;
-		joint_torques=point(std::abs(joint_torques.X()),std::abs(joint_torques.Y()));
+		jt1=jointTorques[0];
+		jt2=jointTorques[1];
+		jointTorques=point(jt1,jt2);
 		kp0=mat2(10.8,2.83,2.51,8.67);
 		kp1=mat2(3.18l*jointTorques.X(),2.15l*jointTorques.Y(),2.34l*jointTorques.X(),6.18l*jointTorques.Y());
 		kp=kp0+kp1;
-		kd=1l/12l;
-		torqueFB=kp*((theta_real-theta_desired)+(omega_real-omega_desired)*kd+torqueReflex); //Unless we fell through, reflex torque is 0.
+		torqueFB=kp*(e+edot/12l+torqueReflex); //Unless we fell through, reflex torque is 0.
 		break;
 	}
-	torque=torqueFB*impedanceGain;
+	torqueFB=torqueFB*impedanceGain;
 	
 	f[0]=y[2];
 	f[1]=y[3];
@@ -115,8 +118,8 @@ int ArmSolver::func(double t, const double y[], double f[])
 	
 	paramsMutex.lock();
 		
-	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
-	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
+	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, torqueFB);
+	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, torqueFB);
 	paramsMutex.unlock();
 	
 	f[2]=qsDDot[0];
