@@ -105,7 +105,7 @@ subplot(2,2,4)
 hold on
 plot(t,vecmag(y(:,[3 4])),'r')
 
-for kpgain=linspace(.15,5,20)
+for kpgain=.35 %linspace(.15,5,20)
 y=extract(t,xvaf,params,'reflex');
 subplot(2,1,1)
 plot(y(:,1),y(:,2),'m-o','MarkerSize',2)

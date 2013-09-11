@@ -1,11 +1,11 @@
 %function success=addSubject(name)
 clc
 clear all
-name='729'
+name='300'
 
 disp(['Loading Data for Subject ',name])
 
-output=load(['../Data/output729.dat']);
+output=load(['../Data/output300.dat']);
 input=load(['../Data/input.dat']);
 
 global fJ getAlpha x0
@@ -55,9 +55,11 @@ for k=1:length(a)
 
     %trials(k).time=output(fo,13);
     trials(k).time=linspace(output(fo(1),13),output(fo(end),13),length(fo));
+    gT=mean(gradient(trials(k).time));
+    
     trials(k).pos=output(fo,[3 4]);
     trials(k).des=output(fo,[11 12]);
-    gT=(output(fo(end),2)-output(fo(1),2))/length(fo);
+    
     trials(k).desvel=[gradient(trials(k).des(:,1))./gT gradient(trials(k).des(:,2))./gT];
     if norm(trials(k).pos(1,:)-trials(k).pos(end,:))<.25
         trials(k).long=0;
