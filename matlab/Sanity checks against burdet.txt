@@ -28,7 +28,6 @@ XXXXX Caught a sign difference in the first element of the coriolis vector.
 6. Anthropomorphics generates a value very different from Shad and Muss for inertias.
 XXXXX Quadruple checked. Any reasonable "oops" fix actually makes it worse.
 
-
 99. Need to implement gainscaling in the controlwidget. Also a dropdown for model type
 
 
