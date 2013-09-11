@@ -6,6 +6,11 @@ switch num
         l2=.34;
         mass=175;
         shoulder=[0 .45];
+    case {'300'} %Yazan
+        l1=.31;
+        l2=.34;
+        mass=210;
+        shoulder=[0 .51];
     case {'3','9','10'}
         l1=.36;
         l2=.31;
