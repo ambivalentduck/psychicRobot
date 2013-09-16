@@ -75,13 +75,32 @@ minSpanI=ceil(minSpanT/gT); %Convert to index span
 dtimec=[0; diff(t(calib))]; %Time distance since calibration was satisfied
 breaks=find(dtimec>.1)
 
-begins=calib(breaks-1);
+begins=calib(breaks);
 ends=calib(breaks);
+
+c=0;
+clear lumps
+for k=1:length(begins)
+    if (ends(k)-begins(k))>=minSpanI
+        c=c+1;
+        lumps(c).inds=begins(k):ends(k);
+    end
+end
+
+upper=100000;
+subinds=1:upper;
 
 figure(1)
 clf
 hold on
-plot(t,v(:,1)
+plot(t(subinds),x(subinds,1),'b')
+plot(t(begins(begins<upper)),x(begins(begins<upper),1),'r.')
+plot(t(ends(ends<upper)),x(ends(ends<upper),1),'kx')
+% for k=1:length(lumps)
+%     if lumps(k).inds(end)<subinds(end)
+%         plot(t(lumps(k).inds),x(lumps(k).inds,1),'r.')
+%     end
+% end
 
 
 % oops=find((~dtrialc)&(dtimec>.1)) %Places where our calibration point finder additional "pauses" in a trial.
@@ -100,6 +119,7 @@ plot(t,v(:,1)
 
 %% Now deal with rotating the forces to deal with that accrued offset
 
+return 
 qr=x;
 q=t;
 sq=q;
