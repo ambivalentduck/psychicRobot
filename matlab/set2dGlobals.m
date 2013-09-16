@@ -37,10 +37,10 @@ hash=char('A'+hash)';
 aName=['getAlpha',hash];
 fName=['fJ',hash];
 %Command torques based on Jacobian, so build one
-[fJ,Jt, getAlpha, getAccel]=makeJacobians(aName,fName);
+[fJ, getAlpha, getAccel]=makeJacobians(aName,fName);
 pause(.1)
 disp('Jacobians complete.')
 fJ=str2func(fName);
-feval(fName,[5 6]);
+feval(fName,[5 6]); %Necessary to force compilation
 getAlpha=str2func(aName);
-feval(aName,[1 2]',[3 4]',[5 6]');
+feval(aName,[1 2]',[3 4]',[5 6]'); %Necessary to force compilation

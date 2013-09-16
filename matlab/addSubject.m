@@ -3,10 +3,16 @@ clc
 clear all
 name='300'
 
+newline=sprintf('\n');
+%% Get everything loaded and setup
 disp(['Loading Data for Subject ',name])
+tic
 
 output=load(['../Data/output300.dat']);
 input=load(['../Data/input.dat']);
+disp('Data files loaded.')
+toc
+disp(newline)
 
 global fJ getAlpha x0
 
@@ -26,8 +32,98 @@ params.dimensions=2;
 params.mass=mass*.4535; %lbs to kg
 set2dGlobals(l1, l2, origin, shoulder,mass)
 x0_=x0;
+toc
+disp(newline)
 
-%trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB sigGain
+%% Smooth everything at once because it's actually faster and more efficient.
+tic
+s01=size(output,1);
+trial=output(:,1);
+
+filtn=128;
+filtType='loess';
+
+t=linspace(output(1,13),output(end,13),s01)';
+gT=t(2)-t(1);
+x=[smooth(output(:,3),filtn,filtType) smooth(output(:,4),filtn,filtType)];
+disp('Position data smoothed.')
+toc
+disp(newline)
+
+v=[gradient(x(:,1)) gradient(x(:,2))]/gT;
+a=[gradient(v(:,1)) gradient(v(:,2))]/gT;
+disp('State data differentiated.')
+toc
+disp(newline)
+
+f=[smooth(output(:,9),filtn,filtType) smooth(output(:,10),filtn,filtType)];
+disp('Force data smoothed.')
+toc
+disp(newline)
+
+%% Our force sensors gradually accrue an offset. Find spots where minimal force is being applied to the handle
+tic
+calib=find(vmlt(a,.1)&vmlt(v,.005)); %Square roots are unnecessarily slow.
+disp('Calibration Points Found.')
+toc
+ltoc=toc;
+disp(newline)
+
+minSpanT=.3; %300 ms
+minSpanI=ceil(minSpanT/gT); %Convert to index span
+
+dtimec=[0; diff(t(calib))]; %Time distance since calibration was satisfied
+breaks=find(dtimec>.1)
+
+begins=calib(breaks-1);
+ends=calib(breaks);
+
+figure(1)
+clf
+hold on
+plot(t,v(:,1)
+
+
+% oops=find((~dtrialc)&(dtimec>.1)) %Places where our calibration point finder additional "pauses" in a trial.
+% 
+% figure(1)
+% clf
+% hold on
+% N=20;
+% ti=find(trial==trial(calib(oops(N))));
+% o=calib(oops(trial(calib(oops))==trial(calib(oops(N)))));
+% plot(t(ti),v(ti),'b')
+% ti2=((vmlt(a,.1)&vmlt(v,.005))&(trial==trial(calib(oops(N)))));
+% plot(t(ti2),v(ti2),'r.')
+% plot(t(o),v(o),'kx')
+
+
+%% Now deal with rotating the forces to deal with that accrued offset
+
+qr=x;
+q=t;
+sq=q;
+cq=q;
+frot=f;
+frot2=frot;
+
+for k=1:s01
+    qr(k,:)=ikinRobot(x(k,:)); %Trig is easily the slowest thing we do, store everything we compute
+    q=sum(qr(k,:));
+    s=sin(q);
+    c=cos(q);
+    sq(k)=s;
+    cq(k)=c;
+    frot(k,:)=([c -s;s c]'*frot(k,:)')'; %Rotate forces from roomspace to a consistent robot handle space: q_robot=[0 0]
+end
+disp('Rotations Performed')
+toc
+ltoc=toc-ltoc;
+disp(['Rate of rotation: ',num2str((t(k)-t(1))/ltoc),' secs data/sec computation'])
+disp(newline)
+
+
+%% Later stuff
 
 a=find(sum(abs(input(:,4:6)),2)>0);
 %a=1:66;
