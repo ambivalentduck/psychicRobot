@@ -1,7 +1,10 @@
-%function success=addSubject(name)
+%function addSubject(name)
 clc
 clear all
 name='300'
+
+doPlots=1;
+%doPlots=0;
 
 newline=sprintf('\n');
 %% Get everything loaded and setup
@@ -34,6 +37,7 @@ set2dGlobals(l1, l2, origin, shoulder,mass)
 x0_=x0;
 toc
 disp(newline)
+loadT=toc;
 
 %% Smooth everything at once because it's actually faster and more efficient.
 tic
@@ -60,20 +64,20 @@ f=[smooth(output(:,9),filtn,filtType) smooth(output(:,10),filtn,filtType)];
 disp('Force data smoothed.')
 toc
 disp(newline)
+smoothT=toc;
 
 %% Our force sensors gradually accrue an offset. Find spots where minimal force is being applied to the handle
 tic
 calib=find(vmlt(a,.1)&vmlt(v,.005)); %Square roots are unnecessarily slow.
 disp('Calibration Points Found.')
 toc
-ltoc=toc;
 disp(newline)
 
 minSpanT=.2; %300 ms
 minSpanI=ceil(minSpanT/gT); %Convert to index span
 
 dtimec=[0; diff(t(calib))]; %Time distance since calibration was satisfied
-breaks=find(dtimec>.1)
+breaks=find(dtimec>.1);
 
 begins=calib(breaks(1:end-1));
 ends=calib(breaks(2:end)-1);
@@ -84,51 +88,44 @@ for k=1:length(begins)
     if (ends(k)-begins(k))>=minSpanI
         c=c+1;
         calibclumps(c).inds=begins(k):ends(k);
+        calibclumps(c).center=round(mean(calibclumps(c).inds));
+    end
+end
+disp('Calibration Time Segments Determined.')
+toc
+disp(newline)
+
+if doPlots
+    upper=length(t);
+    subinds=1:upper;
+
+    figure(1)
+    clf
+    hold on
+    plot(t(subinds),v(subinds,1),'b')
+    plot(t(begins(begins<upper)),v(begins(begins<upper),1),'mx')
+    plot(t(ends(ends<upper)),v(ends(ends<upper),1),'kx')
+    for k=1:length(calibclumps)
+        if lumps(k).inds(end)<subinds(end)
+            plot(t(calibclumps(k).inds),v(calibclumps(k).inds,1),'r.')
+        end
     end
 end
 
-upper=100000;
-subinds=1:upper;
-
-figure(1)
-clf
-hold on
-plot(t(subinds),v(subinds,1),'b')
-plot(t(begins(begins<upper)),v(begins(begins<upper),1),'mx')
-plot(t(ends(ends<upper)),v(ends(ends<upper),1),'kx')
-for k=1:length(lumps)
-    if lumps(k).inds(end)<subinds(end)
-        plot(t(calibclumps(k).inds),v(calibclumps(k).inds,1),'r.')
-    end
-end
-
-
-% oops=find((~dtrialc)&(dtimec>.1)) %Places where our calibration point finder additional "pauses" in a trial.
-% 
-% figure(1)
-% clf
-% hold on
-% N=20;
-% ti=find(trial==trial(calib(oops(N))));
-% o=calib(oops(trial(calib(oops))==trial(calib(oops(N)))));
-% plot(t(ti),v(ti),'b')
-% ti2=((vmlt(a,.1)&vmlt(v,.005))&(trial==trial(calib(oops(N)))));
-% plot(t(ti2),v(ti2),'r.')
-% plot(t(o),v(o),'kx')
-
+clumpT=toc;
 
 %% Now deal with rotating the forces to deal with that accrued offset
+tic
 
-return 
+%Trig is easily the slowest thing we do, store everything we compute
 qr=x;
 q=t;
 sq=q;
 cq=q;
 frot=f;
-frot2=frot;
 
 for k=1:s01
-    qr(k,:)=ikinRobot(x(k,:)); %Trig is easily the slowest thing we do, store everything we compute
+    qr(k,:)=ikinRobot(x(k,:));
     q=sum(qr(k,:));
     s=sin(q);
     c=cos(q);
@@ -142,9 +139,104 @@ ltoc=toc-ltoc;
 disp(['Rate of rotation: ',num2str((t(k)-t(1))/ltoc),' secs data/sec computation'])
 disp(newline)
 
+trigT=toc;
 
-%% Later stuff
+%% Use interpolation between calibration segments to fix rotated forces
+tic
 
+frotfix=frot;
+
+%Deal with data prior to the first clump
+mc=mean(f(calibclumps(1).inds,:));
+zeroinds=1:calibclumps(1).center-1;
+frotfix(zeroinds,:)=ones(length(zeroinds),1)*mc;
+
+for k=1:length(calibclumps)-1
+    fitinds=[calibclumps(k).inds calibclumps(k+1).inds];
+    px=polyfit(t(fitinds),frot(fitinds,1),1);
+    py=polyfit(t(fitinds),frot(fitinds,2),1);
+
+    fixinds=calibclumps(k).center:calibclumps(k+1).center-1;
+    frotfix(fixinds,1)=polyval(px,t(fixinds));
+    frotfix(fixinds,2)=polyval(py,t(fixinds));
+end
+
+%Deal with data after to the last clump
+mc=mean(f(calibclumps(end).inds,:));
+endinds=calibclumps(end).center:length(t);
+frotfix(endinds,:)=ones(length(endinds),1)*mc;
+
+disp('Force Fix Calculated.')
+toc
+disp(newline)
+
+if doPlots
+    figure(2)
+    clf
+    hold on
+    
+    upper=100000 %length(t);
+    subinds=1:100:upper;
+    
+    plot(t(subinds),frot(subinds,1),'b')
+    fixedRot=frot-frotfix;
+    plot(t(subinds),fixedRot(subinds,1),'Color',[.5 .5 .5])
+    for k=1:length(calibclumps)
+        if (calibclumps(k).inds(1)>=subinds(1))&&(calibclumps(k).inds(end)<=subinds(end))
+            plot(t(calibclumps(k).inds),fixedRot(calibclumps(k).inds,1),'r.')
+        end
+    end
+    plot(t(subinds([1 end])),[0 0],'m-')
+    title('Opportunistic Force Recalibration in Robot Handle Space')
+    xlabel('Time, s')
+    ylabel('Force_X, N')
+end
+
+forcefixT=toc;
+
+%% Use trig again to rotate the fix into lab-space coordinates
+tic
+
+ffix=frotfix;
+
+for k=1:s01
+    s=sq(k);
+    c=cq(k);
+    ffix(k,:)=([c -s;s c]*frotfix(k,:)')'; %Rotate forces from roomspace to a consistent robot handle space: q_robot=[0 0]
+end
+
+disp('Force Fix Rotated.')
+toc
+disp(newline)
+
+if doPlots
+    figure(3)
+    clf
+    hold on
+    
+    upper=100000 %length(t);
+    subinds=1:100:upper;
+    
+    plot(t(subinds),frot(subinds,1),'b')
+    fixed=f-ffix;
+    plot(t(subinds),fixed(subinds,1),'Color',[.5 .5 .5])
+    for k=1:length(calibclumps)
+        if (calibclumps(k).inds(1)>=subinds(1))&&(calibclumps(k).inds(end)<=subinds(end))
+            plot(t(calibclumps(k).inds),fixed(calibclumps(k).inds,1),'r.')
+        end
+    end
+    plot(t(subinds([1 end])),[0 0],'m-')
+    title('Opportunistic Force Recalibration in Lab Space')
+    xlabel('Time, s')
+    ylabel('Force_X, N')
+    legend('Original','Fixed','Recalibration Clusters')
+end
+
+
+
+return 
+
+%% Everything below this point is essentially commented out
 a=find(sum(abs(input(:,4:6)),2)>0);
 %a=1:66;
 
