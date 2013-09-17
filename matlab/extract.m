@@ -1,8 +1,6 @@
-function y=extract(t,xvaf,params,armdynamics,x0)
+function y=extract(t,xvaf,armdynamics,x0)
 
 global measuredVals measuredTime fJ getAlpha
-
-set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 
 measuredVals=xvaf;
 measuredTime=t;
@@ -16,7 +14,7 @@ for k=1:size(xvaf,1)
     measuredVals(k,:)=[q' qdot' qddot' torque'];
 end
 
-if nargin<5
+if nargin<4
     q0=measuredVals(1,1:4);
 else
     q0=ikin(x0(1:2));
