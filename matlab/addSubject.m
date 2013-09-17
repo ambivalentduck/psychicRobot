@@ -69,21 +69,21 @@ toc
 ltoc=toc;
 disp(newline)
 
-minSpanT=.3; %300 ms
+minSpanT=.2; %300 ms
 minSpanI=ceil(minSpanT/gT); %Convert to index span
 
 dtimec=[0; diff(t(calib))]; %Time distance since calibration was satisfied
 breaks=find(dtimec>.1)
 
-begins=calib(breaks);
-ends=calib(breaks);
+begins=calib(breaks(1:end-1));
+ends=calib(breaks(2:end)-1);
 
 c=0;
-clear lumps
+clear calibclumps
 for k=1:length(begins)
     if (ends(k)-begins(k))>=minSpanI
         c=c+1;
-        lumps(c).inds=begins(k):ends(k);
+        calibclumps(c).inds=begins(k):ends(k);
     end
 end
 
@@ -93,14 +93,14 @@ subinds=1:upper;
 figure(1)
 clf
 hold on
-plot(t(subinds),x(subinds,1),'b')
-plot(t(begins(begins<upper)),x(begins(begins<upper),1),'r.')
-plot(t(ends(ends<upper)),x(ends(ends<upper),1),'kx')
-% for k=1:length(lumps)
-%     if lumps(k).inds(end)<subinds(end)
-%         plot(t(lumps(k).inds),x(lumps(k).inds,1),'r.')
-%     end
-% end
+plot(t(subinds),v(subinds,1),'b')
+plot(t(begins(begins<upper)),v(begins(begins<upper),1),'mx')
+plot(t(ends(ends<upper)),v(ends(ends<upper),1),'kx')
+for k=1:length(lumps)
+    if lumps(k).inds(end)<subinds(end)
+        plot(t(calibclumps(k).inds),v(calibclumps(k).inds,1),'r.')
+    end
+end
 
 
 % oops=find((~dtrialc)&(dtimec>.1)) %Places where our calibration point finder additional "pauses" in a trial.
