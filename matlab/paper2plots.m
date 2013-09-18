@@ -33,7 +33,7 @@ u2=unique([trials(2:end).dist])
 
 spacer=20;
 gray=.7;
-kpgain=1;
+kpgain=.5;
 
 type=early*pi+late*exp(1)+white; %Use irrational numbers to ease sorting
 types=unique(type);
@@ -168,9 +168,9 @@ for F=1:length(types)
         for kk=1:2
             subplot(2,2,3-k+2*(kk-1))
             hold on
-            errorbar(bins,[catted(1,3-k+2*(kk-1),:).mean],1.96*[catted(1,3-k+2*(kk-1),:).std],'Color',[gray gray gray])
-            errorbar(bins+.015,[catted(F+1,3-k+2*(kk-1),:).mean],1.96*[catted(F+1,3-k+2*(kk-1),:).std],'k')
-            errorbar(bins-.015,[catted(F+1,3-k+2*(kk-1),:).exmean],1.96*[catted(F+1,3-k+2*(kk-1),:).exstd],'r')
+            errorbar(bins,[catted(1,3-k+2*(kk-1),:).mean],[catted(1,3-k+2*(kk-1),:).std],'Color',[gray gray gray])
+            errorbar(bins+.015,[catted(F+1,3-k+2*(kk-1),:).mean],[catted(F+1,3-k+2*(kk-1),:).std],'k')
+            errorbar(bins-.015,[catted(F+1,3-k+2*(kk-1),:).exmean],[catted(F+1,3-k+2*(kk-1),:).exstd],'r')
             xlabel('Movement Time, t')
             ylabel('Pos_x, m')
         end

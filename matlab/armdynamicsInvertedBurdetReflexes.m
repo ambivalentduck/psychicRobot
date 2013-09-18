@@ -25,9 +25,9 @@ omega_desired=qi(lqi/2+1:end);
 kp0=[10.8 2.83; 2.51 8.67];
 joint_torques=abs(D_real*alpha_real+C_real+torque_outside);
 kp1=[3.18*joint_torques(1) 2.15*joint_torques(2); 2.34*joint_torques(1) 6.18*joint_torques(2)];
-kp=kp0+kp1;
+kp=kpgain*(kp0+kp1);
 
-torque_fb=kpgain*kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired))+(kp/50)*(reflexE+2*reflexV);
+torque_fb=kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired))+(kp/50)*(reflexE+2*reflexV);
 
 if nargout>1
     errorV=[theta_real-theta_desired; omega_real-omega_desired];
