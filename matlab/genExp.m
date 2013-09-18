@@ -47,8 +47,7 @@ while cost>3
     cost=abs(onevtwo_)+abs(signbalance_);
 end
 
-
-
+diffs=y(2:end)-y(1:end-1);
 x=[y [0;sign(diffs)] [0;abs(diffs)]];
 
 N=5;
@@ -88,7 +87,8 @@ while c<len
     if (sum(x(c,2:3)'==deck(1:2,d))~=2)&&(k>5)
         deck(:,d:end)=deck(:,d-1+randperm(sd2-d+1));
     end
-    if sum(x(c,2:3)'==deck(1:2,d))==2
+    
+    if sum(x(c,2:3)'==deck(1:2,d))~=2 % Can't match
         out(c).dat=[y(c); .5; 0; 0; 0; -1; 1; 1];
         continue
     end
@@ -156,3 +156,26 @@ o=[(1:length(out))' o];
 fid=fopen('../Data/input.dat','w');
 fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\t%1.0f\n',o');
 fclose(fid);
+
+diff=[o(2:end,2)-o(1:end-1,2)];
+dist=abs(diff);
+udist=unique(dist);
+dir=sign(diff);
+udir=unique(dir);
+diff=[0; diff];
+dist=[0; dist];
+dir=[0; dir];
+type=o(:,4)*pi+o(:,5)*exp(1)+o(:,6);
+types=unique(type);
+types=types(types~=0);
+counts=zeros(5,4);
+
+for T=1:length(types)
+    for k=1:2
+        for kk=1:2
+            counts(T,k+2*(kk-1))=length(find((type==types(T))&(dir==udir(k))&(dist==udist(kk))));
+        end
+    end
+end
+counts
+sum(sum(counts))
