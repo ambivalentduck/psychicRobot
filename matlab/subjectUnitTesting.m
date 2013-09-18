@@ -227,7 +227,7 @@ for k=1:lM
     subplot(4,lM,k)
 
     kpgain=1;
-    y=extract(tl,[x v a f],params,'reflex');
+    y=extract(tl,[x v a f],'reflex');
     plot(y(:,1),y(:,2),'r')
     if k==lM
         legend('Filtered','Raw','Extracted')
@@ -337,7 +337,7 @@ for k=1:lM
     
     figure(6)
     
-    yraw=extract(tl,output(indices,3:10),params,'reflex');
+    yraw=extract(tl,output(indices,3:10),'reflex');
     ysmooth=extract(tl,[x v a f],params,'reflex');
     ysmoothfcorrect=extract(tl,[x v a fcompup],params,'reflex');
     

@@ -174,7 +174,7 @@ if doPlots
     clf
     hold on
     
-    upper=100000 %length(t);
+    upper=100000; %length(t);
     subinds=1:100:upper;
     
     plot(t(subinds),frot(subinds,1),'b')

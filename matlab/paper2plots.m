@@ -33,7 +33,7 @@ u2=unique([trials(2:end).dist])
 
 spacer=20;
 gray=.7;
-kpgain=.5;
+kpgain=.75;
 
 type=early*pi+late*exp(1)+white; %Use irrational numbers to ease sorting
 types=unique(type);
@@ -68,9 +68,10 @@ for k=1:length(type)
     f2=find(dist(k)==u2);
 
     subplot(2,2,3-f+2*(f2-1))
-    y=extract(trials(k).t',[trials(k).x trials(k).v trials(k).a trials(k).f],'reflex');
+    y=extract(trials(k).t',[trials(k).x trials(k).v trials(k).a trials(k).f],@armdynamics_inverted);
     trials(k).extracted=y;
     plot(trials(k).x(1:spacer:end,1)-trials(k).x(1,1),trials(k).x(1:spacer:end,2)-trials(k).x(1,2),'k')
+    quiver(trials(k).x(1:spacer:end,1)-trials(k).x(1,1),trials(k).x(1:spacer:end,2)-trials(k).x(1,2),trials(k).f(1:spacer:end,1),trials(k).f(1:spacer:end,2),'b')
     plot(y(:,1)-y(1,1),y(:,2)-y(1,2),'r')
 end
 
