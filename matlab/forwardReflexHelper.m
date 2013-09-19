@@ -19,14 +19,14 @@ Y=zeros(length(T),6);
 Y(1,:)=measuredVals(1,1:6);
 
 for k=2:length(tsim)
-    f=find((T>=(tsim(k)-.07))&(T<tsim(k))); %mildly larger buffer than necessary
+    f=find((T>=(tsim(k)-.07))&(T<=tsim(k))); %mildly larger buffer than necessary
     errorTime=T(f); 
     if k<4
         errorTime=0;
         errorVals=[0 0 0 0];
     else
         tNN=twoNearestNeighbor(measuredVals,measuredTime,errorTime);
-        errorVals=tNN(:,1:4)-Y(f,1:4);
+        errorVals=Y(f,1:4)-tNN(:,1:4);
     end
     
     [t,X]=ode45(@armdynamicsBurdetReflexes,tsim(k-1:k),X(end,:));

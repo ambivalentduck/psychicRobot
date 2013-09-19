@@ -48,7 +48,7 @@ feval(aName,[1 2]',[3 4]',[5 6]'); %Necessary to force compilation
 
 %% Step 1: Set up a basic kicked movement and forward simulate.
 
-t=0:.01:2;
+t=0:.005:2;
 coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
 [x,v,a]=minjerk(coeff,t);
 x=x';
@@ -85,24 +85,27 @@ q0=measuredVals(1,1:4);
 %forward simulate
 kpgain=1;
 [T,X]=forwardReflexHelper(t,q0);
+[T,XSM]=ode45(@armdynamicsShadMuss,t,q0);
     
-y=X;
+y=zeros(length(T),6);
 
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));
     y(k,3:4)=(fJ(X(k,1:2))*X(k,3:4)')';
-    y(k,5:6)=getAccel(y(k,1:2)',y(k,3:4)',y(k,5:6)');
 end
+
+gT=gradient(t)';
+y(:,5)=gradient(y(:,3))./gT;
+y(:,6)=gradient(y(:,4))./gT;
 
 figure(1)
 clf
 hold on
 plot(x(:,1),x(:,2),'b',y(:,1),y(:,2),'k.')
+quiver(y(:,1),y(:,2),f(:,1),f(:,2),'b')
 axis equal
 
 %% Step 2: Extract to accuracy
-
-measuredVals=[X f]
 
 yex=extract(t,[y f],'reflex');
 plot(yex(:,1),yex(:,2),'r.')
