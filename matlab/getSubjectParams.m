@@ -11,6 +11,11 @@ switch num
         l2=.34;
         mass=210;
         shoulder=[0 .51];
+    case {'301'} %Guy
+        l1=.33;
+        l2=.345;
+        mass=183;
+        shoulder=[0 .49];
     case {'3','9','10'}
         l1=.36;
         l2=.31;

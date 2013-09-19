@@ -1,7 +1,7 @@
 clc
 clear all
 
-global measuredVals measuredTime l1 l2 m1 m2 lc1 lc2 I1 I2 x0 getAccel fJ getAlpha kpgain
+global measuredVals measuredTime l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kpgain
 
 %% Step 0: Set physical parameters
 
@@ -32,20 +32,6 @@ I2=m2*(.468*l2)^2;
 %Shoulder location
 x0=origin+shoulder; %Shoulder is measured in room coordinates relative to the workspace center
 
-%Dynamic code modification requires random function names
-hash=floor(rand(5,1)*24+1);
-hash=char('A'+hash)';
-aName=['getAlpha',hash];
-fName=['fJ',hash];
-
-[fJ, getAlpha, getAccel]=makeJacobians(aName,fName);
-pause(.1)
-disp('Jacobians complete.')
-fJ=str2func(fName);
-feval(fName,[5 6]); %Necessary to force compilation
-getAlpha=str2func(aName);
-feval(aName,[1 2]',[3 4]',[5 6]'); %Necessary to force compilation
-
 %% Step 1: Set up a basic kicked movement and forward simulate.
 
 t=0:.005:2;
@@ -73,9 +59,9 @@ measuredTime=t;
 
 for k=1:size(xvaf,1)
     q=ikin(xvaf(k,1:2));
-    fJq=fJ(q);
+    fJq=fJ(q,l1,l2);
     qdot=fJq\xvaf(k,3:4)';
-    qddot=getAlpha(q,qdot,xvaf(k,5:6)');
+    qddot=getAlpha(q,qdot,xvaf(k,5:6)',l1,l2);
     torque=-fJq'*xvaf(k,7:8)';
     measuredVals(k,:)=[q' qdot' qddot' torque'];
 end
@@ -91,7 +77,7 @@ y=zeros(length(T),6);
 
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));
-    y(k,3:4)=(fJ(X(k,1:2))*X(k,3:4)')';
+    y(k,3:4)=(fJ(X(k,1:2),l1,l2)*X(k,3:4)')';
 end
 
 gT=gradient(t)';
@@ -105,17 +91,34 @@ plot(x(:,1),x(:,2),'b',y(:,1),y(:,2),'k.')
 quiver(y(:,1),y(:,2),f(:,1),f(:,2),'b')
 axis equal
 
-%% Step 2: Extract to accuracy
+%% Step 2: Extract to demonstrate accuracy
 
 yex=extract(t,[y f],'reflex');
 plot(yex(:,1),yex(:,2),'r.')
 
+legend('Intent','Forward Sim','Forces','Extracted Intent')
+
 
 %% Step 3: Sensitivity to gross and measured parameter misestimation.
 
-
-
 % l1, l2, mass, x0
+
+%No surprise if I misestimate these by a centimeter or two
+
+figure(2)
+clf
+hold on
+plot(x(:,1),x(:,2),'b',y(:,1),y(:,2),'k.')
+quiver(y(:,1),y(:,2),f(:,1),f(:,2),'b')
+axis equal
+
+l1_=l1;
+l1v=[l1-.02 l1+.02];
+for l1=l1v
+    yexl1=extract(t,[y f],'reflex');
+    plot(yexl1(:,1),yexl1(:,2),'r.')
+end
+
 
 % whitened forces
 

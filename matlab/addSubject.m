@@ -1,7 +1,7 @@
 %function addSubject(name)
 clc
 clear all
-name='300'
+name='301'
 
 doPlots=1;
 %doPlots=0;
@@ -11,8 +11,8 @@ newline=sprintf('\n');
 disp(['Loading Data for Subject ',name])
 tic
 
-output=load(['../Data/output300.dat']);
-input=load(['../Data/input.dat']);
+output=load(['../Data/output301.dat']);
+input=load(['../Data/input301.dat']);
 disp('Data files loaded.')
 toc
 disp(newline)

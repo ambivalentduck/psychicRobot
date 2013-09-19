@@ -1,7 +1,7 @@
 clc
 clear all
 
-name='300'
+name='301'
 load(['../Data/',name,'.mat'])
 
 global kpgain
