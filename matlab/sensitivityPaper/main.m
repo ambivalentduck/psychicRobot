@@ -170,52 +170,171 @@ end
 f=fieldnames(simme);
 
 hash=floor(rand(5,1)*24+1);
+%hash=[0 0 0 0 0]';
 hash=char('A'+hash)';
 name=['dynamicSimFile',hash]
 
 fh=fopen([name,'.m'],'w');
 fprintf(fh,['function simmed=',name,'(t,xvaf)\n\nglobal l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kpgain real\n\ntic\n\nfigure(2)\nclf\nhold on\nplot(xvaf(:,1),xvaf(:,2),''b.'')\n\n']);
 
-VARY=.3;
+vary=[1.05 1.1 1.15 1.2 1.3];
 
-for k=1:length(f)
-    for v=1:2
-        %Set gross parameters every time
-        fprintf(fh,['l1=',num2str(l1),';\n']);
-        fprintf(fh,['l2=',num2str(l2),';\n']);
-        fprintf(fh,['mass=',num2str(mass),';\n']);
-        fprintf(fh,['x0=[',num2str(x0(1)),' ',num2str(x0(2)),'];\n']);
-        fprintf(fh,'kpgain=1;\nkp0=[10.8 2.83; 2.51 8.67];\nkp1=[3.18 2.15; 2.34 6.18];\n');
-        if strcmp(simme.(f{k}).apply,'gross') %Easiest just to overwrite whatever value was there and not think about which
-            if v==1
-                fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).upper),';\n']);
-            else
-                fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).lower),';\n']);
+count=0;
+total=length(vary)*length(f)*2;
+for v=1:length(vary)
+    for k=1:length(f)
+        for pm=1:2
+            %Set gross parameters every time
+            fprintf(fh,['l1=',num2str(l1),';\n']);
+            fprintf(fh,['l2=',num2str(l2),';\n']);
+            fprintf(fh,['mass=',num2str(mass),';\n']);
+            fprintf(fh,['x0=[',num2str(x0(1)),' ',num2str(x0(2)),'];\n']);
+            fprintf(fh,'kpgain=1;\nkp0=[10.8 2.83; 2.51 8.67];\nkp1=[3.18 2.15; 2.34 6.18];\n');
+            if strcmp(simme.(f{k}).apply,'gross')&&(v==1) %Easiest just to overwrite whatever value was there and not think about which
+                if pm==1
+                    fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).upper),';\n']);
+                else
+                    fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).lower),';\n']);
+                end
             end
-        end
-        fprintf(fh,'lc1=.436*l1;\nlc2=.682*l2;\nm1=.028*mass;\nm2=.022*mass;\n');
-        if strcmp(simme.(f{k}).apply,'fine')
-            if v==1
-                fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(1-VARY),';\n']);
-            else
-                fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(1+VARY),';\n']);
+            fprintf(fh,'lc1=.436*l1;\nlc2=.682*l2;\nm1=.028*mass;\nm2=.022*mass;\n');
+            if strcmp(simme.(f{k}).apply,'fine')
+                if pm==1
+                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(vary(v)),';\n']);
+                else
+                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'/',num2str(vary(v)),';\n']);
+                end
             end
-        end
-        fprintf(fh,'I1=m1*(.322*l1)^2;\nI2=m2*(.468*l2)^2;\n');
-        if strcmp(simme.(f{k}).apply,'end')
-            if v==1
-                fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(1-VARY),';\n']);
-            else
-                fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(1-VARY),';\n']);
+            fprintf(fh,'I1=m1*(.322*l1)^2;\nI2=m2*(.468*l2)^2;\n');
+            if strcmp(simme.(f{k}).apply,'end')
+                if pm==1
+                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(vary(v)),';\n']);
+                else
+                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'/',num2str(vary(v)),';\n']);
+                end
             end
+            fprintf(fh,['y=extract(t,xvaf,''reflex'');\nC=rand(1,3);\nplot(y(:,1),y(:,2),''Color'',C)\n']);
+            fprintf(fh,['simmed(',num2str(k),',',num2str(v),',',num2str(pm),').y=y;\n']);
+            count=count+1;
+            fprintf(fh,['progress=',num2str(count/total),'\naxis equal\ndrawnow\ntoc\n\n']);
         end
-        fprintf(fh,['y=extract(t,xvaf,''reflex'');\nC=rand(1,3);\nplot(y(:,1),y(:,2),''Color'',C)\nsimmed(',num2str((2*(k-1)+v)),').y=y;\nsimmed(end).name=''',simme.(f{k}).plotName,''';\n']);
-        fprintf(fh,['progress=',num2str((2*(k-1)+v)/(length(f)*2)),'\naxis equal\ndrawnow\ntoc\n\n']);
     end
 end
 fclose(fh);
 
 simmed=feval(name,t,xvaf);
 
+for k=1:length(f)
+    for v=1:length(vary)
+        for pm=1:2
+            simmed(k,v,pm).rms=sqrt(mean(vecmag2(yex-simmed(k,v,pm).y)))*1000;
+        end
+    end
+end
 
+fh=fopen('report.txt','w');
 
+columns(1).v='Variable';
+for k=1:length(vary)
+    n=num2str(vary(k));
+    columns(k+1).v=['\t/',n,'\t*',n];
+end
+
+fprintf(fh,[columns.v,'\n']);
+
+rms=[[simmed(:,end,1).rms]' [simmed(:,end,2).rms]'];
+v=max(rms,[],2);
+[s,i]=sort(v);
+
+for k=1:length(i)
+    clear columns
+    columns(1).v=f{i(k)};
+    for v=1:length(vary)
+        columns(v+1).v=['\t',num2str(simmed(i(k),v,1).rms),'\t',num2str(simmed(i(k),v,2).rms)];
+    end
+    fprintf(fh,[columns.v,'\n']);
+end
+fclose(fh);
+
+%% Step 4: Monte Carlo Variance estimation
+
+% First step, get things back to their nominal values.
+
+l1=.33;
+l2=.34;
+weight=175; %lbs
+mass=weight*.4535; %kg
+shoulder=[0 .45];
+
+%Winters (1990)
+lc1=.436*l1;
+lc2=.682*l2;
+
+m1=.028*mass;
+m2=.022*mass;
+
+%rog of gyration numbers from winters, rog=sqrt(I/m)
+I1=m1*(.322*l1)^2;
+I2=m2*(.468*l2)^2;
+
+%Shoulder location
+x0=origin+shoulder; %Shoulder is measured in room coordinates relative to the workspace center
+
+kpgain=1;
+kp0=[10.8 2.83; 2.51 8.67];
+kp1=[3.18 2.15; 2.34 6.18];
+
+% Next, which parameters are really independent? Certainly not the
+% terms inside a stiffness matrix...
+% l1 l2 lc1 lc2 m1 m2 i1 i2 kp0 kp1... but really you want to fuzz up
+% winters' numbers.
+
+p=sobolset(20,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
+p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
+
+varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
+%The number after p controls the number of points. Remember, this N*10 is the number of individual sims done.
+
+consistent=varied(:,1:10);
+individual=varied(:,11:20);
+
+hash=floor(rand(5,1)*24+1);
+%hash=[0 0 0 0 0]';
+hash=char('A'+hash)';
+name=['dynamicSimFile',hash]
+
+fh=fopen([name,'.m'],'w');
+fprintf(fh,['function simmed=',name,'(t,xvaf)\n\nglobal l1 l2 m1 m2 lc1 lc2 I1 I2 kp0 kp1 real\n\ntic\n\n']);
+fprintf(fh,'kp0nom=[10.8 2.83; 2.51 8.67];\nkp1nom=[3.18 2.15; 2.34 6.18];\n\n')
+
+range=.1*[l1 l2 lc1 lc2 m1 m2 I1 I2]; %Have to vary about nominal values to avoid correlated variance
+
+count=0;
+total=size(consistent,1)*10;
+for N=1:size(consistent,1)
+    for col=1:10
+        v=consistent(N,:);
+        v(col)=individual(N,col); %Overwrite just a single value at a time.
+        v(1:8)=(v(1:8)-.5).*range;
+        v(9:10)=(v(9:10)-.5)*.4+1; 
+        fprintf(fh,['l1=',num2str(l1+v(1)),';\n']);
+        fprintf(fh,['l2=',num2str(l2+v(2)),';\n']);
+        fprintf(fh,['lc1=',num2str(lc1+v(3)),';\n']);
+        fprintf(fh,['lc2=',num2str(lc2+v(4)),';\n']);
+        fprintf(fh,['m1=',num2str(m1+v(5)),';\n']);
+        fprintf(fh,['m2=',num2str(m2+v(6)),';\n']);
+        fprintf(fh,['I1=',num2str(I1+v(7)),';\n']);
+        fprintf(fh,['I2=',num2str(I2+v(8)),';\n']);
+        fprintf(fh,['kp0=kp0nom*',num2str(v(9)),';\n']);
+        fprintf(fh,['kp1=kp1nom*',num2str(v(10)),';\n']);
+
+        %Everything is now at its nominal value. Next shake things up.
+        fprintf(fh,['y=extract(t,xvaf,''reflex'');\n']);
+        fprintf(fh,['simmed(',num2str(N),',',num2str(col),').y=y;\n']);
+        count=count+1;
+        fprintf(fh,['progress=',num2str(count/total),'\ntoc\n\n']);
+    end
+end
+fclose(fh);
+
+simmedVar=feval(name,t,xvaf);
