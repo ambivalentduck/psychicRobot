@@ -3,7 +3,7 @@ clear all
 
 N=10000;
 
-proofofconcept=@(a,b,c) a;
+proofofconcept=@(a,b,c) a+b.*c.^2;
 
 p=sobolset(6,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
 p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
@@ -31,5 +31,11 @@ for k=1:3
     VA(k)=1/N*sum(B.*(AB(:,k)-A));
 end
 
-E
-VA
+buildme=varied(:,1:3);
+buildme(:,3)=buildme(:,3).^2;
+
+vr=var(buildme)
+%vr=vr([1 3 2]);
+
+E./vr
+VA./vr

@@ -227,7 +227,7 @@ simmed=feval(name,t,xvaf);
 for k=1:length(f)
     for v=1:length(vary)
         for pm=1:2
-            simmed(k,v,pm).rms=sqrt(mean(vecmag2(yex-simmed(k,v,pm).y)))*1000;
+            simmed(k,v,pm).mue=mean(vecmag(yex(:,1:2)-simmed(k,v,pm).y))*1000;
         end
     end
 end
@@ -242,7 +242,7 @@ end
 
 fprintf(fh,[columns.v,'\n']);
 
-rms=[[simmed(:,end,1).rms]' [simmed(:,end,2).rms]'];
+rms=[[simmed(:,end,1).mue]' [simmed(:,end,2).mue]'];
 v=max(rms,[],2);
 [s,i]=sort(v);
 
@@ -250,7 +250,7 @@ for k=1:length(i)
     clear columns
     columns(1).v=f{i(k)};
     for v=1:length(vary)
-        columns(v+1).v=['\t',num2str(simmed(i(k),v,1).rms),'\t',num2str(simmed(i(k),v,2).rms)];
+        columns(v+1).v=['\t',num2str(simmed(i(k),v,1).mue),'\t',num2str(simmed(i(k),v,2).mue)];
     end
     fprintf(fh,[columns.v,'\n']);
 end
@@ -353,3 +353,36 @@ for N=1:size(consistent,1)
     end
     [N/sc1 toc/N ((sc1/N-1)*(toc))/60]
 end
+
+%% Plot the results of the quasi-Monte Carlo analysis
+
+load('simSobol.mat')
+
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp0','kp1'};
+
+mueA=zeros(length(simmedA),1);
+mueB=mueA;
+mueAB=zeros(length(simmedA),10);
+
+for k=1:length(simmedA)
+    mueA(k)=mean(vecmag(yex(:,1:2)-simmedA(k).y(:,1:2)))*1000;
+    mueB(k)=mean(vecmag(yex(:,1:2)-simmedB(k).y(:,1:2)))*1000;
+    for col=1:10
+        mueAB(k,col)=mean(vecmag(yex(:,1:2)-simmedAB(k,col).y(:,1:2)))*1000;
+    end
+end
+mueABm=mueAB;
+for col=1:10
+    mueABm(:,col)=mueAB(:,col)-mueA;
+end
+
+figure(237)
+clf
+hold on
+for col=1:10
+    plot(col*ones(length(simmedA),1),mueABm(:,col),'k.')
+end
+ylabel('Difference in Mean Unsigned Error, millimeters')
+set(gca,'xtick',1:10)
+set(gca,'xticklabels',names)
+
