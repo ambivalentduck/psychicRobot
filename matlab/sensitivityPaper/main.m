@@ -258,31 +258,31 @@ fclose(fh);
 
 %% Step 4: Monte Carlo Variance estimation
 
-% First step, get things back to their nominal values.
+% First step, set up nominal values.
 
-l1=.33;
-l2=.34;
-weight=175; %lbs
-mass=weight*.4535; %kg
-shoulder=[0 .45];
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
 
 %Winters (1990)
-lc1=.436*l1;
-lc2=.682*l2;
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
 
-m1=.028*mass;
-m2=.022*mass;
+m1nom=.028*massnom;
+m2nom=.022*massnom;
 
 %rog of gyration numbers from winters, rog=sqrt(I/m)
-I1=m1*(.322*l1)^2;
-I2=m2*(.468*l2)^2;
+I1nom=m1nom*(.322*l1nom)^2;
+I2nom=m2nom*(.468*l2nom)^2;
 
 %Shoulder location
-x0=origin+shoulder; %Shoulder is measured in room coordinates relative to the workspace center
+x0=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
 
 kpgain=1;
-kp0=[10.8 2.83; 2.51 8.67];
-kp1=[3.18 2.15; 2.34 6.18];
+kp0nom=[10.8 2.83; 2.51 8.67];
+kp1nom=[3.18 2.15; 2.34 6.18];
 
 % Next, which parameters are really independent? Certainly not the
 % terms inside a stiffness matrix...
@@ -298,43 +298,58 @@ varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically s
 consistent=varied(:,1:10);
 individual=varied(:,11:20);
 
-hash=floor(rand(5,1)*24+1);
-%hash=[0 0 0 0 0]';
-hash=char('A'+hash)';
-name=['dynamicSimFile',hash]
-
-fh=fopen([name,'.m'],'w');
-fprintf(fh,['function simmed=',name,'(t,xvaf)\n\nglobal l1 l2 m1 m2 lc1 lc2 I1 I2 kp0 kp1 real\n\ntic\n\n']);
-fprintf(fh,'kp0nom=[10.8 2.83; 2.51 8.67];\nkp1nom=[3.18 2.15; 2.34 6.18];\n\n')
-
 range=.1*[l1 l2 lc1 lc2 m1 m2 I1 I2]; %Have to vary about nominal values to avoid correlated variance
 
-count=0;
-total=size(consistent,1)*10;
+sc1=size(consistent,1);
+
+tic
 for N=1:size(consistent,1)
+    v=consistent(N,:);
+    v(1:8)=(v(1:8)-.5).*range;
+    v(9:10)=(v(9:10)-.5)*.4+1;
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom+v(3);
+    lc2=lc2nom+v(4);
+    m1=m1nom+v(5);
+    m2=m2nom+v(6);
+    I1=I1nom+v(7);
+    I2=I2nom+v(8);
+    kp0=kp0nom*v(9);
+    kp1=kp1nom*v(10);
+    simmedA(N).y=extract(t,xvaf,'reflex');
+
+    v=individual(N,:);
+    v(1:8)=(v(1:8)-.5).*range;
+    v(9:10)=(v(9:10)-.5)*.4+1;
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom+v(3);
+    lc2=lc2nom+v(4);
+    m1=m1nom+v(5);
+    m2=m2nom+v(6);
+    I1=I1nom+v(7);
+    I2=I2nom+v(8);
+    kp0=kp0nom*v(9);
+    kp1=kp1nom*v(10);
+    simmedB(N).y=extract(t,xvaf,'reflex');
+
     for col=1:10
         v=consistent(N,:);
         v(col)=individual(N,col); %Overwrite just a single value at a time.
         v(1:8)=(v(1:8)-.5).*range;
-        v(9:10)=(v(9:10)-.5)*.4+1; 
-        fprintf(fh,['l1=',num2str(l1+v(1)),';\n']);
-        fprintf(fh,['l2=',num2str(l2+v(2)),';\n']);
-        fprintf(fh,['lc1=',num2str(lc1+v(3)),';\n']);
-        fprintf(fh,['lc2=',num2str(lc2+v(4)),';\n']);
-        fprintf(fh,['m1=',num2str(m1+v(5)),';\n']);
-        fprintf(fh,['m2=',num2str(m2+v(6)),';\n']);
-        fprintf(fh,['I1=',num2str(I1+v(7)),';\n']);
-        fprintf(fh,['I2=',num2str(I2+v(8)),';\n']);
-        fprintf(fh,['kp0=kp0nom*',num2str(v(9)),';\n']);
-        fprintf(fh,['kp1=kp1nom*',num2str(v(10)),';\n']);
-
-        %Everything is now at its nominal value. Next shake things up.
-        fprintf(fh,['y=extract(t,xvaf,''reflex'');\n']);
-        fprintf(fh,['simmed(',num2str(N),',',num2str(col),').y=y;\n']);
-        count=count+1;
-        fprintf(fh,['progress=',num2str(count/total),'\ntoc\n\n']);
+        v(9:10)=(v(9:10)-.5)*.4+1;
+        l1=l1nom+v(1);
+        l2=l2nom+v(2);
+        lc1=lc1nom+v(3);
+        lc2=lc2nom+v(4);
+        m1=m1nom+v(5);
+        m2=m2nom+v(6);
+        I1=I1nom+v(7);
+        I2=I2nom+v(8);
+        kp0=kp0nom*v(9);
+        kp1=kp1nom*v(10);
+        simmedAB(N,col).y=extract(t,xvaf,'reflex');
     end
+    [N/sc1 toc/N ((sc1/N-1)*(toc))/60]
 end
-fclose(fh);
-
-simmedVar=feval(name,t,xvaf);
