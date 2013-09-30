@@ -227,7 +227,7 @@ simmed=feval(name,t,xvaf);
 for k=1:length(f)
     for v=1:length(vary)
         for pm=1:2
-            simmed(k,v,pm).mue=mean(vecmag(yex(:,1:2)-simmed(k,v,pm).y))*1000;
+            simmed(k,v,pm).mue=mean(vecmag(yex(:,1:2)-simmed(k,v,pm).y(:,1:2)))*1000;
         end
     end
 end
@@ -259,6 +259,9 @@ fclose(fh);
 %% Step 4: Monte Carlo Variance estimation
 
 % First step, set up nominal values.
+if exist('simSobol.mat')
+    return
+end
 
 l1nom=.33;
 l2nom=.34;
@@ -371,16 +374,22 @@ for k=1:length(simmedA)
         mueAB(k,col)=mean(vecmag(yex(:,1:2)-simmedAB(k,col).y(:,1:2)))*1000;
     end
 end
+
+EnxVx=zeros(10,1);
+VxEnx=EnxVx;
+
 mueABm=mueAB;
 for col=1:10
-    mueABm(:,col)=mueAB(:,col)-mueA;
+    EnxVx(col)=1/length(simmedA)*sum(mueB.*(mueAB(:,col)-mueA));
+    VxEnx(col)=1/(2*length(simmedA))*sum((mueA-mueAB(:,col)).^2);
 end
 
 figure(237)
 clf
 hold on
 for col=1:10
-    plot(col*ones(length(simmedA),1),mueABm(:,col),'k.')
+    plot(col*ones(length(simmedA),1)-.05,mueABm(:,col),'k.')
+    plot(col*ones(length(simmedA),1)+.05,mueABm(:,col),'b.')
 end
 ylabel('Difference in Mean Unsigned Error, millimeters')
 set(gca,'xtick',1:10)
