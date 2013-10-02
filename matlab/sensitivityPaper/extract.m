@@ -6,7 +6,7 @@ measuredVals=xvaf;
 measuredTime=t;
 
 for k=1:size(xvaf,1)
-    q=ikin(xvaf(k,1:2));
+    q=ikinAbs(xvaf(k,1:2));
     fJq=fJ(q,l1,l2);
     qdot=fJq\xvaf(k,3:4)';
     qddot=getAlpha(q,qdot,xvaf(k,5:6)',l1,l2);
@@ -17,7 +17,7 @@ end
 if nargin<4
     q0=measuredVals(1,1:4);
 else
-    q0=ikin(x0(1:2));
+    q0=ikinAbs(x0(1:2));
     q0(3:4)=fJ(q0)\x0(3:4)';
 end
 

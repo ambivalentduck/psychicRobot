@@ -1,6 +1,6 @@
 function [dqi]=armdynamicsInvertedBurdetReflexes(t,qi)
 
-global measuredVals measuredTime errorVals errorTime kp0 kp1 kpgain
+global measuredVals measuredTime errorVals errorTime kp0 kp1 kpgain kpkdratio reflexratio kpkdreflexratio
 
 lqi=length(qi);
 
@@ -27,7 +27,7 @@ joint_torques=abs(D_real*alpha_real+C_real+torque_outside);
 kpT=kp1*[joint_torques(1) 0; 0 joint_torques(2)];
 kp=kpgain*(kp0+kpT);
 
-torque_fb=kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired))+(kp/50)*(reflexE+2*reflexV);
+torque_fb=kp*((theta_real-theta_desired) + kpkdratio*(omega_real-omega_desired))+kp*reflexratio*(reflexE+kpkdreflexratio*reflexV);
 
 % Update the change in desired state
 dqi=[omega_desired;

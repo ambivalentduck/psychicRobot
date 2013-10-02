@@ -1,7 +1,7 @@
 clc
 clear all
 
-global measuredVals measuredTime l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kpgain
+global measuredVals measuredTime l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kp kd kpgain kpkdratio reflexratio kpkdreflexratio
 
 %% Step 0: Set physical parameters
 
@@ -34,6 +34,12 @@ x0=origin+shoulder; %Shoulder is measured in room coordinates relative to the wo
 
 kp0=[10.8 2.83; 2.51 8.67];
 kp1=[3.18 2.15; 2.34 6.18];
+kp=[15 6;6 16];
+kd=[2.3 .09; .09 2.4];
+kpkdratio=1/12;
+reflexratio=1/50;
+kpkdreflexratio=2;
+
 
 %% Step 1: Set up a basic kicked movement and forward simulate.
 
@@ -77,189 +83,250 @@ kpgain=1;
 [T,XSM]=ode45(@armdynamicsShadMuss,t,q0);
 
 y=zeros(length(T),6);
+ysm=y;
 
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));
     y(k,3:4)=(fJ(X(k,1:2),l1,l2)*X(k,3:4)')';
+    ysm(k,1:2)=fkin(XSM(k,1:2));
+    ysm(k,3:4)=(fJ(XSM(k,1:2),l1,l2)*XSM(k,3:4)')';
 end
 
 gT=gradient(t)';
 y(:,5)=gradient(y(:,3))./gT;
 y(:,6)=gradient(y(:,4))./gT;
+ysm(:,5)=gradient(ysm(:,3))./gT;
+ysm(:,6)=gradient(ysm(:,4))./gT;
+
 
 figure(1)
 clf
 hold on
 plot(x(:,1),x(:,2),'b',y(:,1),y(:,2),'k.')
 quiver(y(:,1),y(:,2),f(:,1),f(:,2),'b')
+plot(ysm(:,1),ysm(:,2),'k^')
 axis equal
 
 %% Step 2: Extract to demonstrate accuracy
 
 yex=extract(t,[y f],'reflex');
+yexsm=extract(t,[ysm f],@armdynamics_inverted);
 plot(yex(:,1),yex(:,2),'r.')
+plot(yexsm(:,1),yexsm(:,2),'r^')
 
 legend('Intent','Forward Sim','Forces','Extracted Intent')
 
 xvaf=[y f];
-
-%% Step 3: Set up data for mass simulation
-
-clear simme fineparams endparams grossparams
-
-% Make the structure: gross params first
-fieldname='l1';
-simme.(fieldname).name='l1';
-simme.(fieldname).plotName='l1';
-simme.(fieldname).lower=l1-.03;
-simme.(fieldname).upper=l1+.03;
-simme.(fieldname).apply='gross';
-
-fieldname='l2';
-simme.(fieldname).name='l2';
-simme.(fieldname).plotName='l2';
-simme.(fieldname).lower=l2-.03;
-simme.(fieldname).upper=l2+.03;
-simme.(fieldname).apply='gross';
-
-fieldname='x0_1';
-simme.(fieldname).name='x0(1)';
-simme.(fieldname).plotName='x0_1';
-simme.(fieldname).lower=x0(1)-.03;
-simme.(fieldname).upper=x0(1)+.03;
-simme.(fieldname).apply='gross';
-
-fieldname='x0_2';
-simme.(fieldname).name='x0(2)';
-simme.(fieldname).plotName='x0_2';
-simme.(fieldname).lower=x0(2)-.03;
-simme.(fieldname).upper=x0(2)+.03;
-simme.(fieldname).apply='gross';
-
-fieldname='mass';
-simme.(fieldname).name='mass';
-simme.(fieldname).plotName='mass';
-simme.(fieldname).lower=mass-9; %20 pounds
-simme.(fieldname).upper=mass+9;
-simme.(fieldname).apply='gross';
-
-% Make the structure, fine params in a batch of +/- 20% because Winters
-% could be off...say...just in the forearm
-fineparams={'lc1','lc2','m1','m2','kpgain'};
-for k=1:length(fineparams)
-    simme.(fineparams{k}).name=fineparams{k};
-    simme.(fineparams{k}).plotName=fineparams{k};
-    simme.(fineparams{k}).apply='fine';
-end
-
-endparams={'I1','I2'};
-endparamnames={'I1','I2'};
-for k=1:4
-    endparams{2+k}=['kp0(',num2str(mod(k-1,2)+1),',',num2str(ceil(k/2)),')'];
-    endparams{6+k}=['kp1(',num2str(mod(k-1,2)+1),',',num2str(ceil(k/2)),')'];
-    endparamnames{2+k}=['kp0_',num2str(mod(k-1,2)+1),num2str(ceil(k/2))];
-    endparamnames{6+k}=['kp1_',num2str(mod(k-1,2)+1),num2str(ceil(k/2))];
-end
-for k=1:length(endparams)
-    simme.(endparamnames{k}).name=endparams{k};
-    simme.(endparamnames{k}).plotName=endparamnames{k};
-    simme.(endparamnames{k}).apply='end';
-end
+xvafsm=[ysm f];
 
 
-f=fieldnames(simme);
+%% Step 3a: Set up data for mass simulation - Burdet
+clear OAT
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
 
-hash=floor(rand(5,1)*24+1);
-%hash=[0 0 0 0 0]';
-hash=char('A'+hash)';
-name=['dynamicSimFile',hash]
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
 
-fh=fopen([name,'.m'],'w');
-fprintf(fh,['function simmed=',name,'(t,xvaf)\n\nglobal l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kpgain real\n\ntic\n\nfigure(2)\nclf\nhold on\nplot(xvaf(:,1),xvaf(:,2),''b.'')\n\n']);
+m1nom=.028*massnom;
+m2nom=.022*massnom;
 
-vary=[1.05 1.1 1.15 1.2 1.3];
+%Shoulder location
+x0nom=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
 
-count=0;
-total=length(vary)*length(f)*2;
-for v=1:length(vary)
-    for k=1:length(f)
-        for pm=1:2
-            %Set gross parameters every time
-            fprintf(fh,['l1=',num2str(l1),';\n']);
-            fprintf(fh,['l2=',num2str(l2),';\n']);
-            fprintf(fh,['mass=',num2str(mass),';\n']);
-            fprintf(fh,['x0=[',num2str(x0(1)),' ',num2str(x0(2)),'];\n']);
-            fprintf(fh,'kpgain=1;\nkp0=[10.8 2.83; 2.51 8.67];\nkp1=[3.18 2.15; 2.34 6.18];\n');
-            if strcmp(simme.(f{k}).apply,'gross')&&(v==1) %Easiest just to overwrite whatever value was there and not think about which
-                if pm==1
-                    fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).upper),';\n']);
-                else
-                    fprintf(fh,[simme.(f{k}).name,'=',num2str(simme.(f{k}).lower),';\n']);
-                end
-            end
-            fprintf(fh,'lc1=.436*l1;\nlc2=.682*l2;\nm1=.028*mass;\nm2=.022*mass;\n');
-            if strcmp(simme.(f{k}).apply,'fine')
-                if pm==1
-                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(vary(v)),';\n']);
-                else
-                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'/',num2str(vary(v)),';\n']);
-                end
-            end
-            fprintf(fh,'I1=m1*(.322*l1)^2;\nI2=m2*(.468*l2)^2;\n');
-            if strcmp(simme.(f{k}).apply,'end')
-                if pm==1
-                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'*',num2str(vary(v)),';\n']);
-                else
-                    fprintf(fh,[simme.(f{k}).name,'=',simme.(f{k}).name,'/',num2str(vary(v)),';\n']);
-                end
-            end
-            fprintf(fh,['y=extract(t,xvaf,''reflex'');\nC=rand(1,3);\nplot(y(:,1),y(:,2),''Color'',C)\n']);
-            fprintf(fh,['simmed(',num2str(k),',',num2str(v),',',num2str(pm),').y=y;\n']);
-            count=count+1;
-            fprintf(fh,['progress=',num2str(count/total),'\naxis equal\ndrawnow\ntoc\n\n']);
-        end
+kp0nom=[10.8 2.83; 2.51 8.67];
+kp1nom=[3.18 2.15; 2.34 6.18];
+kpkdrationom=1/12;
+reflexrationom=1/50;
+kpkdreflexrationom=2;
+
+checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
+checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+
+varyme=ones(18*length(checkratio)+4*length(checkruler),22);
+svm1=size(varyme,1);
+variedcol=zeros(svm1,1);
+ind=0;
+for k=[1 2 21 22]
+    for kk=1:length(checkruler)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0];
+        varyme(ind,k)=checkruler(kk);
+        variedcol(ind)=k;
     end
 end
-fclose(fh);
-
-simmed=feval(name,t,xvaf);
-
-for k=1:length(f)
-    for v=1:length(vary)
-        for pm=1:2
-            simmed(k,v,pm).mue=mean(vecmag(yex(:,1:2)-simmed(k,v,pm).y(:,1:2)))*1000;
-        end
+    
+for k=3:20
+    for kk=1:length(checkratio)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0];
+        varyme(ind,k)=checkratio(kk);
+        variedcol(ind)=k;
     end
 end
 
-fh=fopen('report.txt','w');
-
-columns(1).v='Variable';
-for k=1:length(vary)
-    n=num2str(vary(k));
-    columns(k+1).v=['\t/',n,'\t*',n];
+tic
+figure(4)
+clf
+hold on
+for N=1:svm1
+    v=varyme(N,:);
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom*v(3); %Fair because multiplication is commutative
+    lc2=lc2nom*v(4);
+    m1=m1nom*v(5);
+    m2=m2nom*v(6);
+    I1=m1*(.322*v(7)*l1)^2;
+    I2=m2*(.468*v(8)*l2)^2;
+    kp0=v(17)*kp0nom.*[v(9) v(10); v(11) v(12)];
+    kp1=v(17)*kp1nom.*[v(13) v(14); v(15) v(16)];
+    kpkdratio=kpkdrationom*v(18);
+    reflexratio=reflexrationom*v(19);
+    kpkdreflexratio=kpkdreflexrationom*v(20);
+    x0=x0nom+[v(21) v(22)];
+    OAT(N).y=extract(t,xvaf,'reflex');
+    plot(OAT(N).y(:,1),OAT(N).y(:,2))
+    axis equal
+    drawnow
+    [N/svm1 toc/N ((svm1/N-1)*(toc))/60]
 end
 
-fprintf(fh,[columns.v,'\n']);
+for k=1:length(OAT)
+    OAT(k).mue=mean(vecmag(yex(:,1:2)-OAT(k).y(:,1:2)))*1000;
+end
 
-rms=[[simmed(:,end,1).mue]' [simmed(:,end,2).mue]'];
-v=max(rms,[],2);
-[s,i]=sort(v);
 
-for k=1:length(i)
-    clear columns
-    columns(1).v=f{i(k)};
-    for v=1:length(vary)
-        columns(v+1).v=['\t',num2str(simmed(i(k),v,1).mue),'\t',num2str(simmed(i(k),v,2).mue)];
+upper=max([OAT.mue]);
+
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp0_{11}','kp0_{12}','kp0_{21}','kp0_{22}','kp1_{11}','kp1_{12}','kp1_{21}','kp1_{22}','kpgain','kpkd ratio','reflex ratio','kpkd reflex ratio','P0_x','P0_y'};
+
+figure(667)
+clf
+hold on
+for k=1:22
+    inds=find(variedcol==k);
+    vars=varyme(inds,k);
+    vals=[OAT(inds).mue];
+    for i=inds'
+        OAT(i).variation=varyme(i,k);
+        OAT(i).name=names{k};
+        OAT(i).col=k;
     end
-    fprintf(fh,[columns.v,'\n']);
+    subplot(8,3,k)
+    plot(vars,vals,'k')
+    ylabel(names{k})
+    ylim([0 upper])
 end
-fclose(fh);
 
-%% Step 4: Monte Carlo Variance estimation
+%% Step 3b: Set up data for mass simulation - Shad & Muss
+clear OATSM
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
+
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
+
+m1nom=.028*massnom;
+m2nom=.022*massnom;
+
+%Shoulder location
+x0nom=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
+
+kpgain=1;
+kpnom=[15 6;6 16];
+kdnom=[2.3 .09; .09 2.4];
+
+checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
+checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+
+varyme=ones(15*length(checkratio)+4*length(checkruler),19);
+svm1=size(varyme,1);
+variedcol=zeros(svm1,1);
+ind=0;
+for k=[1 2 18 19]
+    for kk=1:length(checkruler)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0];
+        varyme(ind,k)=checkruler(kk);
+        variedcol(ind)=k;
+    end
+end
+    
+for k=3:17
+    for kk=1:length(checkratio)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0];
+        varyme(ind,k)=checkratio(kk);
+        variedcol(ind)=k;
+    end
+end
+
+tic
+figure(3)
+clf
+hold on
+for N=1:svm1
+    v=varyme(N,:);
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom*v(3); %Fair because multiplication is commutative
+    lc2=lc2nom*v(4);
+    m1=m1nom*v(5);
+    m2=m2nom*v(6);
+    I1=m1*(.322*v(7)*l1)^2;
+    I2=m2*(.468*v(8)*l2)^2;
+    kp=v(17)*kpnom.*[v(9) v(10); v(11) v(12)];
+    kd=v(17)*kdnom.*[v(13) v(14); v(15) v(16)];
+    x0=x0nom+[v(18) v(19)];
+    OATSM(N).y=extract(t,xvafsm,@armdynamics_inverted);
+    plot(OATSM(N).y(:,1),OATSM(N).y(:,2))
+    axis equal
+    drawnow
+    [N/svm1 toc/N ((svm1/N-1)*(toc))/60]
+end
+
+for k=1:length(OATSM)
+    OATSM(k).mue=mean(vecmag(yexsm(:,1:2)-OATSM(k).y(:,1:2)))*1000;
+end
+
+
+upper=max([OATSM.mue]);
+
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp11','kp12','kp21','kp22','kd11','kd12','kd21','kd22','kpgain','P0_x','P0_y'};
+
+figure(666)
+clf
+hold on
+for k=1:19
+    inds=find(variedcol==k);
+    vars=varyme(inds,k);
+    vals=[OATSM(inds).mue];
+    for i=inds'
+        OATSM(i).variation=varyme(i,k);
+        OATSM(i).name=names{k};
+        OATSM(i).col=k;
+    end
+    subplot(7,3,k)
+    plot(vars,vals)
+    ylabel(names{k})
+    ylim([0 upper])
+end
+    
+save('OATs.mat','OAT','OATSM')
+
+%% Step 4a: Monte Carlo Variance estimation - Burdet
 
 % First step, set up nominal values.
-if exist('simSobol.mat')
+if exist('simSobol.mat','file')
     return
 end
 
@@ -301,7 +368,14 @@ varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically s
 consistent=varied(:,1:10);
 individual=varied(:,11:20);
 
+%Notice that you're actually slanting things here by giving everything but
+%kp0 and kp1 a 10% total range vs kps which have a 20% total range
 range=.1*[l1 l2 lc1 lc2 m1 m2 I1 I2]; %Have to vary about nominal values to avoid correlated variance
+% Need to fix this. 
+% converted=norminv(uniform from sobol,mean, sd);
+% Probably need to quietly saturate to +/- 3 sd. Histogram of doing that looks fine.
+%l1, l2 mean error 0, sd 2 mm
+%mass mean error +1.2kg, sd 3.1 kg (The Accuracy of Self-Reported Weights, stunkard and albaum Am J Clin Nutr 1981)
 
 sc1=size(consistent,1);
 
@@ -384,14 +458,76 @@ for col=1:10
     VxEnx(col)=1/(2*length(simmedA))*sum((mueA-mueAB(:,col)).^2);
 end
 
+%varA=var(mueA);
+varA=var(mueAB(:))
+
+S=VxEnx/varA
+STi=EnxVx/varA
+
 figure(237)
 clf
 hold on
+plot([1-.15 10.15],[0 0],'m')
 for col=1:10
-    plot(col*ones(length(simmedA),1)-.05,mueABm(:,col),'k.')
-    plot(col*ones(length(simmedA),1)+.05,mueABm(:,col),'b.')
+    plot(col*ones(length(simmedA),1)-.15,mueA-mueAB(:,col),'k.',col-.15,VxEnx(col),'rx')
+    plot(col*ones(length(simmedA),1)-.05,mueB.*(mueAB(:,col)-mueA),'b.',col-.05,EnxVx(col),'rx')
 end
-ylabel('Difference in Mean Unsigned Error, millimeters')
+ylabel('Mean Unsigned Error, millimeters')
 set(gca,'xtick',1:10)
-set(gca,'xticklabels',names)
+set(gca,'xticklabel',names)
+
+%% Monte Carlo Variance estimation - ShadMuss
+
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
+
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
+
+m1nom=.028*massnom;
+m2nom=.022*massnom;
+
+%Shoulder location
+x0=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
+
+kpgain=1;
+kpnom=[15 6;6 16];
+kdnom=[2.3 .09; .09 2.4];
+
+p=sobolset(20,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
+p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
+
+varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
+%The number after p controls the number of points. Remember, this N*10 is the number of individual sims done.
+
+consistent=varied(:,1:10);
+individual=varied(:,11:20);
+
+tic
+figure(3)
+clf
+hold on
+for N=1:svm1
+    v=varyme(N,:);
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom*v(3); %Fair because multiplication is commutative
+    lc2=lc2nom*v(4);
+    m1=m1nom*v(5);
+    m2=m2nom*v(6);
+    I1=m1*(.322*v(7)*l1)^2;
+    I2=m2*(.468*v(8)*l2)^2;
+    kp=v(17)*kpnom.*[v(9) v(10); v(11) v(12)];
+    kd=v(17)*kdnom.*[v(13) v(14); v(15) v(16)];
+    x0=x0nom+[v(18) v(19)];
+    OATSM(N).y=extract(t,xvafsm,@armdynamics_inverted);
+    plot(OATSM(N).y(:,1),OATSM(N).y(:,2))
+    axis equal
+    drawnow
+    [N/svm1 toc/N ((svm1/N-1)*(toc))/60]
+end
 
