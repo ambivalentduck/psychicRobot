@@ -121,6 +121,7 @@ legend('Intent','Forward Sim','Forces','Shad&Muss','Extracted Intent','Extracted
 
 xvaf=[y f];
 xvafsm=[ysm f];
+save('baselines.mat','yex')
 
 
 %% Step 3a: Set up data for mass simulation - Burdet
@@ -394,6 +395,7 @@ suplabel('MUE in Velocity, fraction peak velocity','y')
 
 save('OATs.mat','OAT','OATSM')
 
+
 %% Step 4a: Monte Carlo Variance estimation - Burdet
 
 % First step, set up nominal values.
@@ -571,6 +573,7 @@ p=sobolset(22,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generi
 p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
 
 varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
+
 %The number after p controls the number of points. Remember, this N*10 is the number of individual sims done.
 
 A=varied(:,1:11);
@@ -647,7 +650,7 @@ for k=1:length(saltelliA)
     end
 end
 
-save('sobolSM.mat','saltelliA','saltelliB','saltelliAB');
+save('sobolSM.mat','saltelliA','saltelliB','saltelliAB','yexsm');
 
 %% Plot outcome of sensitivity analysis on ShadMuss
 
