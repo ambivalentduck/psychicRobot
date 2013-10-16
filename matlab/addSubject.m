@@ -244,7 +244,7 @@ end
 
 fixrotT=toc;
 
-%% Everything below this point is essentially commented out
+%% Set up trial structure and save it
 
 u=unique(trial);
 

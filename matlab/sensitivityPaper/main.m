@@ -121,6 +121,7 @@ legend('Intent','Forward Sim','Forces','Shad&Muss','Extracted Intent','Extracted
 
 xvaf=[y f];
 xvafsm=[ysm f];
+save('baselines.mat','yex')
 
 
 %% Step 3a: Set up data for mass simulation - Burdet
@@ -146,18 +147,20 @@ kp1nom=[3.18 2.15; 2.34 6.18];
 kpkdrationom=1/12;
 reflexrationom=1/50;
 kpkdreflexrationom=2;
+xvafnom=xvaf;
 
 checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
 checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+checkforces=[-2 -1 -.5 0 .5 1 2];
 
-varyme=ones(18*length(checkratio)+4*length(checkruler),22);
+varyme=ones(18*length(checkratio)+4*length(checkruler)+4*length(checkforces),26);
 svm1=size(varyme,1);
 variedcol=zeros(svm1,1);
 ind=0;
 for k=[1 2 21 22]
     for kk=1:length(checkruler)
         ind=ind+1;
-        varyme(ind,:)=[0 0 ones(1,18) 0 0];
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
         varyme(ind,k)=checkruler(kk);
         variedcol(ind)=k;
     end
@@ -166,11 +169,21 @@ end
 for k=3:20
     for kk=1:length(checkratio)
         ind=ind+1;
-        varyme(ind,:)=[0 0 ones(1,18) 0 0];
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
         varyme(ind,k)=checkratio(kk);
         variedcol(ind)=k;
     end
 end
+
+for k=23:26
+    for kk=1:length(checkforces)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
+        varyme(ind,k)=checkforces(kk);
+        variedcol(ind)=k;
+    end
+end
+
 
 tic
 figure(4)
@@ -192,6 +205,8 @@ for N=1:svm1
     reflexratio=reflexrationom*v(19);
     kpkdreflexratio=kpkdreflexrationom*v(20);
     x0=x0nom+[v(21) v(22)];
+    xvaf=xvafnom;
+    xvaf(:,7:8)=[xvaf(:,7)+v(23)+randn(length(t),1)*v(24) xvaf(:,8)+v(25)+randn(length(t),1)*v(26)];
     OAT(N).y=extract(t,xvaf,'reflex');
     plot(OAT(N).y(:,1),OAT(N).y(:,2))
     axis equal
@@ -203,13 +218,15 @@ peakV=sqrt(max(vecmag2(xvaf(:,3:4))));
 for k=1:length(OAT)
     OAT(k).mue=mean(vecmag(yex(:,1:2)-OAT(k).y(:,1:2)))*1000;
     OAT(k).mueV=mean(vecmag(yex(:,3:4)-OAT(k).y(:,3:4)))/peakV;
+    OAT(k).mueP=max(vecmag(yex(:,1:2)-OAT(k).y(:,1:2)))*1000;
+    OAT(k).muePV=max(vecmag(yex(:,3:4)-OAT(k).y(:,3:4)))/peakV;
 end
 
 
-upper=max([OAT.mue]);
-upperV=max([OAT.mueV]);
+upper=max([OAT.mueP]);
+upperV=max([OAT.muePV]);
 
-names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp0_{11}','kp0_{12}','kp0_{21}','kp0_{22}','kp1_{11}','kp1_{12}','kp1_{21}','kp1_{22}','kpgain','kpkd ratio','reflex ratio','kpkd reflex ratio','P0_x','P0_y'};
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp0_{11}','kp0_{12}','kp0_{21}','kp0_{22}','kp1_{11}','kp1_{12}','kp1_{21}','kp1_{22}','kpgain','kpkd ratio','reflex ratio','kpkd reflex ratio','P0_x','P0_y','F_x Bias','F_x Gaussian','F_y Bias','F_y Gaussian'};
 
 figure(667)
 clf
@@ -217,7 +234,7 @@ clf
 figure(668)
 clf
 
-for k=1:22
+for k=1:26
     inds=find(variedcol==k);
     vars=varyme(inds,k);
     vals=[OAT(inds).mue];
@@ -227,23 +244,24 @@ for k=1:22
         OAT(i).col=k;
     end
     figure(667)
-    subplot(8,3,k)
+    subplot(9,3,k)
     plot(vars,vals,'k')
+    %fill([vars; vars(end); vars(1)],[vals 0 0],'k')
     ylabel(names{k})
     ylim([0 upper])
     figure(668)
-    subplot(8,3,k)
-    plot(vars,[OAT(inds).mueV],'k')
+    subplot(9,3,k)
+    plot(vars,[OAT(inds).muePV],'k')
     ylabel(names{k})
     ylim([0 upperV])
 end
 
 figure(667)
-suplabel('Burdet','t')
-suplabel('MUE in Position, mm','y')
+suplabel('Burdet','t');
+suplabel('MUE in Position, mm','y');
 figure(668)
-suplabel('Burdet','t')
-suplabel('MUE in Velocity, fraction peak velocity','y')
+suplabel('Burdet','t');
+suplabel('MUE in Velocity, fraction peak velocity','y');
 
 %% Step 3b: Set up data for mass simulation - Shad & Muss
 clear OATSM
@@ -267,17 +285,20 @@ kpgain=1;
 kpnom=[15 6;6 16];
 kdnom=[2.3 .09; .09 2.4];
 
+xvafsmnom=xvafsm;
+
 checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
 checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+checkforces=[-2 -1 -.5 0 .5 1 2];
 
-varyme=ones(15*length(checkratio)+4*length(checkruler),19);
+varyme=ones(15*length(checkratio)+4*length(checkruler)+4*length(checkforces),23);
 svm1=size(varyme,1);
 variedcol=zeros(svm1,1);
 ind=0;
 for k=[1 2 18 19]
     for kk=1:length(checkruler)
         ind=ind+1;
-        varyme(ind,:)=[0 0 ones(1,15) 0 0];
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
         varyme(ind,k)=checkruler(kk);
         variedcol(ind)=k;
     end
@@ -286,8 +307,17 @@ end
 for k=3:17
     for kk=1:length(checkratio)
         ind=ind+1;
-        varyme(ind,:)=[0 0 ones(1,15) 0 0];
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
         varyme(ind,k)=checkratio(kk);
+        variedcol(ind)=k;
+    end
+end
+
+for k=20:23
+    for kk=1:length(checkforces)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
+        varyme(ind,k)=checkforces(kk);
         variedcol(ind)=k;
     end
 end
@@ -309,6 +339,8 @@ for N=1:svm1
     kp=v(17)*kpnom.*[v(9) v(10); v(11) v(12)];
     kd=v(17)*kdnom.*[v(13) v(14); v(15) v(16)];
     x0=x0nom+[v(18) v(19)];
+    xvafsm=xvafsmnom;
+    xvafsm(:,7:8)=[xvafsm(:,7)+v(20)+randn(length(t),1)*v(21) xvafsm(:,8)+v(22)+randn(length(t),1)*v(23)];
     OATSM(N).y=extract(t,xvafsm,@armdynamics_inverted);
     plot(OATSM(N).y(:,1),OATSM(N).y(:,2))
     axis equal
@@ -327,13 +359,13 @@ end
 upper=max([OATSM.mue]);
 upperV=max([OATSM.mueV]);
 
-names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp11','kp12','kp21','kp22','kd11','kd12','kd21','kd22','kpgain','P0_x','P0_y'};
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp11','kp12','kp21','kp22','kd11','kd12','kd21','kd22','kpgain','P0_x','P0_y','F_x Bias','F_x Gaussian','F_y Bias','F_y Gaussian'};
 
 figure(665)
 clf
 figure(666)
 clf
-for k=1:19
+for k=1:23
     inds=find(variedcol==k);
     vars=varyme(inds,k);
     vals=[OATSM(inds).mue];
@@ -343,12 +375,12 @@ for k=1:19
         OATSM(i).col=k;
     end
     figure(665)
-    subplot(7,3,k)
+    subplot(8,3,k)
     plot(vars,vals,'k')
     ylabel(names{k})
     ylim([0 upper])
     figure(666)
-    subplot(7,3,k)
+    subplot(8,3,k)
     plot(vars,[OATSM(inds).mueV],'k')
     ylabel(names{k})
     ylim([0 upperV])
@@ -363,12 +395,13 @@ suplabel('MUE in Velocity, fraction peak velocity','y')
 
 save('OATs.mat','OAT','OATSM')
 
+
 %% Step 4a: Monte Carlo Variance estimation - Burdet
 
 % First step, set up nominal values.
-if exist('simSobol.mat','file')
-    return
-end
+%if exist('simSobol.mat','file')
+%    return
+%end
 
 l1nom=.33;
 l2nom=.34;
@@ -424,16 +457,17 @@ for N=1:size(consistent,1)
     v=consistent(N,:);
     v(1:8)=(v(1:8)-.5).*range;
     v(9:10)=(v(9:10)-.5)*.4+1;
-    l1=l1nom+v(1);
-    l2=l2nom+v(2);
-    lc1=lc1nom+v(3);
-    lc2=lc2nom+v(4);
-    m1=m1nom+v(5);
-    m2=m2nom+v(6);
-    I1=I1nom+v(7);
-    I2=I2nom+v(8);
-    kp0=kp0nom*v(9);
-    kp1=kp1nom*v(10);
+    l1=norminv(v(1),l1nom,.01); %Measurement error on order of mm
+    l2=norminv(v(2),l2nom,.01);
+    lc1=norminv(v(3),.436,.01/(.436*l1nom))*l1; %choose sd ~1cm, Dempster does NOT have this
+    lc2=norminv(v(4),.682,.01/(.682*l2nom))*l2; %choose sd ~1cm
+    mass=norminv(v(5),massnom,3.1); %mass self-report error SD=3.1 kg (The Accuracy of Self-Reported Weights, stunkard and albaum Am J Clin Nutr 1981)
+    m1=norminv(v(6),.028,.0029)*mass; % Dempster 1955
+    m2=norminv(v(7),.022,.00248)*mass; % Dempster 1955
+    I1=m1*(norminv(v(8),.322,.322/20)*l1)^2; % ~5% SD
+    I2=m2*(norminv(v(9),.468,.468/20)*l2)^2; % ~5% SD
+    kp=kpnom*norminv(v(10),1,.15); % SD is actually quite large
+    kd=kdnom*norminv(v(11),1,.15); % SD is actually quite large
     simmedA(N).y=extract(t,xvaf,'reflex');
 
     v=individual(N,:);
@@ -539,6 +573,7 @@ p=sobolset(22,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generi
 p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
 
 varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
+
 %The number after p controls the number of points. Remember, this N*10 is the number of individual sims done.
 
 A=varied(:,1:11);
@@ -615,7 +650,7 @@ for k=1:length(saltelliA)
     end
 end
 
-save('sobolSM.mat','saltelliA','saltelliB','saltelliAB');
+save('sobolSM.mat','saltelliA','saltelliB','saltelliAB','yexsm');
 
 %% Plot outcome of sensitivity analysis on ShadMuss
 
