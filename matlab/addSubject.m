@@ -50,6 +50,9 @@ filtType='loess';
 t=linspace(output(1,13),output(end,13),s01)';
 gT=t(2)-t(1);
 x=[smooth(output(:,3),filtn,filtType) smooth(output(:,4),filtn,filtType)];
+xdiff=x-output(:,3:4);
+var(xdiff)
+
 disp('Position data smoothed.')
 toc
 disp(newline)
@@ -61,6 +64,8 @@ toc
 disp(newline)
 
 f=[smooth(output(:,9),filtn,filtType) smooth(output(:,10),filtn,filtType)];
+fdiff=f-output(:,9:10);
+
 disp('Force data smoothed.')
 toc
 disp(newline)
@@ -192,6 +197,9 @@ if doPlots
     ylabel('Force_X, N')
     legend('Original','Fixed','Difference','Recalibration Clusters')
 end
+
+mean(frotfix)
+std(frotfix)
 
 forcefixT=toc;
 
