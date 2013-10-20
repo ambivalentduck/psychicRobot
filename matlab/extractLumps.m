@@ -6,7 +6,7 @@ clear all
 name='300'
 load(['../Data/',name,'.mat'])
 
-global measuredVals measuredTime fJ getAlpha kpgain
+global measuredVals measuredTime errorVals errorTime fJ getAlpha kpgain
 
 %% Setup our globals and measured vals
 
@@ -29,7 +29,7 @@ for k=1:size(xvaf,1)
 end
 q0=measuredVals(1,1:4);
 
-calib=find(vmlt(xvaf(:,5:6),.1)&vmlt(xvaf(:,3:4),.005)); %Square roots are unnecessarily slow.
+calib=find(vmlt(xvaf(:,3:4),.027)); %Square roots are unnecessarily slow.
 dtimec=[0 diff(t(calib))]; %Time distance since calibration was satisfied
 breaks=find(dtimec>.1);
 if isempty(calib)
@@ -48,7 +48,7 @@ measuredTime=t;
 
 %% Extract and plot
 
-[T,X,tfb,tff]=extractionReflexHelper(t,q0);
+[T,X]=extractionReflexHelper(t,q0);
 y=X(:,1:4);
 for k=1:length(T)
     y(k,1:2)=fkin(X(k,1:2));
@@ -90,8 +90,6 @@ plot(t(start),xvaf(start,2),'go')
 plot(t(locs),xvaf(locs,2),'rx')
 plot(t(fhigh),xvaf(fhigh,2),'r.')
 
-
-
 %% First submovement - Use an iterative process to firm up our estimate of the first submovement
 
 %Define a beginning, middle, end, and "direction" range.
@@ -103,22 +101,22 @@ plot(t(fhigh),xvaf(fhigh,2),'r.')
 clear kpg
 
 start=start;
-peak=locs(1)-1;
-calib_end=fhigh-start;
-range_inds=start:2*peak-start;
+peak_=locs(find(locs>start,1,'first'));
+peak=peak_-start;
+calib_end=fhigh(1)-start;
+range_inds=start:2*peak_-start;
 kpg{1}=40*[1 0;0 1];
 kpg{2}=.5*[1 0;0 1];
 tfull=t;
 y1=y;
 
-
-close(100)
+%close(100)
 ITS=2;
 while norm(kpg{ITS}-kpg{ITS-1},2)>.01
     kpgain=kpg{ITS};
 
     t=tfull(range_inds);
-    [T,X,tfb,tff]=extractionReflexHelper(t,q0);
+    [T,X]=extractionReflexHelper(t,q0);
     y=X(:,1:4);
     for k=1:length(T)
         y(k,1:2)=fkin(X(k,1:2));
@@ -133,6 +131,8 @@ while norm(kpg{ITS}-kpg{ITS-1},2)>.01
     plot(xvaf(:,1),xvaf(:,2),'b')
     plot(y(:,1),y(:,2),'k')
     quiver(y(:,1),y(:,2),xvaf(range_inds,7),xvaf(range_inds,8),'c')
+    plot(y(1,1),y(1,2),'go')
+    plot(y(peak,1),y(peak,2),'rx')
     axis equal
     subplot(2,1,2)
     hold on
@@ -159,21 +159,51 @@ while norm(kpg{ITS}-kpg{ITS-1},2)>.01
     ac=ac';
 
     subplot(2,1,1)
-    plot(y(1:peak,1),line(1)*y(1:peak,1)+line(2),'g-')
+    plot(y(1:peak,1),line(1)*y(1:peak,1)+line(2),'g.')
     plot(y(1,1)+[0 2*tdist],y(1,2)+[0 line(1)*2*tdist],'m')
     plot(xc(:,1),xc(:,2),'m')
     subplot(2,1,2)
     plot(t',vecmag(vc),'m',t,vc(:,1)','m-.',t',vc(:,2),'m--')
+    plot(tdist,norm(y(peak,3:4)),'gx')
 
     tff_launch=xc;
-    for k=1:length(t)
+    
+    idealVals=zeros(length(t),4);
+    
+    for k=1:length(tmj)
         q=ikin(xc(k,:));
         qdot=fJq\vc(k,:)';
         qddot=getAlpha(q,qdot,ac(k,:)');
+        idealVals(k,:)=[q' qdot'];
         [D,C]=computeDC(q,qdot);
         tff_launch(k,:)=(D*qddot+C)';
     end
+    
+    errorVals=measuredVals(range_inds,1:4)-idealVals;
+    errorTime=measuredTime(range_inds);
+    
+    tff_ideal=tff_launch;
+    tfb_ideal=tff_ideal;
+    
+    for k=1:length(range_inds)
+        [dqi,tfb_ideal(k,:),tff_ideal(k,:)]=armdynamicsInvertedBurdetReflexes(tfull(range_inds(k)),idealVals(k,:)');
+    end
 
+    kpgain=kpgain-.1*tfb_ideal(1:peak,:)\(tff_launch(1:peak,:)-tff_ideal(1:peak,:));
+    
+    
+    [T,X]=extractionReflexHelper(t,q0);
+    ycor=X(:,1:4);
+    for k=1:length(T)
+        ycor(k,1:2)=fkin(X(k,1:2));
+        ycor(k,3:4)=(fJ(X(k,1:2))*X(k,3:4)')';
+    end
+    
+    subplot(2,1,1)
+    plot(ycor(:,1),ycor(:,2),'r')
+    subplot(2,1,2)
+    plot(t,vecmag(ycor(:,3:4)),'r',t,ycor(:,3),'r-.',t,ycor(:,4),'r--')
+    
     %     figure(40+ITS)
     %     clf
     %     hold on

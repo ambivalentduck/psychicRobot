@@ -1,4 +1,4 @@
-function [T,X,tfb,tff]=extractionReflexHelper(T,Q0)
+function [T,X]=extractionReflexHelper(T,Q0)
 
 global measuredVals measuredTime errorVals errorTime
 
@@ -11,14 +11,6 @@ end
 [t,X]=ode45(@armdynamicsInvertedBurdet,T(f),Q0');
 sols(1).t=t';
 sols(1).X=X';
-tfb=zeros(2,length(sols(end).t));
-tff=tfb;
-for k=1:length(sols(end).t)
-    [trash tfb(:,k) tff(:,k)]=armdynamicsInvertedBurdetReflexes(sols(end).t(k),sols(end).X(:,k));
-end
-sols(end).tfb=tfb;
-sols(end).tff=tff;
-
 
 lastend=f(end);
 f=find((T>T(lastend))&(T<T(lastend)+.06));
@@ -35,13 +27,6 @@ while ~isempty(f)
         sols(end+1).t=t(end)';
         sols(end).X=X(end,:)';
     end
-    tfb=zeros(2,length(sols(end).t));
-    tff=tfb;
-    for k=1:length(sols(end).t)
-        [trash tfb(:,k) tff(:,k)]=armdynamicsInvertedBurdetReflexes(sols(end).t(k),sols(end).X(:,k));
-    end
-    sols(end).tfb=tfb;
-    sols(end).tff=tff;
 
     lastend=f(end);
     f=find((T>T(lastend))&(T<T(lastend)+.06));
@@ -49,5 +34,3 @@ end
 
 t=[sols.t];
 X=[sols.X]';
-tfb=[sols.tfb]';
-tff=[sols.tff]';
