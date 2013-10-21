@@ -15,7 +15,7 @@ set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 k=30;
 t=trials(k).t';
 xvaf=[trials(k).x trials(k).v trials(k).a trials(k).f];
-kpgain=1;
+kpgain=.6;
 
 measuredVals=xvaf;
 
@@ -55,11 +55,13 @@ for k=1:length(T)
     y(k,3:4)=(fJ(X(k,1:2))*X(k,3:4)')';
 end
 
+y=[y(:,1)-y(1,1) y(:,2)-y(1,2) y(:,3:4)];
+
 figure(100)
 clf
 subplot(3,1,1)
 hold on
-plot(xvaf(:,1),xvaf(:,2),'b')
+plot(xvaf(:,1)-xvaf(1,1),xvaf(:,2)-xvaf(1,2),'b')
 plot(y(:,1),y(:,2),'k')
 quiver(y(:,1),y(:,2),xvaf(:,7),xvaf(:,8),'c')
 axis equal
@@ -72,8 +74,9 @@ hold on
 plot(t,xvaf(:,2))
 quiver(t',xvaf(:,2),xvaf(:,7),xvaf(:,8),'c')
 
-%% Step 1: mark the first peak and somehow optimize straightness up to it
+%% Step 1: mark the peaks and plot accordingly
 [vals,locs]=findpeaks(vmy,'MINPEAKHEIGHT',.1);
+locs=locs((y(locs,1)/y(end,1))<.9); 
 
 peak=locs(1)-1;
 
@@ -90,6 +93,108 @@ plot(t(start),xvaf(start,2),'go')
 plot(t(locs),xvaf(locs,2),'rx')
 plot(t(fhigh),xvaf(fhigh,2),'r.')
 
+%% State space front-to-back decomposition
+yraw=y;
+
+start0=start;
+locs0=locs;
+y=yraw;
+expectedsubs=length(locs)+1;
+peak=locs(1);
+
+figure(101)
+clf
+subplot(expectedsubs+1,1,1)
+hold on
+plot(y(:,1),y(:,2),'b.')
+plot(y(locs,1),y(locs,2),'rx')
+
+figure(102)
+clf
+subplot(expectedsubs+1,1,1)
+hold on
+plot(t,vecmag(y(:,3:4)),'k',t,y(:,3),'k-.',t,y(:,4),'k--')
+plot(t(start),vmy(start),'go')
+plot(t(locs),vmy(locs),'rx')
+
+colors=rand(expectedsubs,3);
+offset=[0 0];
+
+k=0;
+while (yraw(start,1)/yraw(end,1))<.8
+    k=k+1;
+    fit_inds=start:peak;
+    full_inds=start:2*peak-start;
+    
+    %Fit a line from beginning to peak
+    line=[y(fit_inds,1) ones(length(fit_inds),1)]\y(fit_inds,2);
+    dist=norm((y(start,1:2)-y(peak,1:2))-(dot(y(start,1:2)-y(peak,1:2),[-line(1) 1]))*[-line(1) 1]);
+    tdist=sign(y(peak,1)-y(start,1))*1/(1+line(1)^2)^(1/2)*dist;
+    figure(100)
+    subplot(3,1,1)
+    plot(yraw(start,1)+[0 2*tdist],yraw(start,2)+[0 2*line(1)*tdist],'Color',colors(k,:))
+    subplot(3,1,2)
+    dr=[tdist line(1)*tdist];
+    dr=dr/norm(dr);
+    dp=zeros(length(full_inds),1);
+    for kk=1:length(full_inds)
+        dp(kk)=dot(y(full_inds(kk),3:4),dr);
+    end
+    plot(t(full_inds),dp,'.','Color',colors(k,:))
+    
+    %From line to 5th order polynomial
+    coeff=calcminjerk(y(start,1:2),y(start,1:2)+[2*tdist line(1)*2*tdist],[0 0],[0 0],[0 0],[0 0],0,t(2*peak-start)-t(start));
+    tmj=t(full_inds)-t(fit_inds(1));
+    tmj(tmj>2*t(fit_inds(end)))=2*t(fit_inds(end));
+    [xc,vc,ac]=minjerk(coeff,tmj);
+    xc=xc';
+    vc=vc';
+    ac=ac';
+
+    subplot(3,1,1)
+    plot(offset(1)+xc(:,1),offset(2)+xc(:,2),'.','Color',colors(k,:))
+
+    subplot(3,1,2)
+    plot(t(full_inds)',vecmag(vc(:,1:2)),'Color',colors(k,:))
+    plot(t(full_inds)',vc(:,1),'-.','Color',colors(k,:))
+    plot(t(full_inds)',vc(:,2),'--','Color',colors(k,:))
+
+    %Subtract off 5th order poly
+    y(full_inds,:)=y(full_inds,:)-[xc vc];
+    y(full_inds(end)+1:end,1:2)=y(full_inds(end)+1:end,1:2)-(xc(end,:)'*ones(1,length(t(full_inds(end)+1:end))))';
+    
+    %New start is last time point where x <= 0
+    f=find((y(:,3)<0)&(y(:,1)<0),1,'last');
+    vmy=vecmag(y(:,3:4));
+    [vals,locs]=findpeaks(vmy,'MINPEAKHEIGHT',.1);
+    locs=locs((y(locs,1)/y(end,1))<.9);
+    
+    figure(101)
+    subplot(expectedsubs+1,1,k+1)
+    hold on
+    plot(y(:,1),y(:,2),'.')
+    plot(y(locs0,1),y(locs0,2),'mx')
+    plot(y(locs,1),y(locs,2),'rx')
+    plot(y(f,1),y(f,2),'gx')
+    axis equal
+    
+    figure(102)
+    subplot(expectedsubs+1,1,k+1)
+    hold on
+    plot(t,vmy,'k',t,y(:,3),'k-.',t,y(:,4),'k--')
+    plot(t(start),vmy(start),'go')
+    plot(t(locs0),vmy(locs0),'mx')
+    plot(t(locs),vmy(locs),'rx')
+    plot(t(f),vmy(f),'gx')
+    
+    start=f;
+    peak=locs(1);
+    offset=offset+xc(end,:);
+end
+
+return
+ 
+
 %% First submovement - Use an iterative process to firm up our estimate of the first submovement
 
 %Define a beginning, middle, end, and "direction" range.
@@ -97,6 +202,8 @@ plot(t(fhigh),xvaf(fhigh,2),'r.')
 %Extract with the value of kpgain that we start this iteration with
 %Draw up line of launch, 5th order polynomial
 %Compare to some notion of convergence. If not converged, adjust kpgain
+
+
 
 clear kpg
 
@@ -166,7 +273,7 @@ while norm(kpg{ITS}-kpg{ITS-1},2)>.01
     plot(t',vecmag(vc),'m',t,vc(:,1)','m-.',t',vc(:,2),'m--')
     plot(tdist,norm(y(peak,3:4)),'gx')
 
-    tff_launch=xc;
+    tff_ideal=xc;
     
     idealVals=zeros(length(t),4);
     
@@ -176,21 +283,40 @@ while norm(kpg{ITS}-kpg{ITS-1},2)>.01
         qddot=getAlpha(q,qdot,ac(k,:)');
         idealVals(k,:)=[q' qdot'];
         [D,C]=computeDC(q,qdot);
-        tff_launch(k,:)=(D*qddot+C)';
+        tff_ideal(k,:)=(D*qddot+C)';
     end
     
     errorVals=measuredVals(range_inds,1:4)-idealVals;
     errorTime=measuredTime(range_inds);
     
-    tff_ideal=tff_launch;
-    tfb_ideal=tff_ideal;
+    tff_constrained=zeros(size(tff_ideal));
+    tfb_constrained=tff_constrained;
     
     for k=1:length(range_inds)
-        [dqi,tfb_ideal(k,:),tff_ideal(k,:)]=armdynamicsInvertedBurdetReflexes(tfull(range_inds(k)),idealVals(k,:)');
+        [dqi,tfb_constrained(k,:),tff_constrained(k,:)]=armdynamicsInvertedBurdetReflexes(tfull(range_inds(k)),idealVals(k,:)');
     end
 
-    kpgain=kpgain-.1*tfb_ideal(1:peak,:)\(tff_launch(1:peak,:)-tff_ideal(1:peak,:));
+    %kpgain=kpgain-(tfb_ideal(1:peak,:)\(tff_launch(1:peak,:)-tff_ideal(1:peak,:)));
+    ratio=vecmag(tfb_constrained(1:peak,:))\vecmag((tff_constrained(1:peak,:)-tff_ideal(1:peak,:)))
+    kpgain=0;
     
+    figure(1000)
+    clf
+    hold on
+    yex=y;
+    yex(t<2*t(peak),:)=yex(t<2*t(peak),:)-[xc(t<2*t(peak),:) vc(t<2*t(peak),:)]
+    subplot(2,1,1)
+    hold on
+    plot(yex(:,1),yex(:,2),'.')
+    l=[yex(peak:end,1) ones(size(yex(peak:end,1)))]\yex(peak:end,2)
+    plot(yex(:,1),l(1)*yex(:,1)+l(2),'r')
+    plot(yex(peak,1),yex(peak,2),'rx')
+    plot(yex(301:end,1),yex(301:end,2),'m.')
+    axis equal
+    subplot(2,1,2)
+    plot(t,vecmag(yex(:,3:4)),'b',t,yex(:,3),'b-.',t,yex(:,4),'b--')
+    
+    [blah,i]=min(abs(t-.3))
     
     [T,X]=extractionReflexHelper(t,q0);
     ycor=X(:,1:4);
