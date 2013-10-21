@@ -72,7 +72,18 @@ for k=1:length(type)
     trials(k).extracted=y;
     plot(trials(k).x(1:spacer:end,1)-trials(k).x(1,1),trials(k).x(1:spacer:end,2)-trials(k).x(1,2),'k')
     quiver(trials(k).x(1:spacer:end,1)-trials(k).x(1,1),trials(k).x(1:spacer:end,2)-trials(k).x(1,2),trials(k).f(1:spacer:end,1),trials(k).f(1:spacer:end,2),'b')
-    plot(y(:,1)-y(1,1),y(:,2)-y(1,2),'r')
+    try
+        lumps=findLumps(trials(k).t',y,0);
+        colormap(lumps2rgbk(lumps,y));
+        sx = y(:,1);
+        sy = y(:,2);
+        sz = zeros(size(sx));
+        colormap(lumps2rgbk(lumps,y));  % This is the color, vary with x in this case.
+        col=(1:length(sx))/length(sx);
+        surface([sx';sx'],[sy';sy'],[sz';sz'],[col;col],'facecol','no','edgecol','interp','linew',2);
+    catch
+        plot(y(:,1)-y(1,1),y(:,2)-y(1,2),'r')
+    end
 end
 
 figure(1)
