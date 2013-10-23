@@ -124,43 +124,315 @@ xvafsm=[ysm f];
 save('baselines.mat','yex')
 
 
-%% Step 3a: OAT - Burdet
+%% Step 3a: Set up data for mass simulation - Burdet
+clear OAT
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
 
-names=paramsPopulator('names');
-dat=paramsPopulator('Burdet');
-f=find(dat(:,3));
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
 
-lf=length(f);
-for k=1:lf
-    params=paramsPopulator(f(k));
-    OAT(k,:)=repeatedSim(params,t,xvaf,'reflexes',0,0);
-    for kk=1:size(params,1)
-        OAT(k,kk).name=names(f(k));
-        OAT(k,kk).val=params(kk,f(k));
+m1nom=.028*massnom;
+m2nom=.022*massnom;
+
+%Shoulder location
+x0nom=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
+
+kp0nom=[10.8 2.83; 2.51 8.67];
+kp1nom=[3.18 2.15; 2.34 6.18];
+kpkdrationom=1/12;
+reflexrationom=1/50;
+kpkdreflexrationom=2;
+xvafnom=xvaf;
+
+checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
+checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+checkforces=[-2 -1 -.5 0 .5 1 2];
+
+varyme=ones(18*length(checkratio)+4*length(checkruler)+4*length(checkforces),26);
+svm1=size(varyme,1);
+variedcol=zeros(svm1,1);
+ind=0;
+for k=[1 2 21 22]
+    for kk=1:length(checkruler)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
+        varyme(ind,k)=checkruler(kk);
+        variedcol(ind)=k;
     end
 end
 
-%% Step 3b: OAT - ShadMuss
-
-dat=paramsPopulator('shadmuss');
-f=find(dat(:,3));
-
-lf=length(f);
-for k=1:lf
-    params=paramsPopulator(f(k));
-    OATSM(k,:)=repeatedSim(t,xvaf,'reflexes',0,0);
-    for kk=1:size(params,1)
-        OATSM(k,kk).name=names(f(k));
-        OATSM(k,kk).val=params(kk,f(k));
+for k=3:20
+    for kk=1:length(checkratio)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
+        varyme(ind,k)=checkratio(kk);
+        variedcol(ind)=k;
     end
 end
 
-save('OAT_KICK.mat','OAT','OATSM')
+for k=23:26
+    for kk=1:length(checkforces)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,18) 0 0 0 0 0 0];
+        varyme(ind,k)=checkforces(kk);
+        variedcol(ind)=k;
+    end
+end
+
+
+tic
+figure(4)
+clf
+hold on
+for N=1:svm1
+    v=varyme(N,:);
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom*v(3); %Fair because multiplication is commutative
+    lc2=lc2nom*v(4);
+    m1=m1nom*v(5);
+    m2=m2nom*v(6);
+    I1=m1*(.322*v(7)*l1)^2;
+    I2=m2*(.468*v(8)*l2)^2;
+    kp0=v(17)*kp0nom.*[v(9) v(10); v(11) v(12)];
+    kp1=v(17)*kp1nom.*[v(13) v(14); v(15) v(16)];
+    kpkdratio=kpkdrationom*v(18);
+    reflexratio=reflexrationom*v(19);
+    kpkdreflexratio=kpkdreflexrationom*v(20);
+    x0=x0nom+[v(21) v(22)];
+    xvaf=xvafnom;
+    xvaf(:,7:8)=[xvaf(:,7)+v(23)+randn(length(t),1)*v(24) xvaf(:,8)+v(25)+randn(length(t),1)*v(26)];
+    OAT(N).y=extract(t,xvaf,'reflex');
+    plot(OAT(N).y(:,1),OAT(N).y(:,2))
+    axis equal
+    drawnow
+    [N/svm1 toc/N ((svm1/N-1)*(toc))/60]
+end
+
+peakV=sqrt(max(vecmag2(xvaf(:,3:4))));
+for k=1:length(OAT)
+    OAT(k).mue=mean(vecmag(yex(:,1:2)-OAT(k).y(:,1:2)))*1000;
+    OAT(k).mueV=mean(vecmag(yex(:,3:4)-OAT(k).y(:,3:4)))/peakV;
+    OAT(k).mueP=max(vecmag(yex(:,1:2)-OAT(k).y(:,1:2)))*1000;
+    OAT(k).muePV=max(vecmag(yex(:,3:4)-OAT(k).y(:,3:4)))/peakV;
+end
+
+
+upper=max([OAT.mueP]);
+upperV=max([OAT.muePV]);
+
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp0_{11}','kp0_{12}','kp0_{21}','kp0_{22}','kp1_{11}','kp1_{12}','kp1_{21}','kp1_{22}','kpgain','kpkd ratio','reflex ratio','kpkd reflex ratio','P0_x','P0_y','F_x Bias','F_x Gaussian','F_y Bias','F_y Gaussian'};
+
+figure(667)
+clf
+
+figure(668)
+clf
+
+for k=1:26
+    inds=find(variedcol==k);
+    vars=varyme(inds,k);
+    vals=[OAT(inds).mue];
+    for i=inds'
+        OAT(i).variation=varyme(i,k);
+        OAT(i).name=names{k};
+        OAT(i).col=k;
+    end
+    figure(667)
+    subplot(9,3,k)
+    plot(vars,vals,'k')
+    %fill([vars; vars(end); vars(1)],[vals 0 0],'k')
+    ylabel(names{k})
+    ylim([0 upper])
+    figure(668)
+    subplot(9,3,k)
+    plot(vars,[OAT(inds).muePV],'k')
+    ylabel(names{k})
+    ylim([0 upperV])
+end
+
+figure(667)
+suplabel('Burdet','t');
+suplabel('MUE in Position, mm','y');
+figure(668)
+suplabel('Burdet','t');
+suplabel('MUE in Velocity, fraction peak velocity','y');
+
+%% Step 3b: Set up data for mass simulation - Shad & Muss
+clear OATSM
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
+
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
+
+m1nom=.028*massnom;
+m2nom=.022*massnom;
+
+%Shoulder location
+x0nom=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
+
+kpgain=1;
+kpnom=[15 6;6 16];
+kdnom=[2.3 .09; .09 2.4];
+
+xvafsmnom=xvafsm;
+
+checkratio=1+[-.3 -.2 -.1 -.05 0 .05 .1 .2 .3];
+checkruler=[-3 -1 -1 -.5 0 .5 1 2 3]/100;
+checkforces=[-2 -1 -.5 0 .5 1 2];
+
+varyme=ones(15*length(checkratio)+4*length(checkruler)+4*length(checkforces),23);
+svm1=size(varyme,1);
+variedcol=zeros(svm1,1);
+ind=0;
+for k=[1 2 18 19]
+    for kk=1:length(checkruler)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
+        varyme(ind,k)=checkruler(kk);
+        variedcol(ind)=k;
+    end
+end
+
+for k=3:17
+    for kk=1:length(checkratio)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
+        varyme(ind,k)=checkratio(kk);
+        variedcol(ind)=k;
+    end
+end
+
+for k=20:23
+    for kk=1:length(checkforces)
+        ind=ind+1;
+        varyme(ind,:)=[0 0 ones(1,15) 0 0 0 0 0 0];
+        varyme(ind,k)=checkforces(kk);
+        variedcol(ind)=k;
+    end
+end
+
+tic
+figure(3)
+clf
+hold on
+for N=1:svm1
+    v=varyme(N,:);
+    l1=l1nom+v(1);
+    l2=l2nom+v(2);
+    lc1=lc1nom*v(3); %Fair because multiplication is commutative
+    lc2=lc2nom*v(4);
+    m1=m1nom*v(5);
+    m2=m2nom*v(6);
+    I1=m1*(.322*v(7)*l1)^2;
+    I2=m2*(.468*v(8)*l2)^2;
+    kp=v(17)*kpnom.*[v(9) v(10); v(11) v(12)];
+    kd=v(17)*kdnom.*[v(13) v(14); v(15) v(16)];
+    x0=x0nom+[v(18) v(19)];
+    xvafsm=xvafsmnom;
+    xvafsm(:,7:8)=[xvafsm(:,7)+v(20)+randn(length(t),1)*v(21) xvafsm(:,8)+v(22)+randn(length(t),1)*v(23)];
+    OATSM(N).y=extract(t,xvafsm,@armdynamics_inverted);
+    plot(OATSM(N).y(:,1),OATSM(N).y(:,2))
+    axis equal
+    drawnow
+    [N/svm1 toc/N ((svm1/N-1)*(toc))/60]
+end
+
+peakV=sqrt(max(vecmag2(xvafsm(:,3:4))));
+
+for k=1:length(OATSM)
+    OATSM(k).mue=mean(vecmag(yexsm(:,1:2)-OATSM(k).y(:,1:2)))*1000;
+    OATSM(k).mueV=mean(vecmag(yexsm(:,3:4)-OATSM(k).y(:,3:4)))/peakV;
+end
+
+
+upper=max([OATSM.mue]);
+upperV=max([OATSM.mueV]);
+
+names={'l1','l2','lc1','lc2','m1','m2','I1','I2','kp11','kp12','kp21','kp22','kd11','kd12','kd21','kd22','kpgain','P0_x','P0_y','F_x Bias','F_x Gaussian','F_y Bias','F_y Gaussian'};
+
+figure(665)
+clf
+figure(666)
+clf
+for k=1:23
+    inds=find(variedcol==k);
+    vars=varyme(inds,k);
+    vals=[OATSM(inds).mue];
+    for i=inds'
+        OATSM(i).variation=varyme(i,k);
+        OATSM(i).name=names{k};
+        OATSM(i).col=k;
+    end
+    figure(665)
+    subplot(8,3,k)
+    plot(vars,vals,'k')
+    ylabel(names{k})
+    ylim([0 upper])
+    figure(666)
+    subplot(8,3,k)
+    plot(vars,[OATSM(inds).mueV],'k')
+    ylabel(names{k})
+    ylim([0 upperV])
+end
+
+figure(665)
+suplabel('ShadMuss','t')
+suplabel('MUE in Position, mm','y')
+figure(666)
+suplabel('ShadMuss','t')
+suplabel('MUE in Velocity, fraction peak velocity','y')
+
+save('OATs.mat','OAT','OATSM')
 
 
 %% Step 4a: Monte Carlo Variance estimation - Burdet
 
-p=sobolset(,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
+% First step, set up nominal values.
+%if exist('simSobol.mat','file')
+%    return
+%end
+
+l1nom=.33;
+l2nom=.34;
+weightnom=175; %lbs
+massnom=weightnom*.4535; %kg
+shouldernom=[0 .45];
+
+%Winters (1990)
+lc1nom=.436*l1nom;
+lc2nom=.682*l2nom;
+
+m1nom=.028*massnom;
+m2nom=.022*massnom;
+
+%rog of gyration numbers from winters, rog=sqrt(I/m)
+I1nom=m1nom*(.322*l1nom)^2;
+I2nom=m2nom*(.468*l2nom)^2;
+
+%Shoulder location
+x0=origin+shouldernom; %Shoulder is measured in room coordinates relative to the workspace center
+
+kpgain=1;
+kp0nom=[10.8 2.83; 2.51 8.67];
+kp1nom=[3.18 2.15; 2.34 6.18];
+
+% Next, which parameters are really independent? Certainly not the
+% terms inside a stiffness matrix...
+% l1 l2 lc1 lc2 m1 m2 i1 i2 kp0 kp1... but really you want to fuzz up
+% winters' numbers.
+
+p=sobolset(20,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
 p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
 
 varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
@@ -369,12 +641,12 @@ peakV=sqrt(max(vecmag2(xvafsm(:,3:4))));
 for k=1:length(saltelliA)
     saltelliA(k).mue=mean(vecmag(yexsm(:,1:2)-saltelliA(k).y(:,1:2)))*1000;
     saltelliA(k).mueV=mean(vecmag(yexsm(:,3:4)-saltelliA(k).y(:,3:4)))/peakV;
-
+    
     saltelliB(k).mue=mean(vecmag(yexsm(:,1:2)-saltelliB(k).y(:,1:2)))*1000;
     saltelliB(k).mueV=mean(vecmag(yexsm(:,3:4)-saltelliB(k).y(:,3:4)))/peakV;
     for kk=1:11
-        saltelliAB(k,kk).mue=mean(vecmag(yexsm(:,1:2)-saltelliAB(k,kk).y(:,1:2)))*1000;
-        saltelliAB(k,kk).mueV=mean(vecmag(yexsm(:,3:4)-saltelliAB(k,kk).y(:,3:4)))/peakV;
+            saltelliAB(k,kk).mue=mean(vecmag(yexsm(:,1:2)-saltelliAB(k,kk).y(:,1:2)))*1000;
+            saltelliAB(k,kk).mueV=mean(vecmag(yexsm(:,3:4)-saltelliAB(k,kk).y(:,3:4)))/peakV;
     end
 end
 
@@ -410,7 +682,7 @@ for col=1:11
     VxEnx(col)=1/(2*length(fA))*sum((fA-fAB).^2);
     EnxVxV(col)=1/length(fA)*sum(fvB.*(fvAB-fvA));
     VxEnxV(col)=1/(2*length(fA))*sum((fvA-fvAB).^2);
-
+    
     figure(237)
     plot(col*ones(length(fA),1)-.1,(fA-fAB)/varY,'k.',col-.1,VxEnx(col)/varY,'rx')
     plot(col*ones(length(fA),1)+.1,fB.*(fAB-fA)/varY,'b.',col+.1,EnxVx(col)/varY,'rx')
