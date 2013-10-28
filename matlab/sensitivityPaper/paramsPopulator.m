@@ -40,6 +40,12 @@ nom=[.33; %l1
     1/50; %Reflex Kp Ratio
     2]; % Kp/Kp ratio for reflexes
 nom=nom';
+
+if nargin==0
+    params=nom;
+    return
+end
+
 lnom=length(nom);
 
 sd=[.01; %l1, 1cm
@@ -154,45 +160,45 @@ if length(n)==1
     return
 end
 
-in=[1 1; %l1
-    1 1; %l2
-    1 1; %lc1/l1 factor
-    1 1; %lc2/l2 factor
-    1 1; %mass, lb to kg conversion
-    1 1; %m1/mass conversion factor
-    1 1; %m2/mass conversion factor
-    1 1; %rog1
-    1 1; %rog2
-    1 1; %Shoulder x in robot space
-    1 1; %Shoulder y in robot space
-    1 1; %Robot x bias
-    1 1; %Robot y bias
-    1 1; %Robot x noise
-    1 1; %Robot y noise
-    0 0; %Kp gain
-    0 1; %Burdet const Kp gain
-    0 1; %Burdet torque-varying Kp gain
-    1 0; %Shad-muss Kp gain
-    1 0; %Shad-muss Kd gain
-    0 0; %Burdet kp0
-    0 0;
-    0 0;
-    0 0;
-    0 0; %Burdet kp1
-    0 0;
-    0 0;
-    0 0;
-    0 0; %Shad-Muss kp
-    0 0;
-    0 0;
-    0 0;
-    0 0; %Shad-Muss kd
-    0 0;
-    0 0;
-    0 0;
-    0 1; %Kd/Kp for Burdet
-    0 1; %Reflex Kp Ratio
-    0 1]; % Kp/Kp ratio for reflexes
+in=[1 1 1 1; %l1
+    1 1 1 1; %l2
+    1 1 1 1; %lc1/l1 factor
+    1 1 1 1; %lc2/l2 factor
+    1 1 1 1; %mass, lb to kg conversion
+    1 1 1 1; %m1/mass conversion factor
+    1 1 1 1; %m2/mass conversion factor
+    1 1 1 1; %rog1
+    1 1 1 1; %rog2
+    1 1 1 1; %Shoulder x in robot space
+    1 1 1 1; %Shoulder y in robot space
+    1 1 1 1; %Robot x bias
+    1 1 1 1; %Robot y bias
+    1 1 1 1; %Robot x noise
+    1 1 1 1; %Robot y noise
+    1 0 1 0; %Kp gain
+    0 0 1 1; %Burdet const Kp gain
+    0 0 1 1; %Burdet torque-varying Kp gain
+    1 1 0 0; %Shad-muss Kp gain
+    1 1 0 0; %Shad-muss Kd gain
+    0 0 1 0; %Burdet kp0
+    0 0 1 0;
+    0 0 1 0;
+    0 0 1 0;
+    0 0 1 0; %Burdet kp1
+    0 0 1 0;
+    0 0 1 0;
+    0 0 1 0;
+    1 0 0 0; %Shad-Muss kp
+    1 0 0 0;
+    1 0 0 0;
+    1 0 0 0;
+    1 0 0 0; %Shad-Muss kd
+    1 0 0 0;
+    1 0 0 0;
+    1 0 0 0;
+    0 0 1 1; %Kd/Kp for Burdet
+    0 0 1 1; %Reflex Kp Ratio
+    0 0 1 1]; % Kp/Kp ratio for reflexes
 
 sumin=sum(in); % ==[17 20]
 
@@ -202,7 +208,7 @@ if ischar(n)
         return
     end
     f=find(strcmpi(n,{'shadmuss','burdet'}));
-    params=[nom' sd' in(:,f)];
+    params=[nom' sd' in(:,2*f-1:2*f)];
     return
 end
 
@@ -218,7 +224,7 @@ params=zeros(sn1,lnom);
 
 f2=find(in(:,f));
 
-for k=1:length(lnom)
+for k=1:lnom
     if in(k,f) %Varying
         params(:,k)=norminv(n(:,f2==k),nom(k),sd(k));
     else

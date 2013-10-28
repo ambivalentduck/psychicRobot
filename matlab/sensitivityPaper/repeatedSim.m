@@ -4,7 +4,7 @@ global l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kp kd kpgain kpkdratio reflexratio k
 
 xvafnom=xvaf;
 
-if nargin<4
+if nargin<5
     doplot=0;
     clock=0;
 end
@@ -44,13 +44,13 @@ for k=1:sp1
     reflexratio=v(38);
     kpkdreflexratio=v(39);
 
-    simmed(N).y=extract(t,xvaf,handle);
+    simmed(k).y=extract(t,xvaf,handle);
     if doplot
         plot(simmed(N).y(:,1),simmed(N).y(:,2))
         axis equal
         drawnow
     end
     if clock
-        [k/sp1 toc/k ((sp1/k-1)*(toc))/60] %#ok<NOPRT>
+        [k/sp1 toc/k (((clock*sp1-k)/k)*(toc))/60] %#ok<NOPRT>
     end
 end

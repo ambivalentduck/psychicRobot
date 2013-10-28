@@ -73,7 +73,7 @@ end
 offset=[0 0];
 
 k=0;
-while (yraw(start,1)/yraw(end,1))<.8
+while ((yraw(start,1)/yraw(end,1))<.8)|(k<2)
     k=k+1;
     fit_inds=start:peak;
     full_inds=start:2*peak-start;
