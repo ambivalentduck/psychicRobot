@@ -10,6 +10,7 @@ for k=1 %:8
     name=num2str(k);
     if exist(['../Data/curlkick',name,'.mat'],'file')
         load(['../Data/curlkick',name,'.mat'])
+        params.mass=80;
     else
         input=load(['../Data/Data/input',name,'.dat']);
         output=load(['../Data/Data/output',name,'.dat']);

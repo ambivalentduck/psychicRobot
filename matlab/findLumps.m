@@ -4,6 +4,8 @@ if nargin<3
     doPlots=0;
 end
 
+y(:,1)=y(:,1)-y(1,1);
+y(:,2)=y(:,2)-y(1,2);
 yraw=y;
 
 vmy=vecmag(y(:,3:4));
@@ -24,6 +26,10 @@ end
 
 [vals,locs]=findpeaks(vmy,'MINPEAKHEIGHT',.1);
 locs=locs((y(locs,1)/y(end,1))<.9); 
+
+[trash,start]=min(vmy(1:locs(1)));
+t(start)
+t(locs(1))
 
 start0=start;
 locs0=locs;
@@ -75,7 +81,7 @@ offset=[0 0];
 k=0;
 while ((yraw(start,1)/yraw(end,1))<.8)|(k<2)
     k=k+1;
-    fit_inds=start:peak;
+    fit_inds=floor((start+peak)/2):peak;
     full_inds=start:2*peak-start;
     lumps(k).inds=full_inds;
     lumps(k).peak=peak;
@@ -106,7 +112,7 @@ while ((yraw(start,1)/yraw(end,1))<.8)|(k<2)
     if doPlots
         figure(doPlots)
         subplot(3,1,1)
-        plot(yraw(start,1)+[0 2*tdist],yraw(start,2)+[0 2*line(1)*tdist],'Color',colors(k,:))
+        plot(yraw(fit_inds(1),1)+[0 2*tdist],yraw(fit_inds(1),2)+[0 2*line(1)*tdist],'Color',colors(k,:))
         plot(offset(1)+xc(:,1),offset(2)+xc(:,2),'.','Color',colors(k,:))
 
         subplot(3,1,2)
