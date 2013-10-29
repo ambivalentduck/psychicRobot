@@ -5,6 +5,9 @@ if nargin<3
 end
 
 t=t-t(1);
+if size(t,2)>size(t,1)
+    t=t';
+end
 
 y(:,1)=y(:,1)-y(1,1);
 y(:,2)=y(:,2)-y(1,2);
@@ -33,7 +36,8 @@ if doPlots
     subplot(3,1,1)
     hold on
     plot(y(:,1),y(:,2),'k')
-    plot(y(start,1),y(start,2),'go')
+    plot(y(start,1),y(start,2),'mo')
+    plot(y(peak,1),y(peak,2),'mx')
     axis equal
     xlabel('Robot X, m')
     ylabel('Robot Y, m')
@@ -42,7 +46,8 @@ if doPlots
     hold on
     vmy=vecmag(y(:,3:4));
     plot(t,vecmag(y(:,3:4)),'k',t,y(:,3),'k-.',t,y(:,4),'k--')
-    plot(t(start),vmy(start),'go')
+    plot(t(start),vmy(start),'mo')
+    plot(t(peak),vmy(peak),'mx')
     xlabel('Time post-onset, sec')
     ylabel('Velocity, m/s')
 
@@ -64,16 +69,20 @@ offset=0*y(:,1:2);
 
 k=0;
 while 1
-    k=k+1;
+    k=k+1
+    
+    %Set
     inddist=floor((peak-start)/4);
-    fit_inds=peak-inddist:peak+inddist;
+    fit_inds=max(1,peak-inddist):min(length(t),peak+inddist);
     full_inds=max(1,start):min(length(t),2*peak-start);
     lumps(k).offset=offset;
 
-    %Fit a line from beginning to peak, first pass
-    line=[y(fit_inds,1) ones(length(fit_inds),1)]\y(fit_inds,2);
+    %Fit a line from beginning to peak, first pass. Dodge issues with
+    %vertical lines having inf slope by regressing against time.
+    line1=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,1);
+    line2=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,2);
 
-    dr=[1 line(1)];
+    dr=[line1(1) line2(1)];
     dr=dr/norm(dr);
     dp1=zeros(length(full_inds),1);
     dpunit=dp1;
@@ -81,10 +90,7 @@ while 1
         dp1(kk)=dot(y(full_inds(kk),3:4),dr);
         dpunit(kk)=dp1(kk)/norm(y(full_inds(kk),3:4));
     end
-    if dpunit(floor(length(full_inds)/2))<0
-        dpunit=-dpunit;
-    end
-
+    
     % Second pass...
     gu=gradient(dpunit);
     mid=floor(length(full_inds)/2);
@@ -110,10 +116,11 @@ while 1
     start=full_inds(1);
 
     inddist=floor((peak-start)/4);
-    fit_inds=peak-inddist:peak+inddist;
-    line=[y(fit_inds,1) ones(length(fit_inds),1)]\y(fit_inds,2);
+    fit_inds=max(1,peak-inddist):min(length(t),peak+inddist);
+    line1=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,1);
+    line2=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,2);
 
-    unitslope=[-line(1) 1]/norm([-line(1) 1]);
+    unitslope=[-line2(1) line1(1)]/norm([-line2(1) line1(1)]);
     vec1=(y(peak,1:2)-y(start,1:2))-dot(y(peak,1:2)-y(start,1:2),unitslope)*unitslope;
     vec2=(y(peak,1:2)-y(full_inds(end),1:2))-dot(y(peak,1:2)-y(full_inds(end),1:2),unitslope)*unitslope;
     if norm(vec1)<norm(vec2)
@@ -122,7 +129,7 @@ while 1
         vec=-vec2;
     end
 
-    dr=[1 line(1)];
+    dr=[line1(1) line2(1)];
     dr=dr/norm(dr);
     dp=zeros(length(full_inds),1);
     for kk=1:length(full_inds)
@@ -213,7 +220,7 @@ while 1
 
     lumps(k).resid=y;
     
-    if pkheight<.15
+    if pkheight<.1
         break
     end
 end
