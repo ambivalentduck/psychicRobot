@@ -7,7 +7,7 @@ kpgain=1;
 gray=.7;
 vecmag_scale=.125;
 
-for k=1 %:8
+for k=5 %1:3 %8
     name=num2str(k);
     if exist(['../Data/curlkick',name,'.mat'],'file')
         load(['../Data/curlkick',name,'.mat']);
@@ -164,12 +164,13 @@ for k=1 %:8
         mark=length(trials(kk).t(start:end));
         y=extract(t,xvaf,'reflex');
         trials(kk).y=y;
-        lumps=findLumps2(t,y,mark-10,0);
-        %lumps=findLumps2(t,y,mark-10,6);
+        lumps=findLumps(t,y,mark-10,0);
+        %lumps=findLumps(t,y,mark-10,length(lumps));
         trials(kk).lumps=lumps;
         trials(kk).nlumps=length(lumps);
-        if (length(lumps)/t(end)>6)&&(length(lumps)>9)
-            problemtrials(end+1,:)=[c kk]
+        if ((length(lumps)/t(end)>6)&&(length(lumps)>9))||~isfield(lumps(end),'ownership')
+            [c kk]
+            problemtrials(end+1,:)=[c kk];
             trials(kk).isproblem=1;
             continue
         end
@@ -228,16 +229,19 @@ for k=1 %:8
     text(.4,-.03,'1 sec')
     subplot(3,2,6)
     axis off
-
+    backgray=.6;
+    set(gcf,'Color',backgray*[1 1 1])
     drawnow
     cleanup
+    
+    nlumps=[trials.nlumps];
+    bins=1:max(nlumps)
+    h=hist(nlumps,bins);
+    figure(k+10)
+    bar(bins,h/sum(h))
+    title(['Histogram of subunit count. Sub #',num2str(k)])
+    ylabel('Relative Frequency')
 end
 
-nlumps=[trials.nlumps];
-bins=1:max(nlumps)
-h=hist(nlumps,bins);
-figure(2)
-bar(bins,h/sum(h))
-title('Histogram of subunit count')
-ylabel('Relative Frequency')
+
 

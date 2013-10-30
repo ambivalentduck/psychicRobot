@@ -10,26 +10,32 @@ switch num
         l1=.255;
         l2=.33;
         shoulder=[0 .44];
+        mass=150;
     case '3'
         l1=.25;
         l2=.31;
-        shoulder=[0 .37]; %???
+        shoulder=[0 .37];
+        mass=250;
     case '4'
         l1=.265;
         l2=.335;
         shoulder=[0 .46];
+        mass=170;
     case '5'
         l1=.295;
         l2=.335;
         shoulder=[0 .48];
+        mass=145;
     case '6'
         l1=.275;
         l2=.315;
         shoulder=[.02 .45];
+        mass=145;
     case '7'
         l1=.255;
         l2=.305;
         shoulder=[0 .43];
+        mass=150;
     case '8'
         l1=.34;
         l2=.31;
