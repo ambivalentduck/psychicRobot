@@ -1,22 +1,39 @@
-function C=lumps2rgbk(lumps,y)
+function [C,owned]=lumps2rgbk(lumps)
 
 %say that 1=r, 2=g 3=b, not those=black
 
-sy1=size(y,1);
+% r g b y(rg) c(gb) m(rb)
+cc=[1 0 0;
+    0 1 0;
+    0 0 1;
+    .8 .8 0;
+    0 1 1;
+    1 0 1];
 
-z=zeros(sy1,4);
+scc1=size(cc,1);
+ly=length(lumps(1).ownership);
 
-for k=1:min(3,length(lumps)) %Counting to three is hazardous if you won't always succeed
-    z(lumps(k).inds,4)=1;
-    z(lumps(k).inds,k)=vecmag(lumps(k).y(:,3:4));
+z=zeros(ly,scc1+1);
+for k=1:min(scc1,length(lumps)) %Counting to three is hazardous if you won't always succeed
+    z(lumps(k).inds,end)=1;
+    z(:,k)=lumps(k).ownership;
 end
 
-C=zeros(sy1,3);
-
-f=find(z(:,4));
-for kk=f'
-    s=sum(z(kk,1:3));
-    if s>0
-        C(kk,:)=z(kk,1:3)/s;
+f=find(z(:,scc1+1));
+C=zeros(ly,3);
+for k=f'
+    s=sum(z(k,1:scc1));
+    if s==0
+        continue
+    end
+    for kk=1:scc1
+        C(k,:)=C(k,:)+cc(kk,:)*z(k,kk)/s;
     end
 end
+
+C(C>1)=1;
+C(C<0)=0;
+C(isnan(C))=0;
+
+owned=zeros(ly,1);
+owned(f)=1;

@@ -5,6 +5,7 @@ switch num
         l1=.245;
         l2=.335;
         shoulder=[0 .45];
+        mass=210;
     case '2'
         l1=.255;
         l2=.33;
@@ -39,5 +40,10 @@ params.l1=l1;
 params.l2=l2;
 params.shoulder=shoulder;
 params.origin=[-0.0095, 0.4250];
-params.mass=((l1+l2)/.77)*91; %Shitty locally linear scaling of weight with height, remember that 200 lbs = 91 kg.
+
+if exist('mass','var')
+    params.mass=0.453592*mass;
+else
+    params.mass=((l1+l2)/.77)*91; %Shitty locally linear scaling of weight with height, remember that 200 lbs = 91 kg.
+end
 

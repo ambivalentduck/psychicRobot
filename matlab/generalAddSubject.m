@@ -191,7 +191,7 @@ for k=1:length(u)
     if length(inds)<(.2/gT) %Ie. Not even 200 ms long...
         continue
     end
-
+    trials(k).rawinds=inds;
     trials(k).rawnum=u(k);
     trials(k).x=x(inds,:);
     trials(k).v=v(inds,:);
