@@ -143,6 +143,7 @@ for k=5 %1:3 %8
         plot(t-t(start),vmy,'Color',[gray gray gray])
     end
 
+    colscheme=colorScheme(10);
     problemtrials=[];
     for c=1:length(f)
         c/length(f)
@@ -197,7 +198,29 @@ for k=5 %1:3 %8
         for cc=owned
             plot(rc(cc:cc+1,1),rc(cc:cc+1,2),'-','Color',C(cc,:))
         end
-
+        
+        figure(5000+c)
+        clf
+        hold on
+        yls=(y(1,1:2)'*ones(1,length(t)))';
+        for cc=1:length(lumps)
+            cc
+            if cc==1
+                offset=yls(1,:);
+            else
+                offset=yls(inds(end),:)
+            end
+            yl=[lumps(cc).y(:,1)-lumps(cc).y(1,1) lumps(cc).y(:,2)-lumps(cc).y(1,2)];
+            inds=lumps(cc).inds;
+            mid=floor((inds(end)+inds(1))/2);
+            yls(inds,:)=yls(inds,:)+yl;
+            yls(inds(end)+1:end,:)=[yls(inds(end)+1:end,1)+yl(end,1) yls(inds(end)+1:end,2)+yl(end,2)];
+            ylp=[yl(:,1)+offset(1) yl(:,2)+offset(2)];
+            plot(ylp(:,1),ylp(:,2),'.','Color',colscheme(cc,:))
+        end
+        plot(yls(1:mark,1),yls(1:mark,2),'k')
+            
+            
         vmy=vecmag(xvaf(:,3:4));
         urx=[xvaf(:,1)-xvaf(1,1) xvaf(:,2)-xvaf(1,2)]*urotmat{targetcat(kk)};
         rc=[urx(:,1) vmy*vecmag_scale]*rotmat{targetcat(kk)};
@@ -208,8 +231,9 @@ for k=5 %1:3 %8
         plot(t(1:mark),vecmag(xvaf(1:mark,3:4)),'k')
         %plot(t(locs)-t(start),vecmag(xvaf(locs,3:4)),'rx')
         for cc=owned
-            plot(t(cc:cc+1)',vecmag(y(cc:cc+1,3:4)),'-','Color',C(cc,:))
+            plot(t(cc:cc+1)',vmy(cc:cc+1),'-','Color',C(cc,:))
         end
+        return
     end
     subplot(3,2,1)
     axis off
