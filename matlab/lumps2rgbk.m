@@ -3,12 +3,7 @@ function [C,owned]=lumps2rgbk(lumps)
 %say that 1=r, 2=g 3=b, not those=black
 
 % r g b c(gb) m(rb) y(rg)
-cc=[1 0 0;
-    0 1 0;
-    0 0 1;
-    0 1 1;
-    1 0 1;
-    .96 .9 .08];
+cc=colorScheme();
 
 scc1=size(cc,1);
 ly=length(lumps(1).ownership);

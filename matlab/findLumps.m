@@ -20,7 +20,6 @@ end
 y(:,1)=y(:,1)-y(1,1);
 y(:,2)=y(:,2)-y(1,2);
 yraw=y;
-ylast=y;
 
 vmy=vecmag(y(:,3:4));
 [trash,peak]=max(vmy(1:upperlim));
@@ -76,76 +75,102 @@ offset=0*y(:,1:2);
 k=0;
 while k<maxlumps
     k=k+1;
+    
+    %Three passes: gradient from peak direction gives line. Line gives min-jerk fit
+    %There's a quiet assumption that the found peak is perfect and that
+    %getting things symmetrical about it is key. Maybe fix in a v2.0.
 
-    %Fit a line from beginning to peak, first pass. Dodge issues with
-    %vertical lines having inf slope by regressing against time.
-    inddist=ceil(.1/gT);
-    fit_inds=max(1,peak-inddist):min(length(t),peak+inddist);
-    line1=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,1);
-    line2=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,2);
-
-    dr=[line1(1) line2(1)];
+    %First pass: get a fitting interval via dot() with peak.
+    dr=y(peak,3:4);
     dr=dr/norm(dr);
     dp1=zeros(lT,1);
-    dpunit=dp1;
+    dpunit1=dp1;
     for kk=1:lT
         dp1(kk)=dot(y(kk,3:4),dr);
-        dpunit(kk)=dp1(kk)/norm(y(kk,3:4));
+        dpunit1(kk)=dp1(kk)/norm(y(kk,3:4));
     end
-
-    % Second pass...
-    gu=gradient(dpunit);
-    [vals,locs1]=findpeaks(gu,'minpeakheight',.01);
-    [vals,locs2]=findpeaks(-gu,'minpeakheight',.01);
-
-    lower=locs1(find(locs1<peak,1,'last'));
-    if isempty(lower)
-        lower=1;
+    gu1=gradient(dpunit1);
+    [vals,locs1]=findpeaks(gu1,'minpeakheight',.01);
+    [vals,locs2]=findpeaks(-gu1,'minpeakheight',.01);
+    lower1=locs1(find(locs1<peak,1,'last'));
+    upper1=locs2(find(locs2>peak,1,'first'));
+    if isempty(lower1)
+        lower1=1;
     end
-
-    upper=locs2(find(locs2>peak,1,'first'));
-    if isempty(upper)
-        upper=lT;
+    if isempty(upper1)
+        upper1=lT;
     end
- 
-    dpunit=dpunit; %*norm(y(peak,3:4));
-    gu=norm(y(peak,3:4))*gu/max(abs(gu));
-
-    if doPlots
-        figure(doPlots+2)
-        subplot(ceil((expectedsubs+1)/2),2,k)
-        plot(t,dpunit,'.','Color',colors(k,:))
-        plot(t,gu,'x','Color',colors(k,:))
-        plot(t(lower),norm(y(lower,3:4)),'mo','Markersize',10)
-        plot(t(upper),norm(y(upper,3:4)),'m^','Markersize',10)
+    ispan=ceil(min(peak-lower1,upper1-peak)/2); % /2 is not obvious...optimize.
+    fit_inds=max(1,peak-ispan):min(lT,peak+ispan);
+    
+    %Second pass: Fit a line to first pass interval. Dodge issues with 
+    %vertical lines having inf slope by regressing against time.
+    line1=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,1);
+    line2=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,2);
+    dr=[line1(1) line2(1)];
+    dr=dr/norm(dr);
+    dp2=zeros(lT,1);
+    dpunit2=dp2;
+    for kk=1:lT
+        dp2(kk)=dot(y(kk,3:4),dr);
+        dpunit2(kk)=dp2(kk)/norm(y(kk,3:4));
     end
+    gu2=gradient(dpunit2);
+    [vals,locs1]=findpeaks(gu2,'minpeakheight',.01);
+    [vals,locs2]=findpeaks(-gu2,'minpeakheight',.01);
+    lower2=locs1(find(locs1<peak,1,'last'));
+    upper2=locs2(find(locs2>peak,1,'first'));
+    if isempty(lower2)
+        lower2=1;
+    end
+    if isempty(upper2)
+        upper2=lT;
+    end
+    gu2=norm(y(peak,3:4))*gu2/max(abs(gu2));
 
     unitslope=[-line2(1) line1(1)]/norm([-line2(1) line1(1)]);
-
-    vec1=(y(peak,1:2)-y(lower,1:2))-dot(y(peak,1:2)-y(lower,1:2),unitslope)*unitslope;
-    vec2=(y(peak,1:2)-y(upper,1:2))-dot(y(peak,1:2)-y(upper,1:2),unitslope)*unitslope;
+    vec1=(y(peak,1:2)-y(lower2,1:2))-dot(y(peak,1:2)-y(lower2,1:2),unitslope)*unitslope;
+    vec2=(y(peak,1:2)-y(upper2,1:2))-dot(y(peak,1:2)-y(upper2,1:2),unitslope)*unitslope;
     if norm(vec1)<norm(vec2)
         vec=vec1;
-        ispan=peak-lower;
+        ispan=peak-lower2;
     else
         vec=-vec2;
-        ispan=upper-peak;
+        ispan=upper2-peak;
     end
     
     inds=max(1,peak-ispan):min(lT,peak+ispan);
     tspan=t(inds(end))-t(inds(1));
     vmaxreal=norm(y(peak,3:4));
     vmaxcalc=2*norm(vec)*1.875/tspan;
-    %if vmaxcalc>vmaxreal
-        vec=vec*vmaxreal/vmaxcalc;
-    %end
-
-    dp=zeros(length(inds),1);
-    for kk=1:length(inds)
-        dp(kk)=dot(y(inds(kk),3:4),dr);
+    if vmaxcalc>vmaxreal
+        tspan2=tspan*vmaxcalc/vmaxreal;
+        ispan2=round(tspan2/(2*gT));
+        lower3=max(1,peak-ispan2);
+        upper3=min(lT,peak+ispan2);
+        inds=lower3:upper3;
+        tspan=t(inds(end))-t(inds(1));
+    else
+        lower3=lower2;
+        upper3=upper2;
     end
 
-    %From line to 5th order polynomial
+    if doPlots
+        figure(doPlots+2)
+        subplot(ceil((expectedsubs+1)/2),2,k)
+        plot(t,dpunit1,'--','Color',colors(k,:))
+        plot(t,dpunit2,'-.','Color',colors(k,:))
+        plot(t,gu1,'v','Color',colors(k,:))
+        plot(t,gu2,'^','Color',colors(k,:))
+        plot(t(lower1),norm(y(lower1,3:4)),'m<','Markersize',10)
+        plot(t(upper1),norm(y(upper1,3:4)),'m>','Markersize',10)
+        plot(t(lower2),norm(y(lower2,3:4)),'mo','Markersize',10)
+        plot(t(upper2),norm(y(upper2,3:4)),'mx','Markersize',10)
+        plot(t(lower3),norm(y(lower3,3:4)),'ko','Markersize',10)
+        plot(t(upper3),norm(y(upper3,3:4)),'kx','Markersize',10)
+    end
+    
+    %Third pass
     xi=(y(peak,1:2)-vec)';
     xf=(y(peak,1:2)+vec)';
     ta=(t(inds)'-t(inds(1)))/tspan;
@@ -181,14 +206,15 @@ while k<maxlumps
         figure(doPlots+1)
         subplot(ceil((expectedsubs+1)/2),2,k)
         plot(ylast(inds,1),ylast(inds,2),'.','Color',colors(k,:))
-        plot(xc(:,1),xc(:,2),'Color',colors(k,:))
+        plot(xc(:,1),xc(:,2),'Color',colors(k,:),'Linewidth',3)
+        plot(xc(ceil(end/2),1),xc(ceil(end/2),2),'x','Color',colors(k,:),'Markersize',10)
         plot(xc(1,1),xc(1,2),'o','Color',colors(k,:))
         plot(ylast(inds(1),1),ylast(inds(1),2),'x','Color',colors(k,:))
         plot(ylast(inds(end),1),ylast(inds(end),2),'x','Color',colors(k,:))
 
         subplot(ceil((expectedsubs+1)/2),2,k+1)
         hold on
-        plot(y(:,1),y(:,2),'k.')
+        plot(y(1:upperlim,1),y(1:upperlim,2),'k.')
         plot(y(1,1),y(1,2),'mo')
         axis equal
 
