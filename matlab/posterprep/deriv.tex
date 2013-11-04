@@ -1,0 +1,19 @@
+\documentclass[landscape]{article}
+
+\usepackage{mathtools}
+\usepackage{fullpage}
+%\setlength{\mathindent}{-20cm}
+%\DeclareMathSizes{18}{26}{20}{16}
+% 0 +8 +2 -2
+
+\begin{document}
+\fontsize{16}{23}
+
+\begin{align*}
+\overbrace{\textbf{D}(\ddot{q},\dot{q},q)}^{\text{Dynamics}}+\overbrace{\textbf{E}}^{\text{Environment}}&=\overbrace{\hat{\textbf{D}}(\ddot{q}_d,\dot{q}_d,q_d) + \textbf{C}_K(q_d-q) + \textbf{C}_B(\dot{q}_d-\dot{q})}^{\text{Controller}}\\
+\textbf{D}(\ddot{q},\dot{q},q)&=\textbf{M}(q)\ddot{q}+\textbf{G}(\dot{q},q)\\
+\hat{\textbf{D}}(\ddot{q}_d,\dot{q}_d,q_d)&=\hat{\textbf{M}}(q_d)\ddot{q_d}+\hat{\textbf{G}}(\dot{q}_d,q_d)\\
+\ddot{q}_d&=\hat{\textbf{M}}^{-1}(q)\left(E+\textbf{M}(q)\ddot{q}+\textbf{G}(\dot{q},q)-\hat{\textbf{G}}(\dot{q}_d,q_d)-\textbf{C}_K(q_d-q)-\textbf{C}_B(\dot{q}_d-\dot{q})\right)
+\end{align*}
+
+\end{document}

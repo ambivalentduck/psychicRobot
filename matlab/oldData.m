@@ -157,11 +157,13 @@ for k=5 %1:3 %8
         xvaf2=[trials(kk+1).x trials(kk+1).v trials(kk+1).a trials(kk+1).f];
         t=[trials(kk).t(start:end); trials(kk+1).t(1:onset2)];
         t=t'-t(1);
+        trials(kk).tcat=t;
         xvaf=[xvaf(start:end,:); xvaf2(1:onset2,:)];
 
         mark=length(trials(kk).t(start:end));
         y=extract(t,xvaf,'reflex');
         trials(kk).y=y;
+        trials(kk).cumdist=[0; cumsum(vecmag(trials(kk).y(2:end,1:2)-trials(kk).y(1:end-1,1:2)))];
         lumps=findLumps(t,y,mark-10,0);
         %lumps=findLumps(t,y,mark-10,length(lumps));
         trials(kk).lumps=lumps;
@@ -217,6 +219,7 @@ for k=5 %1:3 %8
         %Clover-leaf
         vmy=vecmag(y(:,3:4));
         urx=[y(:,1)-y(1,1) y(:,2)-y(1,2)]*urotmat{targetcat(kk)};
+        trials(kk).yurot=urx;
         rc=[urx(:,1) -vmy*vecmag_scale]*rotmat{targetcat(kk)};
         rc=[rc(:,1)+y(1,1) rc(:,2)+y(1,2)];
         for cc=owned
@@ -247,16 +250,17 @@ for k=5 %1:3 %8
         end
         drawnow
     end
-    return
+    %load(['../Data/curlkick',name,'.mat']);
 
     set(gcf,'Position',[66 1 1215 945]);
     hbottom=subplot(NSP,1,NSP)
     htop=subplot(NSP,1,1:NSP-1)
+    subplot(htop)
     apos=get(gca,'Position');
     %set(gca,'Position',[0 0 1215 apos(4)*1215/apos(3)])
     set(gca,'Position',[.05 1-.7 .9 .8])
     %10 cm
-    plot([-.03 -.03],.145*[1 1],'w','LineWidth',3)
+    plot([-.03 -.03],[.15 .25],'w','LineWidth',3)
     text(-.045,.165,'10 cm','color',[1 1 1],'Rotation',90)
     %10 N
     plot([0 .05],.67*[1 1],'w','LineWidth',3)
@@ -269,15 +273,19 @@ for k=5 %1:3 %8
     set(gca,'Position',[.1 .15 .8 .3])
     plot([0 1],[0 0]-.6,'w','LineWidth',3)
     plot([0 0],[0 .2]-.6,'w','LineWidth',3)
-    plot([0 1]+Toff(2),[0 0]-.6,'w','LineWidth',3)
     text(.95,-.65,'1 s','color',[1 1 1])
     text(-.02,-.61,'20 cm/s','color',[1 1 1],'Rotation',90)
-    
+    plot([0 1]+Toff(2),[0 0]-.6,'w','LineWidth',3)
+    plot([0 0]+Toff(2),[0 .2]-.6,'w','LineWidth',3)
+    text(.95+Toff(2),-.65,'1 s','color',[1 1 1])
+    text(-.02+Toff(2),-.61,'20 cm/s','color',[1 1 1],'Rotation',90)
     
     backgray=.6;
     set(gcf,'Color',backgray*[1 1 1])
     drawnow
-    cleanup
+    
+    gf=getframe(gcf);
+    imwrite(gf.cdata,['./posterprep/summary',num2str(k),'.png'])
 
     nlumps=[trials.nlumps];
     bins=1:max(nlumps)
@@ -286,6 +294,26 @@ for k=5 %1:3 %8
     bar(bins,h/sum(h))
     title(['Histogram of subunit count. Sub #',num2str(k)])
     ylabel('Relative Frequency')
+    
+    return
+    
+    starts={};
+    ends={};
+    targdists=vecmag([targlocs(:,1)-targlocs(center,1) targlocs(:,2)-targlocs(center,2)]);
+    nl=[trials(f).nlumps];
+    for c=1:5
+        f2=find(nl>=c);
+        starts{k,c}=zeros(length(f2),3);
+        ends{k,c}=zeros(length(f2),3);
+        for cc=1:length(f2)
+            kk=f(f2(cc));
+            inds=trials(kk).lumps(c).inds;
+            rat=targdists(targetcat(kk));
+            starts{k,c}(cc,1:3)=[trials(kk).cumdist(inds(1))/rat trials(kk).yurot(inds(1),1)/rat trials(kk).tcat(inds(1))];
+            ends{k,c}(cc,1:3)=[trials(kk).cumdist(inds(end))/rat trials(kk).yurot(inds(end),1)/rat trials(kk).tcat(inds(end))];
+        end
+    end
+    
 end
 
 
