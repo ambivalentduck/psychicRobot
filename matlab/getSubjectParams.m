@@ -16,12 +16,12 @@ switch num
         l2=.345;
         mass=183;
         shoulder=[0 .49];
-    case {'3','9','10'}
+    case {'3','9','10'} %Jim
         l1=.36;
         l2=.31;
         mass=225;
         shoulder=[0 .55];
-    case {'11','12'}
+    case {'11','12'} %Tes
         l1=.3;
         l2=.32;
         mass=213;

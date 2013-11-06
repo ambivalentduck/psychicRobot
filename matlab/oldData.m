@@ -31,7 +31,11 @@ for k=1:8
         disturbcat(disturbcat==3)=2;
 
         inds=1:f;
-        trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),targetcat,disturbcat,params);
+        trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
+        for c=1:length(trials)
+            trials(c).targetcat=targetcat(c);
+            trials(c).disturbcat=disturbcat;
+        end
         save(['../Data/curlkick',name,'.mat'],'trials','params')
     end
 
@@ -388,7 +392,5 @@ for k=1:4
 end
     
    
-
-
-
+cleanup
 

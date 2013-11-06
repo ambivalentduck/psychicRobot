@@ -1,4 +1,4 @@
-function trials=generalAddSubject(name,traw,xvafraw,trial,targetcat,disturbcat,params)
+function trials=generalAddSubject(name,traw,xvafraw,trial,params)
 
 doPlots=1;
 
@@ -199,9 +199,6 @@ for k=1:length(u)
     trials(k).f=fixed(inds,:);
     trials(k).fraw=f(inds,:);
     trials(k).t=t(inds);
-
-    trials(k).disturbcat=disturbcat(k);
-    trials(k).targetcat=targetcat(k);
 end
 
 total_time=fixrotT+forcefixT+trigT+clumpT+smoothT+loadT %#ok<NOPRT,NASGU>
