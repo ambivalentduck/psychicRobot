@@ -1,4 +1,4 @@
-function [l1, l2, shoulder,mass]=getSubjectParams(num)
+function params=getSubjectParams(num)
 
 switch num
     case {'1', '500', '21', '31','32','55','729'} %me
@@ -26,4 +26,15 @@ switch num
         l2=.32;
         mass=213;
         shoulder=[0 .52];
+end
+
+params.l1=l1;
+params.l2=l2;
+params.shoulder=shoulder;
+params.origin=[-0.0095, 0.4250];
+
+if exist('mass','var')
+    params.mass=0.453592*mass;
+else
+    params.mass=((l1+l2)/.77)*91; %Shitty locally linear scaling of weight with height, remember that 200 lbs = 91 kg.
 end

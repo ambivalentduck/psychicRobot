@@ -128,7 +128,7 @@ tic
 %Show key issue: force accrual in time has a steady slope due to force
 %sensor error
 
-filtn=60/gT; %5 minutes
+filtn=60/gT; %1 minute
 f2=[smooth(frot(:,1),filtn,filtType) smooth(frot(:,2),filtn,filtType)];
 frot=frot-f2;
 frot_detrend=frot;
