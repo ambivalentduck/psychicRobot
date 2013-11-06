@@ -170,6 +170,9 @@ for k=1:8
         trials(kk).cumdist=[0; cumsum(vecmag(trials(kk).y(2:end,1:2)-trials(kk).y(1:end-1,1:2)))];
         lumps=findLumps(t,y,mark-10,0);
         %lumps=findLumps(t,y,mark-10,length(lumps));
+        if length(lumps)==4
+        return
+        end
         trials(kk).lumps=lumps;
         trials(kk).nlumps=length(lumps);
         if ((length(lumps)/t(end)>6)&&(length(lumps)>9))||~isfield(lumps(end),'ownership')

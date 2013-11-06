@@ -260,7 +260,3 @@ if doPlots
     surface([x';x'],[y';y'],[z';z'],[col;col],'facecol','no','edgecol','interp','linew',2);
     axis equal
 end
-
-peaks=[lumps.peak];
-[s,i]=sort(peaks);
-lumps=lumps(i);
