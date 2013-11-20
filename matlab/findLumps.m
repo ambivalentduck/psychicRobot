@@ -1,11 +1,17 @@
-function lumps=findLumps(t,y,upperlim,doPlots)
+function lumps=findLumps(t,y,upperlim,minpeakheight,doPlots)
 
 if nargin==2
     upperlim=length(t);
     doPlots=0;
+    minpeakheight=.1;
 end
 
 if nargin==3
+    minpeakheight=.1;
+    doPlots=0;
+end
+
+if nargin==4
     doPlots=0;
 end
 
@@ -26,7 +32,7 @@ vmy=vecmag(y(:,3:4));
 vals=findpeaks(vmy(1:upperlim),'minpeakheight',.1);
 
 expectedsubs=3*length(vals);
-maxlumps=max(10,doPlots);
+maxlumps=10;
 
 if doPlots
     colors=[1 0 0;
@@ -244,7 +250,7 @@ while k<maxlumps
 
     lumps(k).resid=y;
 
-    if pkheight<.1
+    if pkheight<minpeakheight
         break
     end
 end
@@ -260,3 +266,7 @@ if doPlots
     surface([x';x'],[y';y'],[z';z'],[col;col],'facecol','no','edgecol','interp','linew',2);
     axis equal
 end
+
+peaks=[lumps.peak];
+[s,i]=sort(peaks);
+lumps=lumps(i);
