@@ -4,9 +4,6 @@ clear all
 name='301'
 load(['../../Data/',name,'.mat'])
 
-global kpgain
-
-
 
 %% Set up vectors for find() later.
 
@@ -43,18 +40,8 @@ plot(x(:,1),x(:,2),'b.')
 plot([0 .15],[0 0],'rx')
 axis equal
 
-mn=min(x(:,1));
-mx=max(x(:,1));
-
-bins=0:.001:.15; %(millimeter bins are more than enough...)
-ave=interp1(x(:,1)+.0000001*rand(size(x(:,1))),x(:,2),bins,'linear');
-plot(bins,ave,'k.')
-
 for k=1:length(f)
-    i=interp1(catme(k).x(1,:)+.0000001*rand(size(trials(f(k)).t))',catme(k).x(2,:),bins);
-    i=i-ave;
-    i=i(~isnan(i));
-    mueReal(k)=mean(abs(i))*1000;
+    mueReal(k)=getMUE(bins,ref2,[trials(f(k)).x(:,1)-trials(f(k)).origin(1) trials(f(k)).x(:,2)-trials(f(k)).origin(2)]);
 end
 
 var(mueReal)

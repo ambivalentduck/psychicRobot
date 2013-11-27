@@ -1,30 +1,6 @@
-load baselines.mat
-load OAT_KICK.mat
-load KICK.mat
-load KICKsm.mat
+load all_white_workspace.mat
 
 %% fig 1
-t=0:.005:2;
-coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
-tcalc=t;
-tcalc(t>=.7)=.7;
-[x,v,a]=minjerk(coeff,tcalc);
-x=x';
-v=v';
-a=a';
-
-f=zeros(length(t),2);
-
-f((t>=.1)&(t<=.15),2)=15;
-
-xvaf=[x v a f];
-
-measuredVals=xvaf;
-measuredTime=t;
-
-[xsim,xsimSM]=forwardSim(paramsPopulator,t,xvaf);
-yex=extract(t,[xsim f],'reflex');
-ycross=extract(t,[xsim f],@armdynamics_inverted);
 
 qscale=.001;
 SKIP=2;
@@ -47,11 +23,7 @@ ylim([0.49,0.53])
 xlim([-.01,0.16])
 
 
-
 %% fig 2
-
-
-bins=0:.005:.15;
 
 [trash,ref]=getMUE(bins,0*bins,yex);
 numerical_accuracy_burdet=getMUE(bins,ref,yex)
@@ -93,16 +65,11 @@ S=S/varY
 ST=ST/varY
 
 dat=paramsPopulator('burdet');
-names=paramsPopulator('names');
 figure(6)
 clf
-H=barh(1:numP,[S ST])
-set(H(1),'facecolor',.2*[1 1 1])
-set(H(2),'facecolor',.8*[1 1 1])
+barh(1:numP,[S ST])
 set(gca,'ytick',1:numP)
 set(gca,'yticklabel',names(dat(:,4)>0))
-xlabel('Fraction of Total Variance')
-ylim([0 21])
 
 %% Then Shadmuss
 
