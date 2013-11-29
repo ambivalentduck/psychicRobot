@@ -1,18 +1,20 @@
-function lumps=findLumps(t,y,upperlim,minpeakheight,doPlots)
+function lumps=findLumps(t,y,upperlim,minpeakheight,maxlumps,doPlots)
 
-if nargin==2
-    upperlim=length(t);
-    doPlots=0;
-    minpeakheight=.1;
-end
-
-if nargin==3
-    minpeakheight=.1;
-    doPlots=0;
-end
-
-if nargin==4
-    doPlots=0;
+switch nargin
+    case 2
+        upperlim=length(t);
+        minpeakheight=.1;
+        maxlumps=10;
+        doPlots=0;
+    case 3
+        minpeakheight=.1;
+        maxlumps=10;
+        doPlots=0;
+    case 4
+        maxlumps=10;
+        doPlots=0;
+    case 5
+        doPlots=0;
 end
 
 t=t-t(1);
@@ -31,17 +33,16 @@ vmy=vecmag(y(:,3:4));
 [trash,peak]=max(vmy(1:upperlim));
 vals=findpeaks(vmy(1:upperlim),'minpeakheight',.1);
 
-expectedsubs=3*length(vals);
-maxlumps=10;
+expectedsubs=maxlumps;
 
 if doPlots
     colors=[1 0 0;
-            0 1 0;
-            0 0 1;
-            .8 .8 0;
-            0 1 1;
-            1 0 1;
-            rand(10,3)];
+        0 1 0;
+        0 0 1;
+        .8 .8 0;
+        0 1 1;
+        1 0 1;
+        rand(10,3)];
 
     figure(doPlots)
     clf
@@ -81,7 +82,7 @@ offset=0*y(:,1:2);
 k=0;
 while k<maxlumps
     k=k+1;
-    
+
     %Three passes: gradient from peak direction gives line. Line gives min-jerk fit
     %There's a quiet assumption that the found peak is perfect and that
     %getting things symmetrical about it is key. Maybe fix in a v2.0.
@@ -108,8 +109,8 @@ while k<maxlumps
     end
     ispan=ceil(min(peak-lower1,upper1-peak)/2); % /2 is not obvious...optimize.
     fit_inds=max(1,peak-ispan):min(lT,peak+ispan);
-    
-    %Second pass: Fit a line to first pass interval. Dodge issues with 
+
+    %Second pass: Fit a line to first pass interval. Dodge issues with
     %vertical lines having inf slope by regressing against time.
     line1=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,1);
     line2=[t(fit_inds) ones(length(fit_inds),1)]\y(fit_inds,2);
@@ -144,7 +145,7 @@ while k<maxlumps
         vec=-vec2;
         ispan=upper2-peak;
     end
-    
+
     inds=max(1,peak-ispan):min(lT,peak+ispan);
     tspan=t(inds(end))-t(inds(1));
     vmaxreal=norm(y(peak,3:4));
@@ -175,7 +176,7 @@ while k<maxlumps
         plot(t(lower3),norm(y(lower3,3:4)),'ko','Markersize',10)
         plot(t(upper3),norm(y(upper3,3:4)),'kx','Markersize',10)
     end
-    
+
     %Third pass
     xi=(y(peak,1:2)-vec)';
     xf=(y(peak,1:2)+vec)';
@@ -184,7 +185,7 @@ while k<maxlumps
     vc=((xf-xi)*(30*ta.^2-60*ta.^3+30*ta.^4)/tspan)';
     ac=((xf-xi)*(60*ta-180*ta.^2+120*ta.^3)/(tspan^2))';
     lumps(k).y=[xc vc ac];
-    
+
     lumps(k).offset=offset;
     lumps(k).ownership=zeros(length(t),1);
     lumps(k).ownership(inds)=(30*ta.^2-60*ta.^3+30*ta.^4)/1.875;
@@ -237,7 +238,7 @@ while k<maxlumps
     lumps(k).peak=peak;
 
     [pkheight,peak]=max(vmy(1:upperlim));
-    
+
     if doPlots
         figure(doPlots+2)
         subplot(ceil((expectedsubs+1)/2),2,k+1)
