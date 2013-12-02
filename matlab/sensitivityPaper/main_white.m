@@ -80,7 +80,7 @@ end
 
 for k=1:lf
     for kk=1:sp1
-        OAT(k,kk).name=names{k};
+        OAT(k,kk).name=names{f(k)};
         OAT(k,kk).val=vals(k,kk);
     end
 end
@@ -111,7 +111,7 @@ end
 
 for k=1:lf
     for kk=1:sp1
-        OATSM(k,kk).name=names{k};
+        OATSM(k,kk).name=names{f(k)};
         OATSM(k,kk).val=vals(k,kk);
     end
 end

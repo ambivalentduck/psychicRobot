@@ -8,20 +8,23 @@ figure(1)
 clf
 hold on
 plot(x(:,1),x(:,2),'k.',xsim(:,1),xsim(:,2),'k-')
-quiver(xsim(1:SKIP:end,1),xsim(1:SKIP:end,2),qscale*f(1:SKIP:end,1),qscale*f(1:SKIP:end,2),0,'Color',.6*[1 1 1])
+quiver(xsim(1:SKIP:end,1),xsim(1:SKIP:end,2),qscale*xvaf(1:SKIP:end,7),qscale*xvaf(1:SKIP:end,8),0,'Color',.6*[1 1 1])
 plot(yex(:,1),yex(:,2),'ko')
 plot(ycross(:,1),ycross(:,2),'k-.')
 axis equal
 axis off
 
-plot([0 .15],.495*[1 1],'k','linewidth',3)
-text(0,.493,'15 cm')
-plot(.0005*[1 1],[.505 .515],'k','linewidth',3)
-text(-.001,.507,'10 N','rotation',90)
+bins=0:.005:.15;
+[trash,ref]=getMUE(bins,0*bins,yex);
+cross_accuracy=getMUE(bins,ref,ycross)
 
-ylim([0.49,0.53])
+plot([0 .15],.486*[1 1],'k','linewidth',3)
+text(0,.483,'15 cm')
+plot(.0005*[1 1],[.505 .515],'Color',.6*[1 1 1],'linewidth',3)
+text(-.001,.5075,'10 N','rotation',90)
+
+ylim([0.47,0.53])
 xlim([-.01,0.16])
-
 
 %% fig 2
 
@@ -67,9 +70,14 @@ ST=ST/varY
 dat=paramsPopulator('burdet');
 figure(6)
 clf
-barh(1:numP,[S ST])
+H=barh(1:numP,[S ST])
+set(H(1),'facecolor',.2*[1 1 1])
+set(H(2),'facecolor',.8*[1 1 1])
 set(gca,'ytick',1:numP)
 set(gca,'yticklabel',names(dat(:,4)>0))
+xlabel('Fraction of Total Variance')
+ylim([0 21])
+xlim([-.05 1])
 
 %% Then Shadmuss
 

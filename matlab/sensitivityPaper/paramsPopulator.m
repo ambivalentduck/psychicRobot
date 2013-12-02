@@ -129,6 +129,46 @@ names={'l1, m';
     'Reflex Kp Ratio, unitless';
     'Kp/Kp ratio for reflexes, unitless'};
 
+latexnames={'Upper Arm Length, m';
+    'L2, m';
+    'lc1/l1, unitless';
+    'lc2/l2, unitless';
+    'gross body mass, kg';
+    'm1/mass, unitless';
+    'm2/mass, unitless';
+    'Seg1 RoG/l1, unitless';
+    'Seg2 RoG/l2, unitless';
+    'Shoulder x in robot space, m'
+    'Shoulder y in robot space, m'
+    'Force sensor bias x-axis, N';
+    'Force sensor bias y-axis, N';
+    'Force sensor Gaussian noise SD x-axis, N';
+    'Force sensor Gaussian noise SD y-axis, N';
+    'Kp gain, unitless';
+    'Burdet const Kp gain, unitless';
+    'Burdet torque-varying Kp gain, unitless';
+    'Shad-Muss Kp gain, unitless';
+    'Shad-Muss Kd gain, unitless';
+    '$K_{P0 11}, \frac{N\cdot M}{rad}$';
+    '$K_{P0 12}, \frac{N\cdot M}{rad}$';
+    'Burdet kp0(2,1), N*M/rad';
+    '$K_{P0 22}, \frac{N\cdot M}{rad}$';
+    'Burdet kp1(1,1), N*M/rad';
+    'Burdet kp1(1,2), N*M/rad';
+    'Burdet kp1(2,1), N*M/rad';
+    '$K_{P1 22}, \frac{N\cdot M}{rad}$';
+    'Shad-Muss kp(1,1), N*M/rad';
+    'Shad-Muss kp(1,2), N*M/rad';
+    'Shad-Muss kp(2,1), N*M/rad';
+    'Shad-Muss kp(2,2), N*M/rad';
+    'Shad-Muss kd(1,1), N*M/rad';
+    'Shad-Muss kd(1,2), N*M/rad';
+    'Shad-Muss kd(2,1), N*M/rad';
+    'Shad-Muss kd(2,2), N*M/rad';
+    '$\frac{K_D}{K_P}$';
+    'Reflex Ratio, unitless';
+    'Reflex $\frac{K_D}{K_P}$'};
+
 if nargin==3
     column=varargin{1};
     vals=varargin{2};
@@ -205,6 +245,10 @@ sumin=sum(in); % ==[17 20]
 if ischar(n)
     if strcmpi(n,'names')
         params=names;
+        return
+    end
+    if strcmpi(n,'latex')
+        params=latexnames;
         return
     end
     f=find(strcmpi(n,{'shadmuss','burdet'}));

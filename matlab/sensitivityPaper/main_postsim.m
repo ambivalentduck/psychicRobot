@@ -55,6 +55,8 @@ bins=0:.005:.15;
 
 [trash,ref]=getMUE(bins,0*bins,yex);
 numerical_accuracy_burdet=getMUE(bins,ref,yex)
+cross_accuracy=getMUE(bins,ref,ycross)
+return 
 
 for k=1:size(OAT,1)
     for kk=1:size(OAT,2)
