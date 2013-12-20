@@ -26,6 +26,16 @@ switch num
         l2=.32;
         mass=213;
         shoulder=[0 .52];
+    case {'324'}
+        l1=.28;
+        l2=.32;
+        shoulder=[0 .53];
+        mass=213;
+    case {'789'}
+        l1=.28;
+        l2=.3;
+        shoulder=[-.03 .48];
+        mass=120;
 end
 
 params.l1=l1;

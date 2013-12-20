@@ -8,11 +8,11 @@ gray=.7;
 vecmag_scale=.125;
 WIDTH=3;
 
-subnums=[3 729 300 301];
+subnums=[324 789 300 301];
 lastTrial=[728 611 730 730];
 kpgains=[.4 .25 1 .5];
 
-for k=1
+for k=[]
     if ~exist('../Data/Data_pulse/pulse1.mat','file')
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
@@ -46,7 +46,7 @@ for k=1
     end
 end
 
-for k=2
+for k=[]
     if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
@@ -129,7 +129,7 @@ for k=3
     end
 end
 
-for k=4
+for k=[1 2 4]
     if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
@@ -163,7 +163,7 @@ for k=4
 end
 
 
-for k=4
+for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat']);
 
     udists=unique([trials.dist]);
@@ -260,7 +260,8 @@ for k=4
 
         mark=length(trials(kk).t(start:end));
 
-        [y,lumps,breakp(c),bestKp(c,:)]=stiffnessExtract(t,xvaf,0);
+        y=extract(t,xvaf,'reflex');
+        %[y,lumps,breakp(c),bestKp(c,:)]=stiffnessExtract(t,xvaf,0);
         lumps=findLumps(t,y,mark-10,0);
         trials(kk).y=y;
         trials(kk).cumdist=[0; cumsum(vecmag(trials(kk).y(2:end,1:2)-trials(kk).y(1:end-1,1:2)))];
