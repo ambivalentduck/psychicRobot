@@ -107,7 +107,7 @@ for k=1:20
     s=regexprep(s,', unitless','');
     s=[upper(s(1)) s(2:end)];
     s=[prepend,s];
-    text((mod(k-1,4)+1)*LRskip+5,(floor((k-1)/4)+1)*UDskip-.0015,s,'fontname','Helvetica','Horizontalalignment','center','Verticalalignment','top')
+    text((mod(k-1,4)+1)*LRskip+5,(floor((k-1)/4)+1)*UDskip-.001,s,'fontname','Helvetica','Horizontalalignment','center','Verticalalignment','top')
 end
 
 for k=1:5
@@ -118,6 +118,8 @@ end
 ylim([-.055 -.005])
 xlim([9 51])
 axis on
+set(gca,'position',[0 0 1 1],'units','normalized')
 axis off
+set(gcf,'position',[680, 70. 695, 903])
 
-laprint(gcf,'fig5raw')
+laprint(gcf,'fig5raw','width',15,'scalefonts','off','factor',1)
