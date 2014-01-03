@@ -25,6 +25,7 @@ text(-.001,.5075,'10 N','rotation',90)
 
 ylim([0.47,0.53])
 xlim([-.01,0.16])
+return
 
 %% fig 2
 
