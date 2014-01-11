@@ -9,91 +9,21 @@ vecmag_scale=.125;
 WIDTH=3;
 
 subnums=[324 789 300 301];
-lastTrial=[728 611 730 730];
 kpgains=[.4 .25 1 .5];
 
-for k=[]
-    if ~exist('../Data/Data_pulse/pulse1.mat','file')
+for k=[1 3 4] %:length(subnums)
+    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')||1
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
         output=load(['../Data/Data_pulse/output',name,'.dat']);
-        params=getSubjectParams(name)
+        params=getSubjectParams(name);
         traw=output(:,2);
         xvafraw=output(:,3:10);
         trial=output(:,1);
-        f=find(trial==lastTrial(k),1,'last');
-        inds=1:f;
-        trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
-
-        %First trial is loaded twice and therefore the first line of input is skipped and you're always a trial ahead.
-        trials(1).dist=.15;
-        trials(1).dir=-1;
-        trials(1).disturbcat=0;
-
-        cats=[1 0 2];
-
-        for c=2:length(trials)
-            trials(c).origin=input(c,2:3);
-            trials(c).target=input(c+1,2:3);
-            trials(c).dist=norm(trials(c).target-trials(c).origin);
-            trials(c).dir=sign(trials(c).target(1)-trials(c).origin(1));
-            trials(c).disturbcat=cats(sign(input(c+1,4))+2);
-        end
-        unique([trials.dist])
-        unique([trials.dir])
-        unique([trials.disturbcat])
-        save('../Data/Data_pulse/pulse1.mat','trials','params')
-    end
-end
-
-for k=[]
-    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
-        name=num2str(subnums(k));
-        input=load(['../Data/Data_pulse/input',name,'.dat']);
-        output=load(['../Data/Data_pulse/output',name,'.dat']);
-        params=getSubjectParams(name)
-        traw=output(:,2);
-        xvafraw=output(:,3:10);
-        trial=output(:,1);
-        f=find(trial==lastTrial(k),1,'last');
-        if k==2
-            inds=1:f;
-        else
-            inds=1:5:f;
-        end
-        trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
-
-        trials(1).dist=.15;
-        trials(1).dir=-1;
-        trials(1).disturbcat=0;
-
-        cats=[1 0 2];
-
-        for c=2:length(trials)
-            trials(c).origin=input(c-1,2:3);
-            trials(c).target=input(c,2:3);
-            trials(c).dist=norm(trials(c).target-trials(c).origin);
-            trials(c).dir=sign(trials(c).target(1)-trials(c).origin(1));
-            trials(c).disturbcat=cats(sign(input(c,4))+2);
-        end
-        unique([trials.dist])
-        unique([trials.dir])
-        unique([trials.disturbcat])
-        save(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'trials','params')
-    end
-end
-
-for k=3
-    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
-        name=num2str(subnums(k));
-        input=load(['../Data/Data_pulse/input',name,'.dat']);
-        output=load(['../Data/Data_pulse/output',name,'.dat']);
-        params=getSubjectParams(name)
-        traw=output(:,2);
-        xvafraw=output(:,3:10);
-        trial=output(:,1);
-        f=find(trial==lastTrial(k),1,'last');
-        if k==2
+        lastTrial=max(trial)-1;
+        f=find(trial==lastTrial,1,'last');
+        samprate=1/mean(gradient(traw))
+        if samprate>300 %our filtering method apparently has nonlinear algorithmic complexity and goes from seconds to hours+.
             inds=1:f;
         else
             inds=1:5:f;
@@ -111,16 +41,9 @@ for k=3
             [trash,ind]=min(abs(norm(trials(c).x(end,:)-trials(c).x(1,:))-dists));
             trials(c).dist=dists(ind);
             trials(c).dir=sign(trials(c).x(end,1)-trials(c).x(1,1));
-            [fmax,ind]=max(vecmag(trials(c).f));
-            maxloc=norm(trials(c).x(ind,:)-trials(c).x(1,:));
-            trials(c).disturbcat=0;
-            if (fmax>4)&&((maxloc/trials(c).dist)<(1/3))
-                if trials(c).f(ind,2)>0
-                    trials(c).disturbcat=2;
-                else
-                    trials(c).disturbcat=1;
-                end
-            end
+            trials(c).disturbance=input(c,[4 5 6]);
+            v=find(input(c,[4 5 6]));
+            trials(c).disturbcat=2*v-(input(c,3+v)>=0);
         end
         unique([trials.dist])
         unique([trials.dir])
