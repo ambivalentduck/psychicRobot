@@ -1,4 +1,4 @@
-function simmed=repeatedSim(params,t,xvaf,handle,doplot, clock)
+function simmed=repeatedSim(params,t,xvaf,handle,doplot,remaining)
 
 global l1 l2 m1 m2 lc1 lc2 I1 I2 x0 kp0 kp1 kp kd kpgain kpkdratio reflexratio kpkdreflexratio
 
@@ -6,7 +6,7 @@ xvafnom=xvaf;
 
 if nargin<5
     doplot=0;
-    clock=0;
+    remaining=0;
 end
 
 if doplot
@@ -16,9 +16,9 @@ if doplot
 end
 
 sp1=size(params,1);
-if clock
-    tic
-end
+
+tic
+
 for k=1:sp1
     v=params(k,:);
     l1=v(1);
@@ -50,7 +50,10 @@ for k=1:sp1
         axis equal
         drawnow
     end
-    if clock
-        [k/sp1 toc/k (((clock*sp1-k)/k)*(toc))/60] %#ok<NOPRT>
-    end
+
+    trem=toc*(sp1-k+remaining*sp1)/k;
+    hours=floor(trem/3600);
+    minutes=floor(trem-hours*3600)/60;
+    seconds=trem-hours*3600-minutes*60;
+    [hours minutes seconds k/sp1 toc/k] %#ok<NOPRT>
 end

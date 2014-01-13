@@ -11,7 +11,7 @@ WIDTH=3;
 subnums=[324 789 300 301];
 kpgains=[.4 .25 1 .5];
 
-for k=[1 3 4] %:length(subnums)
+for k=[1 2 3 4] %:length(subnums)
     if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')||1
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
@@ -23,13 +23,25 @@ for k=[1 3 4] %:length(subnums)
         lastTrial=max(trial)-1;
         f=find(trial==lastTrial,1,'last');
         samprate=1/mean(gradient(traw))
-        if samprate>300 %our filtering method apparently has nonlinear algorithmic complexity and goes from seconds to hours+.
+        if samprate<300 %our filtering method apparently has nonlinear algorithmic complexity and goes from seconds to hours+.
             inds=1:f;
         else
             inds=1:5:f;
         end
         trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
+        figure(10)
+        clf
+        subplot(2,1,1)
+        hold on
+        TN=18;
+        plot(trials(TN).x(:,1),trials(TN).x(:,2))
+        quiver(trials(TN).x(:,1),trials(TN).x(:,2),trials(TN).f(:,1),trials(TN).f(:,2))
+        axis equal
+        subplot(2,1,2)
+        plot(trials(TN).t,vecmag(trials(TN).f))
 
+        %Because trial 1 starts from an unknown location/where the robot is
+        %turned on
         trials(1).dist=.15;
         trials(1).dir=-1;
         trials(1).disturbcat=0;
@@ -43,7 +55,11 @@ for k=[1 3 4] %:length(subnums)
             trials(c).dir=sign(trials(c).x(end,1)-trials(c).x(1,1));
             trials(c).disturbance=input(c,[4 5 6]);
             v=find(input(c,[4 5 6]));
-            trials(c).disturbcat=2*v-(input(c,3+v)>=0);
+            if isempty(v)
+                trials(c).disturbcat=0;
+            else
+                trials(c).disturbcat=2*v-(input(c,3+v)>=0);
+            end
         end
         unique([trials.dist])
         unique([trials.dir])
@@ -51,40 +67,6 @@ for k=[1 3 4] %:length(subnums)
         save(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'trials','params')
     end
 end
-
-for k=[1 2 4]
-    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
-        name=num2str(subnums(k));
-        input=load(['../Data/Data_pulse/input',name,'.dat']);
-        output=load(['../Data/Data_pulse/output',name,'.dat']);
-        params=getSubjectParams(name);
-        traw=output(:,2);
-        xvafraw=output(:,3:10);
-        trial=output(:,1);
-        f=find(trial==lastTrial(k),1,'last');
-        inds=1:5:f; %Orders of magnitude difference in time consumed.
-        trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
-
-        trials(1).dist=.15;
-        trials(1).dir=-1;
-        trials(1).disturbcat=0;
-
-        cats=[1 0 2];
-
-        for c=2:length(trials)
-            trials(c).origin=input(c-1,2:3);
-            trials(c).target=input(c,2:3);
-            trials(c).dist=norm(trials(c).target-trials(c).origin);
-            trials(c).dir=sign(trials(c).target(1)-trials(c).origin(1));
-            trials(c).disturbcat=cats(sign(input(c,4))+2);
-        end
-        unique([trials.dist])
-        unique([trials.dir])
-        unique([trials.disturbcat])
-        save(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'trials','params')
-    end
-end
-
 
 for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat']);
@@ -93,29 +75,27 @@ for k=1:4
     udirs=unique([trials.dir]);
     sumudists=sum(udists);
     disturbcat=[trials.disturbcat];
+    udisturbcat=unique(disturbcat)
 
     set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
 
     k
     figure(k)
     clf
-    NSP=3;
     UD=-.3;
+    LR=1.8*sumudists;
     Toff=[0 1.9];
-    xoffsets=[0 1.8*sumudists;1.8*sumudists 0];
-    yoffsets=[0 UD];
-
-    htop=subplot(NSP,WIDTH,1:WIDTH*(NSP-1))
+    
     hold on
     for dist=udists
         for dir=udirs
             distn=find(dist==udists);
             dirn=find(dir==udirs);
-            xoff=xoffsets(distn,dirn)
+            xoff=LR(distn,dirn)
             yoff=0;
-            for cc=[0 UD]
-                plot(xoff,yoff+cc,'wo','markerfacecolor','w')
-                plot([0,dir*dist]+xoff,[0 0]+yoff+cc,'w','LineWidth',3)
+            for cc=0:2
+                plot(xoff,yoff+cc*UD,'wo','markerfacecolor','w')
+                plot([0,dir*dist]+xoff,[0 0]+yoff+cc*UD,'w','LineWidth',3)
             end
         end
     end

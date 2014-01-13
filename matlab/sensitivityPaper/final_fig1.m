@@ -1,12 +1,13 @@
 clc
 clear all
 
-if ~exist('finalfig1data.mat','file')
-    load all_white_workspace.mat
+anecd=[6 7 3];
+
+if ~exist('finalfig1data.mat','file')||1
+    load BATCH3.mat
     wh.xvaf=xvaf;
-    wh.x=x;
-    wh.xsim=xsim;
-    wh.yex=yex;
+    wh.xsim=xvaf(:,[1 2]);
+    wh.yex=extract(t,xvaf,'reflex');
 
     t=0:.005:2;
     coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
@@ -16,17 +17,20 @@ if ~exist('finalfig1data.mat','file')
     x=x';
     v=v';
     a=a';
+    fnhxva=[x v a];
+    
+    
     f=zeros(length(t),2);
     f((t>=.1)&(t<=.15),2)=15;
-    xvaf=[x v a f];
-    measuredVals=xvaf;
-    measuredTime=t;
-    [xsim,xsimSM]=forwardSim(paramsPopulator,t,xvaf);
+    
+    xsim,xsimSM]=forwardSim(paramsPopulator,t,xvaf);
     yex=extract(t,[xsim f],'reflex');
     pul.xvaf=xvaf;
     pul.x=x;
     pul.xsim=xsim;
     pul.yex=yex;
+    
+
     
     save('finalfig1data.mat','wh','pul')
 else
@@ -80,7 +84,7 @@ set(ea,'string','Extracted Intended Hand Trajectory')
 
 plot([0 .15],.486*[1 1],'k','linewidth',3)
 text(0,.4855,'15 cm','Horizontalalignment','left','Verticalalignment','top')
-plot(.0005*[1 1],[.505 .515],'Color',.6*[1 1 1],'linewidth',3)
+quiver([.0005],[.505],[0],qscale*[10],0,'Color',.6*[1 1 1],'linewidth',1)
 text(.0005,.51,'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
 set(0,'defaulttextinterpreter','none')

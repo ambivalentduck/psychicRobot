@@ -18,7 +18,7 @@ loadT=toc;
 tic
 s01=length(traw);
 
-filtn=128;
+filtn=64;
 filtType='loess';
 
 t=linspace(traw(1),traw(end),s01)';
@@ -128,8 +128,12 @@ tic
 %Show key issue: force accrual in time has a steady slope due to force
 %sensor error
 
-filtn=60/gT; %1 minute
-f2=[smooth(frot(:,1),filtn,filtType) smooth(frot(:,2),filtn,filtType)];
+downS=10;
+filtn=5*60/(downS*gT); %5 minutes
+filtType='lowess';
+%f2=[smooth(frot(:,1),filtn,filtType) smooth(frot(:,2),filtn,filtType)];
+f2=[smooth(frot(1:downS:end,1),filtn,filtType) smooth(frot(1:downS:end,2),filtn,filtType)];
+f2=interp1(t(1:downS:end),f2,t);
 frot=frot-f2;
 frot_detrend=frot;
 
