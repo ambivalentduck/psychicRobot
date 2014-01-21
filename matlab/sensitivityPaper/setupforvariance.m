@@ -10,11 +10,12 @@ x=x';
 v=v';
 a=a';
 
-for k=1:5
+for k=6:10
     blah=find(t>.7);
     w=randn(2*length(t),2);
-    [Fb,Fa]=butter(10,3*.005,'low');
-    f=7*filter(Fb,Fa,w);
+    [Fb,Fa]=butter(4,5*2*pi*.005,'low'); %6-10
+    %[Fb,Fa]=butter(10,3*.005,'low'); %1-5
+    f=2.7*1.5*filter(Fb,Fa,w);
     f=f(length(t)+1:end,:);
     f(blah:end,:)=0; %turn it off when you get close
 
@@ -43,6 +44,6 @@ for k=1:5
     vals(k).xvaf=xvaf;
 end
 
-for k=1:5
+for k=6:10
     simsforvariance(num2str(k),vals(k).t,vals(k).xvaf)
 end
