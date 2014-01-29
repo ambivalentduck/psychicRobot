@@ -31,7 +31,7 @@ yraw=y;
 
 vmy=vecmag(y(:,3:4));
 [trash,peak]=max(vmy(1:upperlim));
-vals=findpeaks(vmy(1:upperlim),'minpeakheight',.1);
+vals=findpeaks(vmy(1:upperlim),'minpeakheight',minpeakheight);
 
 expectedsubs=maxlumps;
 
@@ -97,8 +97,8 @@ while k<maxlumps
         dpunit1(kk)=dp1(kk)/norm(y(kk,3:4));
     end
     gu1=gradient(dpunit1);
-    [vals,locs1]=findpeaks(gu1,'minpeakheight',.01);
-    [vals,locs2]=findpeaks(-gu1,'minpeakheight',.01);
+    [vals,locs1]=findpeaks(gu1,'minpeakheight',minpeakheight);
+    [vals,locs2]=findpeaks(-gu1,'minpeakheight',minpeakheight);
     lower1=locs1(find(locs1<peak,1,'last'));
     upper1=locs2(find(locs2>peak,1,'first'));
     if isempty(lower1)
@@ -135,9 +135,8 @@ while k<maxlumps
     end
     gu2=norm(y(peak,3:4))*gu2/max(abs(gu2));
 
-    unitslope=[-line2(1) line1(1)]/norm([-line2(1) line1(1)]);
-    vec1=(y(peak,1:2)-y(lower2,1:2))-dot(y(peak,1:2)-y(lower2,1:2),unitslope)*unitslope;
-    vec2=(y(peak,1:2)-y(upper2,1:2))-dot(y(peak,1:2)-y(upper2,1:2),unitslope)*unitslope;
+    vec1=dot(y(peak,1:2)-y(lower2,1:2),dr)*dr;
+    vec2=dot(y(peak,1:2)-y(upper2,1:2),dr)*dr;
     if norm(vec1)<norm(vec2)
         vec=vec1;
         ispan=peak-lower2;

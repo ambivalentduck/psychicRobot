@@ -1,94 +1,56 @@
 clc
 clear all
 
-if ~exist('justMUE4fig2.mat','file')
-    if ~exist('varSens_all.mat','file')
-        load all_white_workspace.mat
+if ~exist('justMUE4fig2.mat','file')||1
+    whites=6:10;
+    whites=whites(randperm(5));
+    loadme=[whites(1:4) 11:14];
 
-        white.yex=yex;
-        white.xvaf=xvaf;
-        white.A=simA;
-        white.B=simB;
-        white.AB=simAB;
+    bins=0:.005:.15;
 
-        t=0:.005:2;
-        coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
-        tcalc=t;
-        tcalc(t>=.7)=.7;
-        [x,v,a]=minjerk(coeff,tcalc);
-        x=x';
-        v=v';
-        a=a';
+    setGlobals(paramsPopulator)
 
-        f=zeros(length(t),2);
+    for k=1:length(loadme)
+        load(['BATCH',num2str(loadme(k)),'.mat'])
+        yex=extract(t,xvaf,'reflex');
 
-        f((t>=.1)&(t<=.15),2)=15;
+        [trash,ref]=getMUE(bins,0*bins,yex);
 
-        xvaf=[x v a f];
+        mueA=zeros(1000,1);
+        mueB=zeros(1000,1);
+        mueAB=zeros(1000,20);
 
-        load baselines.mat
-        load KICK.mat
-
-        kick.xvaf=xvaf;
-        kick.yex=yex;
-        kick.A=simA;
-        kick.B=simB;
-        kick.AB=simAB;
-
-        save('varSens_all.mat','white','kick');
-        clc
-        clear all
-    end
-
-    load varSens_all.mat
-
-    if ~isfield(white,'mueAB')
-
-        bins=0:.005:.15;
-
-        [trash,kick.ref]=getMUE(bins,0*bins,kick.yex);
-        [trash,white.ref]=getMUE(bins,0*bins,white.yex);
-
-        white.mueA=zeros(size(white.A));
-        white.mueB=zeros(size(white.B));
-        white.mueAB=zeros(size(white.AB));
-        kick.mueA=zeros(size(kick.A));
-        kick.mueB=zeros(size(kick.B));
-        kick.mueAB=zeros(size(kick.AB));
-
-        for k=1:length(kick.A)
-            white.mueA(k)=getMUE(bins,white.ref,white.A(k).y);
-            white.mueB(k)=getMUE(bins,white.ref,white.B(k).y);
-            kick.mueA(k)=getMUE(bins,kick.ref,kick.A(k).y);
-            kick.mueB(k)=getMUE(bins,kick.ref,kick.B(k).y);
-            for kk=1:size(kick.AB,1)
-                white.mueAB(kk,k)=getMUE(bins,white.ref,white.AB(kk,k).y);
-                kick.mueAB(kk,k)=getMUE(bins,kick.ref,kick.AB(kk,k).y);
+        for c=1:1000
+            mueA(c)=getMUE(bins,ref,simA(c).y);
+            mueB(c)=getMUE(bins,ref,simB(c).y);
+            for cc=1:20
+                mueAB(c,cc)=getMUE(bins,ref,simAB(cc,c).y);
             end
         end
-        save('varSens_all.mat','white','kick');
+        justMUE(k).mueA=mueA;
+        justMUE(k).mueB=mueB;
+        justMUE(k).mueAB=mueAB;
     end
 
-    comb.A=[white.mueA kick.mueA];
-    comb.B=[white.mueB kick.mueB];
-    comb.AB=[white.mueAB kick.mueAB];
-
-    save('justMUE4fig2.mat','comb')
+    save('justMUE4fig2.mat','justMUE')
 else
     load justMUE4fig2.mat
 end
 
-S=zeros(size(comb.AB,1),1);
-ST=S;
-
-N=length(comb.A);
-
-for k=1:length(S)
-    S(k)=1/(2*N)*sum((comb.A-comb.AB(k,:)).^2);
-    ST(k)=1/N*sum(comb.B.*(comb.AB(k,:)-comb.A));
+for k=1:8
+    justMUE(k).rawS=zeros(20,1000);
+    justMUE(k).rawST=zeros(20,1000);
+    justMUE(k).total=std(justMUE(k).mueAB(:));
+    for kk=1:20
+        justMUE(k).rawS(kk,:)=(1000*abs(justMUE(k).mueA-justMUE(k).mueAB(:,k))/2)';
+        justMUE(k).rawST(kk,:)=1000*sqrt(abs(justMUE(k).mueB.*(justMUE(k).mueAB(:,k)-justMUE(k).mueA)))';
+    end
 end
 
-vT=var(comb.A(:));
+% for k=1:length(S)
+%     S(k)=1/(2*N)*sum((comb.A-comb.AB(k,:)).^2);
+%     ST(k)=1/N*sum(comb.B.*(comb.AB(k,:)-comb.A));
+% end
 
 names=paramsPopulator('latex');
 dat=paramsPopulator('burdet');

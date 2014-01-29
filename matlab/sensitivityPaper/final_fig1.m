@@ -2,7 +2,7 @@ clc
 clear all
 
 if ~exist('finalfig1data.mat','file')
-    setGlobals(paramsPopulator('burdet'))
+    setGlobals(paramsPopulator)
     
     load BATCH10.mat
     wh.xvaf=xvaf;
