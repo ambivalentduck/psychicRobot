@@ -2,11 +2,11 @@ clc
 clear all
 
 if ~exist('finalfig1data.mat','file')
-    load all_white_workspace.mat
-    wh.xvaf=xvaf;
-    wh.x=x;
-    wh.xsim=xsim;
-    wh.yex=yex;
+    setGlobals(paramsPopulator('burdet'))
+    
+    load BATCH10.mat
+
+   
 
     t=0:.005:2;
     coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
@@ -16,23 +16,45 @@ if ~exist('finalfig1data.mat','file')
     x=x';
     v=v';
     a=a';
-    f=zeros(length(t),2);
-    f((t>=.1)&(t<=.15),2)=15;
-    xvaf=[x v a f];
-    measuredVals=xvaf;
-    measuredTime=t;
-    [xsim,xsimSM]=forwardSim(paramsPopulator,t,xvaf);
-    yex=extract(t,[xsim f],'reflex');
-    pul.xvaf=xvaf;
-    pul.x=x;
-    pul.xsim=xsim;
-    pul.yex=yex;
+    fnhxva=[x v a];
+    wh.xvaf=xvaf;
+    wh.x=x;
+    wh.xsim=xvaf(:,[1 2]);
+    wh.yex=extract(t,xvaf,'reflex');
     
-    save('finalfig1data.mat','wh','pul')
+    f=zeros(length(t),2);
+    %early
+    first=find(x(:,1)>=.015,1,'first');
+    last=find(t>=(t(first)+.15),1,'first');
+    fearly=f;
+    fearly(first:last,2)=15;
+    
+    xsim=forwardSim(paramsPopulator,t,[fnhxva fearly]);
+    yex=extract(t,[xsim fearly],'reflex');
+    epul.xvaf=[xsim fearly];
+    epul.x=x;
+    epul.xsim=xsim;
+    epul.yex=yex;
+    
+    f=zeros(length(t),2);
+    %early
+    first=find(x(:,1)>=.075,1,'first');
+    last=find(t>=(t(first)+.15),1,'first');
+    flate=f;
+    flate(first:last,2)=15;
+    
+    xsim=forwardSim(paramsPopulator,t,[fnhxva flate]);
+    yex=extract(t,[xsim flate],'reflex');
+    lpul.xvaf=[xsim flate];
+    lpul.x=x;
+    lpul.xsim=xsim;
+    lpul.yex=yex;
+    
+    save('finalfig1data.mat','wh','epul','lpul')
 else
     load finalfig1data.mat
 end
-6
+
 qscale=.001;
 SKIP=2;
 yoff=.04;
@@ -41,17 +63,25 @@ figure(1)
 clf
 hold on
 
-plot(wh.xsim(:,1),wh.xsim(:,2),'k-')
-plot(pul.xsim(:,1),pul.xsim(:,2)+yoff,'k-')
-quiver(wh.xsim(1:SKIP:end,1),wh.xsim(1:SKIP:end,2),qscale*wh.xvaf(1:SKIP:end,7),qscale*wh.xvaf(1:SKIP:end,8),0,'Color',.6*[1 1 1])
-quiver(pul.xsim(1:SKIP:end,1),pul.xsim(1:SKIP:end,2)+yoff,qscale*pul.xvaf(1:SKIP:end,7),qscale*pul.xvaf(1:SKIP:end,8),0,'Color',.6*[1 1 1])
+gray=.5*[1 1 1];
+green=[.3 1 .3];
+red=[1 .3 .3];
+blue=[.3 .3 1];
+black=[0 0 0];
 
-exgray=.4;
-ingray=.05;
-plot(wh.x(:,1),wh.x(:,2),'-','color',ingray*[1 1 1],'linewidth',6)
-plot(pul.x(:,1),pul.x(:,2)+yoff,'-','color',ingray*[1 1 1],'linewidth',6)
-plot(wh.yex(:,1),wh.yex(:,2),'.','color',exgray*[1 1 1],'linewidth',1)
-plot(pul.yex(:,1),pul.yex(:,2)+yoff,'.','color',exgray*[1 1 1],'linewidth',1)
+plotme(1)=epul;
+plotme(2)=lpul;
+plotme(3)=wh;
+
+offset=[0 -.05 -.07];
+
+for k=1:3
+plot(plotme(k).xsim(:,1),plotme(k).xsim(:,2)+offset(k),'-','Color',black,'Linewidth',2)
+quiver(plotme(k).xsim(1:SKIP:end,1),plotme(k).xsim(1:SKIP:end,2)+offset(k),qscale*plotme(k).xvaf(1:SKIP:end,7),qscale*plotme(k).xvaf(1:SKIP:end,8),0,'Color',gray)
+plot(plotme(k).x(1:SKIP:end,1),plotme(k).x(1:SKIP:end,2)+offset(k),'o-','Color',green)
+plot(plotme(k).yex(1:SKIP:end,1),plotme(k).yex(1:SKIP:end,2)+offset(k),'.-','Color',red)
+end
+
 
 margin=.02;
 set(gcf,'position',[250 300 625 305])
@@ -78,9 +108,9 @@ set(ea,'position',[0.6288    0.7443   -0.0240   -0.0722])
 set(ea,'string','Extracted Intended Hand Trajectory')
 
 
-plot([0 .15],.486*[1 1],'k','linewidth',3)
-text(0,.4855,'15 cm','Horizontalalignment','left','Verticalalignment','top')
-plot(.0005*[1 1],[.505 .515],'Color',.6*[1 1 1],'linewidth',3)
+plot([0 .01],.486*[1 1],'k','linewidth',3)
+text(0,.4855,'1 cm','Horizontalalignment','left','Verticalalignment','top')
+quiver([.0005],[.505],[0],qscale*[10],0,'Color',.6*[1 1 1],'linewidth',1)
 text(.0005,.51,'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
 set(0,'defaulttextinterpreter','none')
