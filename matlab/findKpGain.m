@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=1 %:4
+for k=3 %:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
     % Categorize by start/end pair
@@ -34,8 +34,52 @@ for k=1 %:4
     urc=unique(reachcat);
     urc=urc(2:end);
 
+    dcats0=[trials.disturbcat];
+
+    if 1 %k==2
+        warning off all
+        %No clue why, but the input file for #3 is whack. Just infer it.
+        for kk=1:length(trials)
+            if sum(vecmag(trials(kk).f))<30
+                trials(kk).disturbance=[0 0 0];
+            else
+                [val,ind]=findpeaks(abs(trials(kk).f(:,1)),'minpeakheight',3);
+                if length(ind)>2
+                    trials(kk).disturbance=[0 0 1.5];
+                else
+                    [val,ind]=findpeaks(abs(trials(kk).f(:,2)),'minpeakheight',8,'npeaks',1);
+                    if length(ind)>=1
+                        if (sign(trials(kk).f(ind,2))*sign(trials(kk).x(end,1)-trials(kk).x(1,1)))<0
+                            mag=15;
+                        else
+                            mag=-15;
+                        end
+                        if ((trials(kk).x(ind-28,1)-trials(kk).x(1,1))/(trials(kk).x(end,1)-trials(kk).x(1,1)))>.3
+                            trials(kk).disturbance=[0 mag 0];
+                        else
+                            trials(kk).disturbance=[mag 0 0];
+                        end
+                    else
+
+                    end
+                end
+            end
+            v=find(trials(kk).disturbance);
+            if isempty(v)
+                trials(kk).disturbcat=0;
+            else
+                trials(kk).disturbcat=2*v-(trials(kk).disturbance(v)>=0);
+            end
+        end
+        warning on all
+    end
+
     % Use unperturbed examples for a reference trajectory for each start/end pair.
     dcats=[trials.disturbcat];
+
+    figure(500)
+    clf
+    plot(dcats0,dcats+.3*rand(size(dcats)),'.')
 
     nclean=3;
     clean=0*dcats;
@@ -95,6 +139,11 @@ for k=1 %:4
         f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
         for fk=1:length(f)
             [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
+            if isempty(ind)
+                continue
+                disp(['Lowering the min for ',num2str(f(fk))])
+                [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',0,'npeaks',1);
+            end
             time=trials(f(fk)).t-trials(f(fk)).t(ind);
             rforce=sign(trials(f(fk)).f(ind,2))*trials(f(fk)).f(:,2);
             ft=find(time<-.2);
@@ -159,12 +208,13 @@ for k=1 %:4
     end
     w=[storeme.W];
     m=[w(1,:)' 0*w(1,:)'+1]\w(2,:)'
-    wx=-2:.1:4;
+    forrange=[storeme.W]';
+    wx=min(forrange(:,1)):.1:max(forrange(:,1))
     plot(wx,m(1)*wx+m(2),'k-')
     xlabel('Kp0 Gain')
     ylabel('Kp1 Gain')
     title('Fit to first 100ms of pulse. Colors are direction/length pairs')
-    
+
     figure(7)
     clf
     hold on
@@ -177,9 +227,9 @@ for k=1 %:4
         Kx=[storeme(U,:).Kx]';
         Sy=[storeme(U,:).Sy]';
         weights=Kx\Sy;
-        kp0gain=weights(1);
-        kp1gain=weights(2);
-        
+        kp0gain=max(.1,weights(1)); %Lower bound because...srsly?
+        kp1gain=max(.1,weights(2));
+
         for fk=1:length(f)
             plot(trials(f(fk)).x(:,1)+xoffset*fk,trials(f(fk)).x(:,2)+yoffset*U,'linewidth',.01)
             plot(trials(f(fk)).x(end,1)+xoffset*fk,trials(f(fk)).x(end,2)+yoffset*U,'rx')
@@ -188,8 +238,13 @@ for k=1 %:4
             plot(storeme(U,fk).X(:,1)+xoffset*fk,storeme(U,fk).Y(:,1)+yoffset*U,'g')
             weights=X\Y;
             if fk<=inf %5
-                [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
-                y=extract(trials(f(fk)).t(1:ind+10)',[trials(f(fk)).x trials(f(fk)).v trials(f(fk)).a trials(f(fk)).f],'reflex');
+                %[val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
+                onset=find(vecmag(trials(f(fk)).v)>.1,1,'first');
+                start=max(onset-10,1);
+                xvaf=[trials(f(fk)).x trials(f(fk)).v trials(f(fk)).a trials(f(fk)).f];
+                y=extract(trials(f(fk)).t(start:end)',xvaf(start:end,:),'reflex');
+                trials(f(fk)).y=y;
+                trials(f(fk)).ygains=[kp0gain kp1gain];
                 plot(y(:,1)+xoffset*fk,y(:,2)+yoffset*U,'r')
                 drawnow
             end
@@ -198,6 +253,8 @@ for k=1 %:4
     axis equal
     legend('Hand','End of Reach','Presumed Intended for Fit','Extracted Intended')
     title('Testing Fit Quality')
+
+    save(['../Data/Data_pulse/pulse',num2str(k),'y.mat'],'params','trials','storeme')
 end
 
 

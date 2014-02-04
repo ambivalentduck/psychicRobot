@@ -47,6 +47,14 @@ for k=1:8
     end
 end
 
+allS=[justMUE.rawS];
+allST=[justMUE.rawST];
+
+lrs=length(allS);
+rp=randperm(lrs);
+plotS=allS(:,rp(1:1000));
+plotST=allST(:,rp(1:1000));
+
 % for k=1:length(S)
 %     S(k)=1/(2*N)*sum((comb.A-comb.AB(k,:)).^2);
 %     ST(k)=1/N*sum(comb.B.*(comb.AB(k,:)-comb.A));
