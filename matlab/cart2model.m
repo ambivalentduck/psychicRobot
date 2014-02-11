@@ -1,4 +1,16 @@
-function [S,C0,C1]=cart2model(X,Y)
+function [SNE,C0,C1]=cart2model(X,Y)
+
+% Assume that forces perpendicular to the direction of movement don't
+% *quickly* effect parallel progress
+% (X is x,y and derivatives measured; Y is y-component desired/typical)
+
+% SNE=sum of non-error-dependent terms
+% Ep=position error
+% Ev=velocity error
+% Tm=torque vector, needed for Perrault-Franklin style fitting
+% C0=for fitting a constant gain to the Torque independent stiffness of Burdet
+% C1=for fitting a constant gain to the Torque independent stiffness of Burdet
+
 
 global fJ getAlpha
 
