@@ -177,8 +177,10 @@ for k=1 %:4
             quiver(trials(f(fk)).x(fq,1),trials(f(fk)).x(fq,2)+yoffset*U,trials(f(fk)).f(fq,1),trials(f(fk)).f(fq,2),'Color','g')
             plot(trials(f(fk)).x(end,1),trials(f(fk)).x(end,2)+yoffset*U,'rx')
             storeme(U,fk).X=[trials(f(fk)).x(fq,:) trials(f(fk)).v(fq,:) trials(f(fk)).a(fq,:) trials(f(fk)).f(fq,:)];
-            storeme(U,fk).Y=gaussianWeightedRegression(catx(:,1),caty,trials(f(fk)).x(fq,1),1000);
-            [storeme(U,fk).S,storeme(U,fk).K0,storeme(U,fk).K1]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
+            Y=gaussianWeightedRegression(catx(:,1),caty,trials(f(fk)).x(fq,1),1000);
+            Y(:,1)=Y(:,1)-(Y(1,1)-trials(f(fk)).x(fq(1),2)); %If the "shape" holds, this corrects for starting bias.
+            storeme(U,fk).Y=Y;
+            [storeme(U,fk).Ts,storeme(U,fk).E,storeme(U,fk).Eb]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
             plot(trials(f(fk)).x(fq,1),storeme(U,fk).Y(:,1)+yoffset*U,'c')
         end
     end
@@ -190,9 +192,17 @@ for k=1 %:4
     colors='rgbcmy';
     for U=1:length(urc)
         for kk=1:size(storeme,2)
-            if isempty(storeme(U,kk).S)
+            if isempty(storeme(U,kk).Ts)
                 continue
             end
+            Ksm=storeme(U,kk).E(:,1:4)\storeme(U,kk).Ts
+            U
+            kk
+        end
+    end
+    if 1
+        if 1
+            continue
             Kx=[storeme(U,kk).K0(:,1) storeme(U,kk).K1(:,1); storeme(U,kk).K0(:,2) storeme(U,kk).K1(:,2)];
             Sy=[storeme(U,kk).S(:,1);storeme(U,kk).S(:,2)];
             weights=Kx\Sy;
