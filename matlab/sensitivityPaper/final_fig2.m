@@ -1,7 +1,7 @@
 clc
 clear all
 
-if ~exist('justMUE4fig2.mat','file')||1
+if ~exist('justMUE4fig2.mat','file')
     whites=6:10;
     whites=whites(randperm(5));
     loadme=[whites(1:4) 11:14];
@@ -42,8 +42,8 @@ for k=1:8
     justMUE(k).rawST=zeros(20,1000);
     justMUE(k).total=std(justMUE(k).mueAB(:));
     for kk=1:20
-        justMUE(k).rawS(kk,:)=(1000*abs(justMUE(k).mueA-justMUE(k).mueAB(:,k))/2)';
-        justMUE(k).rawST(kk,:)=1000*sqrt(abs(justMUE(k).mueB.*(justMUE(k).mueAB(:,k)-justMUE(k).mueA)))';
+        justMUE(k).rawS(kk,:)=(1000*abs(justMUE(k).mueA-justMUE(k).mueAB(:,kk))/2)';
+        justMUE(k).rawST(kk,:)=1000*sqrt(abs(justMUE(k).mueB.*(justMUE(k).mueAB(:,kk)-justMUE(k).mueA)))';
     end
 end
 
@@ -52,8 +52,39 @@ end
 %     ST(k)=1/N*sum(comb.B.*(comb.AB(k,:)-comb.A));
 % end
 
+figure(6)
+clf
+hold on
+spacer=.1;
+NPLOT=1000;
+scatter=.15*(rand(1,NPLOT)-.5);
+rawS=[justMUE.rawS];
+rawST=[justMUE.rawST];
+R=randperm(size(rawS,2));
+oNPLOT=ones(1,NPLOT);
+MSIZE=2;
+for k=1:20
+    plot(rawS(k,R(1:NPLOT)),(k+spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[.5 0 .5])
+    plot(rawST(k,R(1:NPLOT)),(k-spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[0 .5 .5])
+end
+
 names=paramsPopulator('latex');
 dat=paramsPopulator('burdet');
+
+set(gca,'ytick',1:20)
+set(gca,'yticklabel',names(dat(:,4)>0))
+
+ylim([0 21])
+
+xlabel('Change in MUE, mm')
+
+set(0,'defaulttextinterpreter','none')
+laprint(gcf,'fig2raw','scalefonts','off','asonscreen','on')
+
+return
+
+
+
 figure(6)
 clf
 set(gcf,'position',[375   261   629   540])

@@ -10,7 +10,7 @@ x=x';
 v=v';
 a=a';
 
-for k=6:10
+for k=[] %6:10
     blah=find(t>.7);
     w=randn(2*length(t),2);
     [Fb,Fa]=butter(4,5*2*pi*.005,'low'); %6-10
@@ -44,6 +44,37 @@ for k=6:10
     vals(k).xvaf=xvaf;
 end
 
-for k=6:10
+f=zeros(length(t),2);
+k=10;
+for force=[-15 15]
+    for onset=([.1 .5]*.15)
+        k=k+1;
+        first=find(x(:,1)>=onset,1,'first');
+        last=find(t>=(t(first)+.15),1,'first');
+        fspecific=f;
+        fspecific(first:last,2)=force;
+
+        xvaf=[x v a fspecific];
+        xsim=forwardSim(paramsPopulator,t,xvaf);
+
+        figure(k)
+        clf
+        hold on
+        plot(x(:,1),x(:,2),'b',xsim(:,1),xsim(:,2),'k.')
+        quiver(xsim(:,1),xsim(:,2),fspecific(:,1),fspecific(:,2),'b')
+        axis equal
+
+        yex=extract(t,[xsim fspecific],'reflex');
+        plot(yex(:,1),yex(:,2),'r.')
+        plot(x(:,1),x(:,2),'b')
+
+        legend('Intent','Forward Sim','Forces','Extracted Intent')
+
+        vals(k).t=t;
+        vals(k).xvaf=[xsim fspecific];
+    end
+end
+
+for k=11:14
     simsforvariance(num2str(k),vals(k).t,vals(k).xvaf)
 end

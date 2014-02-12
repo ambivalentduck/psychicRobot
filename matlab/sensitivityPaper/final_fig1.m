@@ -2,12 +2,9 @@ clc
 clear all
 
 if ~exist('finalfig1data.mat','file')
-    setGlobals(paramsPopulator)
+    setGlobals(paramsPopulator('burdet'))
     
     load BATCH10.mat
-    wh.xvaf=xvaf;
-    wh.xsim=xvaf(:,[1 2]);
-    wh.yex=extract(t,xvaf,'reflex');
 
     t=0:.005:2;
     coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
@@ -18,7 +15,10 @@ if ~exist('finalfig1data.mat','file')
     v=v';
     a=a';
     fnhxva=[x v a];
+    wh.xvaf=xvaf;
     wh.x=x;
+    wh.xsim=xvaf(:,[1 2]);
+    wh.yex=extract(t,xvaf,'reflex');
     
     f=zeros(length(t),2);
     %early
@@ -62,22 +62,24 @@ clf
 hold on
 
 gray=.5*[1 1 1];
-green=[.3 1 .3];
+green=[.1 .7 .3];
 red=[1 .3 .3];
 blue=[.3 .3 1];
+black=[0 0 0];
 
-plot(wh.xsim(:,1),wh.xsim(:,2),'k-')
-plot(epul.xsim(:,1),epul.xsim(:,2)+yoff,'k-')
-quiver(wh.xsim(1:SKIP:end,1),wh.xsim(1:SKIP:end,2),qscale*wh.xvaf(1:SKIP:end,7),qscale*wh.xvaf(1:SKIP:end,8),0,'Color',.6*[1 1 1])
-quiver(epul.xsim(1:SKIP:end,1),epul.xsim(1:SKIP:end,2)+yoff,qscale*epul.xvaf(1:SKIP:end,7),qscale*epul.xvaf(1:SKIP:end,8),0,'Color',.6*[1 1 1])
+plotme(1)=epul;
+plotme(2)=lpul;
+plotme(3)=wh;
 
+offset=[0 -.05 -.07];
 
-exgray=.4;
-ingray=.05;
-plot(wh.x(:,1),wh.x(:,2),'-','color',ingray*[1 1 1],'linewidth',6)
-plot(epul.x(:,1),epul.x(:,2)+yoff,'-','color',ingray*[1 1 1],'linewidth',6)
-plot(wh.yex(:,1),wh.yex(:,2),'.','color',exgray*[1 1 1],'linewidth',1)
-plot(epul.yex(:,1),epul.yex(:,2)+yoff,'.','color',exgray*[1 1 1],'linewidth',1)
+for k=1:3
+plot(plotme(k).xsim(:,1),plotme(k).xsim(:,2)+offset(k),'-','Color',black,'Linewidth',2)
+quiver(plotme(k).xsim(1:SKIP:end,1),plotme(k).xsim(1:SKIP:end,2)+offset(k),qscale*plotme(k).xvaf(1:SKIP:end,7),qscale*plotme(k).xvaf(1:SKIP:end,8),0,'Color',gray)
+plot(plotme(k).x(1:SKIP:end,1),plotme(k).x(1:SKIP:end,2)+offset(k),'o-','Color',green,'markerfacecolor',green)
+plot(plotme(k).yex(1:SKIP:end,1),plotme(k).yex(1:SKIP:end,2)+offset(k),'.-','Color',red,'markersize',12)
+end
+
 
 margin=.02;
 set(gcf,'position',[250 300 625 305])
