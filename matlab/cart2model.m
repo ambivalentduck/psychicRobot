@@ -1,4 +1,4 @@
-function [SNE,OUT,BOUT]=cart2model(X,Y)
+function [SNE,OUT,BOUT,oT]=cart2model(X,Y)
 
 % Assume that forces perpendicular to the direction of movement don't
 % *quickly* effect parallel progress
@@ -15,6 +15,7 @@ function [SNE,OUT,BOUT]=cart2model(X,Y)
 global fJ getAlpha
 
 SNE=zeros(2,size(X,1));
+oT=zeros(6,size(X,1));
 Ep=SNE;
 Ev=SNE;
 Tm=SNE;
@@ -41,6 +42,7 @@ for k=1:size(X,1)
     Tff=D_des*qdes(5:6)+C_des;
     Tinertial=D_real*qreal(5:6)+C_real;
     SNE(:,k)=Tff-Tinertial-torque;
+    oT(:,k)=[Tff; Tinertial; torque];
     
     Ep(:,k)=qreal(1:2)-qdes(1:2);
     Ev(:,k)=qreal(3:4)-qdes(3:4);
@@ -51,7 +53,7 @@ SNE=SNE';
 Ep=Ep';
 Ev=Ev';
 Tm=Tm';
+oT=oT';
 
 OUT=[Ep Ev Ep.*Tm Ev.*Tm];
 BOUT=[(Ep+Ev/12)*kp0' (Tm.*(Ep+Ev/12))*kp1'];
-[BOUT(:,[1 3]);BOUT(:,[2 4])]\[SNE(:,1); SNE(:,2)]

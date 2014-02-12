@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=1 %:4
+for k=4 %:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
     % Categorize by start/end pair
@@ -36,7 +36,7 @@ for k=1 %:4
 
     dcats0=[trials.disturbcat];
 
-    if 1 %k==2
+    if 3 %k==2
         warning off all
         %No clue why, but the input file for #3 is whack. Just infer it.
         for kk=1:length(trials)
@@ -163,8 +163,8 @@ for k=1 %:4
     figure(5)
     clf
     hold on
-    fitlower=.05;
-    fitupper=.2;
+    fitlower=.07;
+    fitupper=.17;
     for U=1:length(urc)
         f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
         catx=[catme(U,:).x]';
@@ -180,7 +180,7 @@ for k=1 %:4
             Y=gaussianWeightedRegression(catx(:,1),caty,trials(f(fk)).x(fq,1),1000);
             Y(:,1)=Y(:,1)-(Y(1,1)-trials(f(fk)).x(fq(1),2)); %If the "shape" holds, this corrects for starting bias.
             storeme(U,fk).Y=Y;
-            [storeme(U,fk).Ts,storeme(U,fk).E,storeme(U,fk).Eb]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
+            [storeme(U,fk).Ts,storeme(U,fk).E,storeme(U,fk).Eb,storeme(U,fk).oT]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
             plot(trials(f(fk)).x(fq,1),storeme(U,fk).Y(:,1)+yoffset*U,'c')
         end
     end
@@ -195,22 +195,23 @@ for k=1 %:4
             if isempty(storeme(U,kk).Ts)
                 continue
             end
-            Ksm=storeme(U,kk).E(:,1:4)\storeme(U,kk).Ts
-            U
-            kk
+            BOUT=storeme(U,kk).Eb;
+            SNE=storeme(U,kk).Ts;
+            Gb=[BOUT(:,[1 3]);BOUT(:,[2 4])]\[SNE(:,1); SNE(:,2)];
+            %Kx=[storeme(U,kk).K0(:,1) storeme(U,kk).K1(:,1); storeme(U,kk).K0(:,2) storeme(U,kk).K1(:,2)];
+            %Sy=[storeme(U,kk).S(:,1);storeme(U,kk).S(:,2)];
+            %weights=Kx\Sy;
+            plot(Gb(1),Gb(2),[colors(U),'.'])
+            %storeme(U,kk).Kx=Kx';
+            %storeme(U,kk).Sy=Sy';
+            %storeme(U,kk).W=weights;
         end
-    end
-    if 1
-        if 1
-            continue
-            Kx=[storeme(U,kk).K0(:,1) storeme(U,kk).K1(:,1); storeme(U,kk).K0(:,2) storeme(U,kk).K1(:,2)];
-            Sy=[storeme(U,kk).S(:,1);storeme(U,kk).S(:,2)];
-            weights=Kx\Sy;
-            plot(weights(1),weights(2),[colors(U),'.'])
-            storeme(U,kk).Kx=Kx';
-            storeme(U,kk).Sy=Sy';
-            storeme(U,kk).W=weights;
-        end
+        E=vertcat(storeme(U,:).E);
+        TR=vertcat(storeme(U,:).Ts);
+        Ta=vertcat(storeme(U,:).oT);
+        [Ta(:,[1 2 5 6]) E]\Ta(:,4)
+        Ksm=(E(:,1:4)\TR)'
+        continue
         Kx=[storeme(U,:).Kx]';
         Sy=[storeme(U,:).Sy]';
         weights=Kx\Sy;
