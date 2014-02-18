@@ -31,7 +31,7 @@ for k=1:size(X,1)
     torque=-fJq'*X(k,7:8)'; %This line could scrooge it... with the -sign
     qreal=[q; qdot; qddot];
     [D_real,C_real]=computeDC(qreal(1:2),qreal(3:4));
-    
+
     q=ikin([X(k,1) Y(k,1)]);
     fJq=fJ(q);
     qdot=fJq\[X(k,3) Y(k,2)]';
