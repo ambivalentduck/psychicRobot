@@ -75,7 +75,10 @@ offset=[0 -.05 -.07];
 
 for k=1:3
 plot(plotme(k).xsim(:,1),plotme(k).xsim(:,2)+offset(k),'-','Color',black,'Linewidth',2)
-quiver(plotme(k).xsim(1:SKIP:end,1),plotme(k).xsim(1:SKIP:end,2)+offset(k),qscale*plotme(k).xvaf(1:SKIP:end,7),qscale*plotme(k).xvaf(1:SKIP:end,8),0,'Color',gray)
+%quiver(plotme(k).xsim(1:SKIP:end,1),plotme(k).xsim(1:SKIP:end,2)+offset(k),qscale*plotme(k).xvaf(1:SKIP:end,7),qscale*plotme(k).xvaf(1:SKIP:end,8),0,'Color',gray)
+X=[plotme(k).xsim(1:SKIP:end,1) plotme(k).xsim(1:SKIP:end,2)+offset(k)];
+Y=X+qscale*plotme(k).xvaf(1:SKIP:end,7:8);
+arrow(X,Y,gray,.3)
 plot(plotme(k).x(1:SKIP:end,1),plotme(k).x(1:SKIP:end,2)+offset(k),'o-','Color',green,'markerfacecolor',green)
 plot(plotme(k).yex(1:SKIP:end,1),plotme(k).yex(1:SKIP:end,2)+offset(k),'.-','Color',red,'markersize',12)
 end
@@ -89,26 +92,36 @@ set(gcf,'color',[1 1 1])
 axis equal
 axis off
 
-fa=annotation('textarrow');
-set(fa,'position',[0.0960    0.9279   -0.0320   -0.0656])
-set(fa,'string','Force Disturbance')
+latexscale=1.2;
 
-ha=annotation('textarrow');
-set(ha,'position',[ 0.2704    0.8787   -0.0258   -0.0670])
-set(ha,'string','Simulated Hand Trajectory')
+x=.077;
+y=.455;
+l=.01*sqrt(2)/2*[-1 1];
+arrow([x y]+latexscale*l,[x y],gray,.3,2)
+text(x+l(1), y+l(2),'Force Disturbance','horizontalalignment','right','Verticalalignment','bottom','color',gray)
 
-ia=annotation('textarrow');
-set(ia,'position',[ 0.3824    0.7837   -0.0368   -0.0984])
-set(ia,'string','Intended Hand Trajectory')
+x=.1185;
+y=.53;
+l=-.01*sqrt(2)/2*[1 1];
+arrow([x y]+latexscale*l,[x y],black,.3,2)
+text(x+l(1), y+l(2),'Hand Trajectory','horizontalalignment','right','Verticalalignment','top','color',black)
 
-ea=annotation('textarrow');
-set(ea,'position',[0.6288    0.7443   -0.0240   -0.0722])
-set(ea,'string','Extracted Intended Hand Trajectory')
+x=.106;
+y=.501;
+l=.01*sqrt(2)/2*[-1 1];
+arrow([x y]+latexscale*l,[x y],green,.3,2)
+text(x+l(1), y+l(2),'Desired Hand Trajectory','horizontalalignment','right','Verticalalignment','bottom','color',green)
+
+x=.1005;
+y=.497;
+l=-.01*sqrt(2)/2*[1 1];
+arrow([x y]+latexscale*l,[x y],red,.3,2)
+text(x+l(1), y+l(2),'Extracted Desired Hand Trajectory','horizontalalignment','right','Verticalalignment','top','color',red)
 
 
 plot([0 .01],.486*[1 1],'k','linewidth',3)
 text(0,.4855,'1 cm','Horizontalalignment','left','Verticalalignment','top')
-quiver([.0005],[.505],[0],qscale*[10],0,'Color',.6*[1 1 1],'linewidth',1)
+arrow([.001 .505],[.001 .505]+[0 qscale*10],gray,.3)
 text(.0005,.51,'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
 set(0,'defaulttextinterpreter','none')

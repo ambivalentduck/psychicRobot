@@ -55,5 +55,5 @@ Ev=Ev';
 Tm=Tm';
 oT=oT';
 
-OUT=[Ep Ev Ep.*Tm Ev.*Tm];
-BOUT=[(Ep+Ev/12)*kp0' (Tm.*(Ep+Ev/12))*kp1'];
+OUT=[Ep Ev Ep.*Tm Ev.*Tm]; %Triple-checked, these are accurate and should allow proper fitting.
+BOUT=[(Ep+Ev/12)*kp0' (Tm.*(Ep+Ev/12))*kp1']; 
