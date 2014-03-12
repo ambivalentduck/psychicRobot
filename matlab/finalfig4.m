@@ -44,7 +44,14 @@ for k=1 %:4
     for U=1:length(urc)
         st=floor(urc(U)/10);
         en=mod(urc(U),10);
-        edges=[-inf min(centers(st),centers(en)):.001:max(centers(st),centers(en)) inf]; %mm bins
+        edges=[-inf min(0,centers(en)-centers(st)):.0015:max(0,centers(en)-centers(st)) inf]; % 1.5mm bins
+        for kk=1:length(baselineCatme(U,:))
+            if ~isempty(baselineCatme(U,kk).x)
+                baselineCatme(U,kk).x(1,:)=baselineCatme(U,kk).x(1,:)-baselineCatme(U,kk).x(1,1);
+                baselineCatme(U,kk).y(1,:)=baselineCatme(U,kk).y(1,:)-baselineCatme(U,kk).y(1,1);
+            end
+        end
+
         X=[baselineCatme(U,:).x];
         Y=[baselineCatme(U,:).y];
         baselines(U).means=zeros(length(edges)-1,1);
@@ -64,14 +71,19 @@ for k=1 %:4
     N=20;
     for U=1:length(urc)
         plot(baselines(U).edges(2:end-1),baselines(U).means(2:end)+U/N)
-        plot(baselines(U).edges(2:end-1),baselines(U).means(2:end)-baselines(U).stds(2:end)+U/N,'--')
-        plot(baselines(U).edges(2:end-1),baselines(U).means(2:end)+baselines(U).stds(2:end)+U/N,'--')
+        plot(baselines(U).edges(2:end-1),baselines(U).means(2:end)-baselines(U).stds(2:end)+U/N,'-.')
+        plot(baselines(U).edges(2:end-1),baselines(U).means(2:end)+baselines(U).stds(2:end)+U/N,'-.')
     end
     axis equal
 
     %Organize into columns: short, short, long, long
     %Organize into rows: disturbances 1:5
-    figure(5)
+
+    outsidethelines=0;
+    figure(678)
+    clf
+    hold on
+
     for dir=[-1 1]
         for dist=[1 2]
             %This actually contains TWO reachcats if dist==1
@@ -83,26 +95,50 @@ for k=1 %:4
                     xoff=(dir+3*dist)/3; %maps to 2 4 5 7
                     yoff=dcat/20;
 
+                    Y=trials(c).y(:,2);
+                    Y=Y-Y(1);
+                    X=trials(c).y(:,1);
+                    X=X-X(1);
+
                     if kk==1 %ANECDOTES(
+                        figure(5)
                         plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+yoff)
-                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)-baselines(rc).stds(2:end)+yoff,'--')
-                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+baselines(rc).stds(2:end)+yoff,'--')
-                        plot(trials(c).y(:,1)+xoff,trials(c).y(:,2)+yoff,'r')
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)-1.96*baselines(rc).stds(2:end)+yoff,'-.')
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+1.96*baselines(rc).stds(2:end)+yoff,'-.')
+                        plot(X+xoff,Y+yoff,'r')
                     end
 
                     tstat=zeros(length(baselines(rc).edges)-1,1);
 
-                    Y=trials(c).y(:,2);
-                    X=trials(c).y(:,1);
                     for kkk=1:length(baselines(rc).edges)-1
-                        inds=find((X(1,:)>=edges(kk))&(X(1,:)<edges(kk+1)));
-                        tstat(kkk)=abs(mean(Y(inds))-baselines(rc).means(kkk))/(baselines(rc).stds(kkk)*sqrt(1+1/baselines(rc).counts(kkk)));
+                        inds=find((X>=baselines(rc).edges(kkk))&(X<baselines(rc).edges(kkk+1)));
+                        if isempty(inds)
+                            tstat(kkk)=nan;
+                        else
+                            tstat(kkk)=abs(mean(Y(inds))-baselines(rc).means(kkk))/(baselines(rc).stds(kkk)); %*sqrt(1+1/baselines(rc).counts(kkk)));
+                        end
                     end
                     myo2=mean(baselines(rc).means);
+                    figure(5)
                     for kkk=2:length(baselines(rc).edges)-1
-                        if tstat(kkk)>=.2
-                            plot(baselines(rc).edges(kkk)+xoff,myo2-.01-.05*(kk/length(F))+yoff,'.','color',colors(k,:),'markersize',.001)
+                        if tstat(kkk)>=1.96
+                            plot(baselines(rc).edges(kkk)+xoff,myo2-.01-.02*(kk/length(F))+yoff,'.','color',colors(k,:),'markersize',.001)
                         end
+                    end
+
+                    if sum(tstat)>0
+                        outsidethelines=outsidethelines+1
+                        figure(678)
+                        xoff=0;
+                        yoff=outsidethelines/10;
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+yoff)
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)-1.96*baselines(rc).stds(2:end)+yoff,'.')
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+1.96*baselines(rc).stds(2:end)+yoff,'.')
+                        plot(X+xoff,Y+yoff,'r-o')
+                        plot(trials(c).x(:,1)-trials(c).x(1,1),trials(c).x(:,2)-trials(c).x(1,2)+yoff,'g-x')
+                        tst=tstat(2:end);
+                        tst(tst>.2)=.25;
+                        plot(baselines(rc).edges(2:end-1)+xoff,tst/10-.03+yoff,'k')
                     end
                 end
 

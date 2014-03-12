@@ -97,7 +97,7 @@ for k=1:4
         rp=randperm(length(f));
         for krp=1:length(rp)
             fk=rp(krp);
-            if krp<=10
+            if krp<=20
                 catme(U,krp).x=[trials(f(fk)).x(:,1) trials(f(fk)).v(:,1) trials(f(fk)).a(:,1)]';
                 catme(U,krp).y=[trials(f(fk)).x(:,2) trials(f(fk)).v(:,2) trials(f(fk)).a(:,2)]';
             end
