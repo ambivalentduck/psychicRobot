@@ -95,7 +95,7 @@ return
 
 figure(6)
 clf
-set(gcf,'position',[375   261   629   540])
+set(gcf,'position',[375   261   629   760])
 hold on
 spacer=.17;
 width=.1;

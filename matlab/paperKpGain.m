@@ -1,12 +1,10 @@
 clc
 clear all
 
-global kp0gain kp1gain
-
-for k=1:4
+for k=[] %[1 2 4];
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
-    % Categorize by start/end pair
+    %% Categorize by start/end pair
     figure(1)
     clf
     hold on
@@ -38,7 +36,8 @@ for k=1:4
 
     if 3 %k==2
         warning off all
-        %No clue why, but the input file for #3 is whack. Just infer it.
+        %No clue why, but the input file for #3 is whack. Doesn't matter
+        %because we can accurately infer it from what happened during the trial.
         for kk=1:length(trials)
             if sum(vecmag(trials(kk).f))<30
                 trials(kk).disturbance=[0 0 0];
@@ -88,6 +87,8 @@ for k=1:4
     end
     clean=(clean==0);
 
+
+    %% Establish averaged xy vy ay
     figure(2)
     clf
     hold on
@@ -114,6 +115,7 @@ for k=1:4
     end
     axis equal
 
+
     yoffset=.3;
     figure(3)
     clf
@@ -129,7 +131,7 @@ for k=1:4
         plot(X,Y(:,2)+yoffset*U,'g')
     end
 
-    % Find onset of forces
+    %% Find onset of forces
     figure(4)
     clf
     hold on
@@ -158,12 +160,12 @@ for k=1:4
     end
     onset=mean(onsets)
 
+    %% Align at force pulse peak, store converted torques
     set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
-
     figure(5)
     clf
     hold on
-    fitlower=0;
+    fitlower=.0;
     fitupper=.25;
     for U=1:length(urc)
         f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
@@ -174,7 +176,7 @@ for k=1:4
             [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
             time=trials(f(fk)).t;
             try
-                fq=find((time>=(time(ind)+onset+fitlower))&(time<=(time(ind)+onset+fitupper)));
+            fq=find((time>=(time(ind)+onset+fitlower))&(time<=(time(ind)+onset+fitupper)));
             catch
                 continue
             end
@@ -185,81 +187,67 @@ for k=1:4
             Y(:,1)=Y(:,1)-(Y(1,1)-trials(f(fk)).x(fq(1),2)); %If the "shape" holds, this corrects for starting bias.
             storeme(U,fk).Y=Y;
             [storeme(U,fk).Ts,storeme(U,fk).E,storeme(U,fk).Eb,storeme(U,fk).oT]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
-            storeme(U,fk).trialnum=f(fk)*ones(size(storeme(U,fk).Ts,1),1);
-            storeme(U,fk).time=time(fq)-time(fq(1));
             plot(trials(f(fk)).x(fq,1),storeme(U,fk).Y(:,1)+yoffset*U,'c')
         end
     end
     axis equal
-    
-    Eb=vertcat(storeme(:).Eb);
-    Eb=[Eb(:,1)+Eb(:,3); Eb(:,2)+Eb(:,4)];
-    Ts=vertcat(storeme(:).Ts);
-    Ts=[Ts(:,1); Ts(:,2)];
-    rT=vertcat(storeme(:).trialnum);
-    rT=[rT; rT];
-    u=unique(rT); %has the effect of sorting them too
-    
-    time=vertcat(storeme(:).time);
-    time=[time;time];
-    figure(2666)
-    clf
-    hold on
-    for kk=1:length(time)
-        plot(Eb(kk),Ts(kk),'.','markersize',1,'color',[.3,time(kk)/.25,0])
-    end
-    for kk=0:.01:fitupper
-        X=Eb(time<=kk);
-        Y=Ts(time<=kk);
-        W=X\Y;
-        minX=min(X);
-        maxX=max(X);
-        plot([minX,maxX],W*[minX,maxX],'-','color',[0 kk/fitupper 1])
-        text(maxX,W*maxX,num2str(kk))
-    end
-   
-    nT=ceil(log2(length(u)));
-    W=zeros(nT+2,3);
-    W(1,1)=1;
-    W(1,2)=0;
-    W(1,3)=mean(abs(Ts-Eb));
-    labels{1}='0';
-    
-    for U=0:nT
-        trainI=rT<=u(min(length(u),ceil(2^U)));
-        xtrain=Eb(trainI);
-        ytrain=Ts(trainI);
-        W(U+2,1)=xtrain\ytrain;
-        W(U+2,2)=mean(abs(ytrain-W(U+2,1)*xtrain));
-        W(U+2,3)=mean(abs(Ts-W(U+2,1)*Eb));
-        labels{U+2}=num2str(min(length(u),ceil(2^U)));
-    end
-    figure(6)
-    clf
-    subplot(2,1,1)
-    plot(-1:U,W(:,1),'-')
-    ylabel('Fit Feedback Gain, unitless')
-    set(gca,'xticklabels',[])
-    subplot(2,1,2)
-    plot(-1:U,W(:,2),'-b',-1:U,W(:,3),'-r')
-    ylabel('Mean Error, Nm')
-    xlabel('Trials Used to Determine Weight')
-    set(gca,'xticklabels',labels)
 
-    save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'W','labels','starts','ends','dcats')
+    save(['../Data/Data_pulse/pulse',num2str(k),'S.mat'],'storeme')
 end
 
+%% Regress torques to get stiffness matrices
+
+% While we've been directionally sorted up until now, we really just want
+% to snag some of the actual data points at random to do our fitting, not
+% whole sections. Order just doesn't matter here.
+
+figure(6)
+clf
+
+for k=[1 2 3 4]
+    load(['../Data/Data_pulse/pulse',num2str(k),'S.mat'])
+
+    allTs=vertcat(storeme.Ts);
+    allTs=[allTs(:,1); allTs(:,2)];
+    allEb=vertcat(storeme.Eb);
+    allEb=[allEb(:,1)+allEb(:,3); allEb(:,2)+allEb(:,4)];
+    L=length(allTs);
+    N=linspace(20,L,20);
+    KFOLD=5;
+
+    colors=[1 0 0;0 1 0; 0 0 1; 0 0 0];
+
+    for kk=1:length(N)
+        for cc=1:KFOLD
+            rpl=randperm(L);
+            y=allTs(rpl);
+            x=allEb(rpl);
+            subs=1:ceil(N(kk));
+            ytrain=y(subs);
+            xtrain=x(subs);
+            W=xtrain\ytrain;
+            dirty(kk,cc)=W;
+            MSEtrain=mean((ytrain-W*xtrain).^2);
+            MSEtest=mean((y-W*x).^2);
+            subplot(2,1,1)
+            hold on
+            plot(N(kk),MSEtest,'.','color',colors(k,:))
+            plot(N(kk),MSEtrain,'o','color',colors(k,:))
+            subplot(2,1,2)
+            hold on
+            plot(N(kk),W,'.','color',colors(k,:))
+        end
+    end
+    dirty(end,end)
+end
+subplot(2,1,1)
+ylabel('Mean Squared Error, N/m')
+subplot(2,1,2)
+ylabel('Stiffness Gain, Unitless')
+xlabel('Training Timepoints Used')
 
 
-% Specify desired trajectories as replacement of y-component with
-% reference via regression on x-component for 50ms following onset
 
-% Convert cartesian space to joint space
 
-% Analytically solve for kp0 and kp1 GAINS though you could simply
-% solve... maybe both? Remember that this is essentially a force
-% balance: what you should find = k * what you found
 
-% Since these are fast left-divisions: Do trial-by-trial (10 points per
-% left division is nothing...) and aggregate plots
 
