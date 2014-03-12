@@ -245,8 +245,9 @@ for k=1:4
     ylabel('Mean Error, Nm')
     xlabel('Trials Used to Determine Weight')
     set(gca,'xticklabels',labels)
-
-    save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'W','labels','starts','ends','dcats')
+    
+    baselineCatme=catme;
+    save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'W','labels','starts','ends','dcats','storeme','baselineCatme')
 end
 
 
