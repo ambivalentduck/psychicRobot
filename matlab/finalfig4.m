@@ -122,7 +122,7 @@ for k=1 %:4
                     figure(5)
                     for kkk=2:length(baselines(rc).edges)-1
                         if tstat(kkk)>=1.96
-                            plot(baselines(rc).edges(kkk)+xoff,myo2-.01-.02*(kk/length(F))+yoff,'.','color',colors(k,:),'markersize',.001)
+                            plot(baselines(rc).edges(kkk)+xoff,myo2-.01-.01*(kk/length(F))+yoff,'.','color',colors(k,:),'markersize',.001)
                         end
                     end
 
