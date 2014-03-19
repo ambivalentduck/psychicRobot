@@ -5,12 +5,12 @@ figure(5)
 clf
 hold on
 
-colors=[1 0 0; 0 1 0; 0 0 1; 1 1 1]; %RGBK
+colors=[1 0 0; 0 1 0; 0 0 1; 1 1 0]; %RGBK
 
 S=3;
 ANECDOTES=ones(2*2*5,1);
 
-for k=1 %:4
+for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
@@ -18,6 +18,16 @@ for k=1 %:4
     %For each direction/length/disturbance (2*2*5), plot an example from subject S
     %UNDER that example, plot the t-statistic: (Y-mean)/(sd(baseline)*sqrt(1+1/Nbaseline)
     % 95% confidence t<=.2
+
+    %make a lookup table to get to "storeme" parameters
+    lookupStoreme=zeros(length(trials),2);
+    for kk=1:size(storeme,1)
+        for kkk=1:size(storeme,2)
+            if ~isempty(storeme(kk,kkk).trialnum);
+                lookupStoreme(storeme(kk,kkk).trialnum(1),:)=[kk,kkk];
+            end
+        end
+    end
 
     figure(1)
     clf
@@ -92,19 +102,23 @@ for k=1 %:4
                 for kk=1:length(F)
                     c=F(kk);
                     rc=find(urc==(10*starts(c)+ends(c)));
+                    xlookup=[0 .2 .6 1];
                     xoff=(dir+3*dist)/3; %maps to 2 4 5 7
-                    yoff=dcat/20;
+                    yoff=(dcat-1)*.5;
 
                     Y=trials(c).y(:,2);
                     Y=Y-Y(1);
                     X=trials(c).y(:,1);
                     X=X-X(1);
 
-                    if kk==1 %ANECDOTES(
+                    if (kk==1)&(k==1) %ANECDOTES(
                         figure(5)
-                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+yoff)
-                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)-1.96*baselines(rc).stds(2:end)+yoff,'-.')
-                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+1.96*baselines(rc).stds(2:end)+yoff,'-.')
+                        plot(baselines(rc).edges(2:end-1)+xoff,baselines(rc).means(2:end)+yoff,'k')
+                        H=baselines(rc).edges(2:end-1);
+                        V1=baselines(rc).means(2:end)-1.96*baselines(rc).stds(2:end);
+                        V2=baselines(rc).means(2:end)+1.96*baselines(rc).stds(2:end);
+                        h=fill([H H(end:-1:1)]+xoff,[V1' V2(end:-1:1)']+yoff,'k');
+                        set(h,'Facecolor',.5*[1 1 1]);
                         plot(X+xoff,Y+yoff,'r')
                     end
 
@@ -118,15 +132,58 @@ for k=1 %:4
                             tstat(kkk)=abs(mean(Y(inds))-baselines(rc).means(kkk))/(baselines(rc).stds(kkk)); %*sqrt(1+1/baselines(rc).counts(kkk)));
                         end
                     end
-                    myo2=mean(baselines(rc).means);
-                    figure(5)
-                    for kkk=2:length(baselines(rc).edges)-1
-                        if tstat(kkk)>=1.96
-                            plot(baselines(rc).edges(kkk)+xoff,myo2-.01-.01*(kk/length(F))+yoff,'.','color',colors(k,:),'markersize',.001)
+                    inds=find(isnan(tstat));
+                    for kkk=1:length(inds)
+                        iter=0;
+                        try
+                            while isnan(tstat(inds(kkk)-iter))
+                                iter=iter+1;
+                            end
+                            lower=tstat(inds(kkk)-iter);
+                            Wl=1/iter;
+                        catch
+                            lower=0;
+                            Wl=0;
                         end
+                        iter=0;
+                        try
+                            while isnan(tstat(inds(kkk)+iter))
+                                iter=iter+1;
+                            end
+                            upper=tstat(inds(kkk)+iter);
+                            Wu=1/iter;
+                        catch
+                            upper=0;
+                            Wu=0;
+                        end
+                        tstat(inds(kkk))=(Wu*upper+Wl*lower)/(Wu+Wl);
                     end
 
-                    if sum(tstat)>0
+                    figure(5)
+                    try
+                        forceinds=storeme(lookupStoreme(c,1),lookupStoreme(c,2)).forceson;
+                    catch
+                       forceinds=find(vecmag(trials(c).f)>.1);
+                    end
+                    %You have about 30cm spacing between anecdotes.
+                    subjecttop=-.3/4*(k-1)-.1;
+                    subjectheight=.3/4;
+                    rowtop=subjecttop-subjectheight*((kk-1)/length(F));
+                    rowbottom=subjecttop-subjectheight*((kk)/length(F));
+                    gap=.1*subjectheight/6;
+                    x=trials(c).x(:,1);
+                    x=x-x(1);
+                    h=fill([x(forceinds([1 end end 1]))]+xoff,[rowtop rowtop rowbottom rowbottom]+yoff,'k');
+                    set(h,'facecolor',[.7 1 .7]);
+
+                    edg=baselines(rc).edges;
+                    for kkk=2:length(edg)-2
+                        if tstat(kkk)>=3 %1.96
+                            h=fill(edg(kkk+[0 1 1 0])+xoff,[rowtop-gap/2 rowtop-gap/2 rowbottom+gap/2 rowbottom+gap/2]+yoff,'k');
+                            set(h,'facecolor',colors(k,:),'edgecolor',colors(k,:))
+                        end
+                    end
+                    if (sum(tstat)>0)&0
                         outsidethelines=outsidethelines+1
                         figure(678)
                         xoff=0;
