@@ -189,6 +189,7 @@ for k=3 %1:4
             [storeme(U,fk).Ts,storeme(U,fk).E,storeme(U,fk).Eb,storeme(U,fk).oT]=cart2model(storeme(U,fk).X,storeme(U,fk).Y);
             storeme(U,fk).trialnum=f(fk)*ones(size(storeme(U,fk).Ts,1),1);
             storeme(U,fk).time=time(fq)-time(fq(1));
+            storeme(U,fk).forceson=find((time>=(time(ind)+onset))&(time<=(time(ind)-onset)));
             plot(trials(f(fk)).x(fq,1),storeme(U,fk).Y(:,1)+yoffset*U,'c')
         end
     end
