@@ -11,8 +11,8 @@ WIDTH=3;
 subnums=[324 789 300 301];
 kpgains=[.4 .25 1 .5];
 
-for k=[1 2 3 4] %:length(subnums)
-    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')
+for k=3 %[1 2 3 4] %:length(subnums)
+    if ~exist(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'file')|1
         name=num2str(subnums(k));
         input=load(['../Data/Data_pulse/input',name,'.dat']);
         output=load(['../Data/Data_pulse/output',name,'.dat']);
@@ -67,6 +67,8 @@ for k=[1 2 3 4] %:length(subnums)
         save(['../Data/Data_pulse/pulse',num2str(k),'.mat'],'trials','params')
     end
 end
+
+return
 
 for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat']);

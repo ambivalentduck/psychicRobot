@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=1:4
+for k=3 %1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
     % Categorize by start/end pair
@@ -36,9 +36,10 @@ for k=1:4
 
     dcats0=[trials.disturbcat];
 
-    if 3 %k==2
+    if 0
         warning off all
-        %No clue why, but the input file for #3 is whack. Just infer it.
+        %No clue why, but the input file for #3 was whack. Found it through
+        %commit history
         for kk=1:length(trials)
             if sum(vecmag(trials(kk).f))<30
                 trials(kk).disturbance=[0 0 0];
@@ -72,14 +73,15 @@ for k=1:4
             end
         end
         warning on all
+
+        figure(500)
+        clf
+        plot(dcats0,dcats+.3*rand(size(dcats)),'.')
+        return
     end
 
     % Use unperturbed examples for a reference trajectory for each start/end pair.
     dcats=[trials.disturbcat];
-
-    figure(500)
-    clf
-    plot(dcats0,dcats+.3*rand(size(dcats)),'.')
 
     nclean=3;
     clean=0*dcats;
@@ -191,7 +193,7 @@ for k=1:4
         end
     end
     axis equal
-    
+
     Eb=vertcat(storeme(:).Eb);
     Eb=[Eb(:,1)+Eb(:,3); Eb(:,2)+Eb(:,4)];
     Ts=vertcat(storeme(:).Ts);
@@ -199,7 +201,7 @@ for k=1:4
     rT=vertcat(storeme(:).trialnum);
     rT=[rT; rT];
     u=unique(rT); %has the effect of sorting them too
-    
+
     time=vertcat(storeme(:).time);
     time=[time;time];
     figure(2666)
@@ -217,14 +219,14 @@ for k=1:4
         plot([minX,maxX],W*[minX,maxX],'-','color',[0 kk/fitupper 1])
         text(maxX,W*maxX,num2str(kk))
     end
-   
+
     nT=ceil(log2(length(u)));
     W=zeros(nT+2,3);
     W(1,1)=1;
     W(1,2)=0;
     W(1,3)=mean(abs(Ts-Eb));
     labels{1}='0';
-    
+
     for U=0:nT
         trainI=rT<=u(min(length(u),ceil(2^U)));
         xtrain=Eb(trainI);
@@ -245,7 +247,7 @@ for k=1:4
     ylabel('Mean Error, Nm')
     xlabel('Trials Used to Determine Weight')
     set(gca,'xticklabels',labels)
-    
+
     baselineCatme=catme;
     save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'W','labels','starts','ends','dcats','storeme','baselineCatme')
 end
