@@ -14,7 +14,7 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=1 %:4
+for k=4 %:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
@@ -90,6 +90,7 @@ for k=1 %:4
                 end
             end
             nout2=sort(nout);
+            nout2(nout2>0)
             red_lim=interp1(1:length(f),nout2,.95*length(f))
 
             for kf=1:1:length(f)
@@ -98,13 +99,13 @@ for k=1 %:4
                     color='r';
                 else
                     color='b';
-                    continue
+                    %continue
                 end
                 plot(x(:,1)+xoff,x(:,2)+yoff,[color,'.'],'markersize',.000001','linewidth',.000001')
             end
            
             plot(H+xoff,medy(2:end)+yoff,'k')
-            plot(means(ST)+xoff,.5+yoff,'rx')
+            plot(means(ST)+xoff,.5+yoff,'gx')
         end
     end
 end
