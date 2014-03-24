@@ -1,7 +1,6 @@
 clc
 clear all
 
-
 % Next is to align trajectories with 1.5mm bins
 % --Throw away N*2.5% from the max and min extrema and note the min, max, mean for each bin.
 % **This is a 95% confidence interval.
@@ -14,7 +13,7 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=4 %:4
+for k=2 %1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
@@ -52,6 +51,11 @@ for k=4 %:4
             [ST EN length(f)]
             bins=[-inf min(means([ST EN])):.0015:max(means([ST EN])) inf];
             X=vertcat(trials(f).x);
+            clear Tcat
+            for kf=1:length(f)
+                Tcat(kf).T=f(kf)+0*trials(f(kf)).x(:,1);
+            end
+            T=vertcat(Tcat.T);
 
             medy=zeros(length(bins)-1,1);
             lower=medy;
@@ -62,6 +66,9 @@ for k=4 %:4
                 y=sort(X(inds,2));
                 medy(B)=median(y);
                 off=.025*length(y);
+                if off<1
+                    off=1;
+                end
                 frac=mod(off,1);
                 yi=interp1(1:length(y),y,[off length(y)+1-off],'linear','extrap');
                 lower(B)=yi(1);
@@ -90,7 +97,6 @@ for k=4 %:4
                 end
             end
             nout2=sort(nout);
-            nout2(nout2>0)
             red_lim=interp1(1:length(f),nout2,.95*length(f))
 
             for kf=1:1:length(f)
@@ -105,7 +111,7 @@ for k=4 %:4
             end
            
             plot(H+xoff,medy(2:end)+yoff,'k')
-            plot(means(ST)+xoff,.5+yoff,'gx')
+            plot(means(ST)+xoff,.5+yoff,'rx')
         end
     end
 end
