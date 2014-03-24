@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=3 %1:4
+for k=1:4
     figure(k)
     clf
     hold on

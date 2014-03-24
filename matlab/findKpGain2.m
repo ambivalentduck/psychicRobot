@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=3 %1:4
+for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
     % Categorize by start/end pair
