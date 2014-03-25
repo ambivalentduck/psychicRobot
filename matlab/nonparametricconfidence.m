@@ -13,14 +13,13 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=2 %1:4
+for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
     clustermeS=zeros(length(trials)-1,1);
     clustermeE=clustermeS;
     for t=1:length(trials)-1
-        plot(trials(t+1).x([1 end],1),trials(t+1).x([1 end],2),'.')
         clustermeS(t)=trials(t+1).x(1,1);
         clustermeE(t)=trials(t+1).x(end,1);
     end
@@ -63,13 +62,22 @@ for k=2 %1:4
 
             for B=1:length(bins)-1
                 inds=find((X(:,1)>=bins(B))&(X(:,1)<bins(B+1)));
-                y=sort(X(inds,2));
+                Tinds=T(inds);
+                Yinds=X(inds,2);
+                medYinds=median(Yinds);
+                uT=unique(Tinds);
+                y=0*uT;
+                for uTk=1:length(uT)
+                   finds=find(Tinds==uT(uTk));
+                   [trash,i]=max(abs(Yinds(finds)-medYinds));
+                   y(uTk)=Yinds(finds(i));
+                end
+                y=sort(y);
                 medy(B)=median(y);
                 off=.025*length(y);
-                if off<1
-                    off=1;
+                if off<2
+                    off=2;
                 end
-                frac=mod(off,1);
                 yi=interp1(1:length(y),y,[off length(y)+1-off],'linear','extrap');
                 lower(B)=yi(1);
                 upper(B)=yi(2);
@@ -85,23 +93,21 @@ for k=2 %1:4
             h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff,'k');
             set(h,'Facecolor',.5*[1 1 1]);
 
-            nout=zeros(length(f),1);
+            nout=zeros(length(f),length(bins)-1);
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
                 %plot(x(:,1)+xoff,x(:,2)+yoff,'b.','markersize',.000001')
                 for B=1:length(bins)-1
                     inds=find((x(:,1)>=bins(B))&(x(:,1)<bins(B+1)));
-                    if sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B))
-                        nout(kf)=nout(kf)+1;
-                    end
+                    nout(kf,B)=sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B));
                 end
             end
-            nout2=sort(nout);
-            red_lim=interp1(1:length(f),nout2,.95*length(f))
+            nout2=sum(nout,2);
+            red_lim=interp1(1:length(f),sort(nout2),.95*length(f))
 
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
-                if nout(kf)>red_lim
+                if nout2(kf)>red_lim
                     color='r';
                 else
                     color='b';
@@ -110,11 +116,17 @@ for k=2 %1:4
                 plot(x(:,1)+xoff,x(:,2)+yoff,[color,'.'],'markersize',.000001','linewidth',.000001')
             end
            
+            confidenceIntervals(ST,EN).med=medy;
+            confidenceIntervals(ST,EN).lower=lower;
+            confidenceIntervals(ST,EN).upper=upper;
+            confidenceIntervals(ST,EN).bins=bins;
+            confidenceIntervals(ST,EN).baseline=nout;
+            
             plot(H+xoff,medy(2:end)+yoff,'k')
-            plot(means(ST)+xoff,.5+yoff,'rx')
+            plot(means(ST)+xoff,.5+yoff,'gx')
+            axis equal
+            axis off
         end
     end
+    save(['../Data/Data_pulse/pulse',num2str(k),'I.mat'],'confidenceIntervals')
 end
-axis equal
-axis off
-
