@@ -3,7 +3,7 @@ clear all
 
 global kp0gain kp1gain
 
-for k=1:4
+for k=4 %1:4
     figure(k)
     clf
     hold on
@@ -19,8 +19,8 @@ for k=1:4
         c/length(F)
         
         kk=F(c);
-        onset=find(vecmag(trials(kk).v)>.1,1,'first');
-        start=max(onset-10,1);
+        onset=find(vecmag(trials(kk).v)>.05,1,'first');
+        start=max(onset-35,1);
         onset2=find(vecmag(trials(kk+1).v)>.1,1,'first');
         xvaf=[trials(kk).x trials(kk).v trials(kk).a trials(kk).f];
         xvaf2=[trials(kk+1).x trials(kk+1).v trials(kk+1).a trials(kk+1).f];
