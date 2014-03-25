@@ -30,36 +30,36 @@ for k=1:4
             upper=confidenceIntervals(ST,EN).upper;
             lower=confidenceIntervals(ST,EN).lower;
             
+            outX=zeros(length(f),length(bins)-1);
+            outY=zeros(length(f),length(bins)-1);
+            
             for kf=1:length(f)
                 %For each trial, just compare x and y via the bin find and record the boolean outcomes.
                 X=trials(f(kf)).x;
                 Y=trials(f(kf)).y;
-                
-                outX=zeros(length(bins)-1,1);
-                outY=zeros(length(bins)-1,1);
                 
                 for B=1:length(bins)-1
                     indsX=find((X(:,1)>=bins(B))&(X(:,1)<bins(B+1)));
                     indsY=find((X(:,1)>=bins(B))&(X(:,1)<bins(B+1)));
                     
                     [trash,i]=max(abs(X(indsX,2)-med(B)));
-                    outX(B)=(X(indsX(i),2)<lower(B))||sum(X(indsX(i),2)>upper(B));
+                    outX(kf,B)=(X(indsX(i),2)<lower(B))||sum(X(indsX(i),2)>upper(B));
                     
                     [trash,i]=max(abs(Y(indsY,2)-med(B)));
-                    outY(B)=(Y(indsY(i),2)<lower(B))||sum(Y(indsY(i),2)>upper(B));
+                    outY(kf,B)=(Y(indsY(i),2)<lower(B))||sum(Y(indsY(i),2)>upper(B));
                 end
                 
-                trials(f(kf)).outX=outX;
-                trials(f(kf)).outY=outY;
+                trials(f(kf)).outX=outX(kf,:);
+                trials(f(kf)).outY=outY(kf,:);
             end
+            %Now, by type of disturbance, foreach unique(dcat(f)), perform
+            %kruskal wallis, which CAN have uneven group sizes.
+            
+            
         end
     end
 
-    %So now in theory you can perform two comparisons:
-    %1. IF. Wilcoxon on row sums for disturbed and undisturbed reaches and extractions (by start/end pair). 
-    %2. WHEN. It's plausible that you won't get significance in some directions, but if you do, 
-    %   You should be able to use a moving, shorter sum (3 bins?) to detect
-    %   onset. Just make sure that 3 bins gives you 95th percentile.
+   
 end      
 
 % 
