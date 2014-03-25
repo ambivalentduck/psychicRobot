@@ -13,7 +13,7 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=2 %1:4
+for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
@@ -63,13 +63,22 @@ for k=2 %1:4
 
             for B=1:length(bins)-1
                 inds=find((X(:,1)>=bins(B))&(X(:,1)<bins(B+1)));
-                y=sort(X(inds,2));
+                Tinds=T(inds);
+                Yinds=X(inds,2);
+                medYinds=median(Yinds);
+                uT=unique(Tinds);
+                y=0*uT;
+                for uTk=1:length(uT)
+                   finds=find(Tinds==uT(uTk));
+                   [trash,i]=max(abs(Yinds(finds)-medYinds));
+                   y(uTk)=Yinds(finds(i));
+                end
+                y=sort(y);
                 medy(B)=median(y);
                 off=.025*length(y);
-                if off<1
-                    off=1;
+                if off<2
+                    off=2;
                 end
-                frac=mod(off,1);
                 yi=interp1(1:length(y),y,[off length(y)+1-off],'linear','extrap');
                 lower(B)=yi(1);
                 upper(B)=yi(2);
@@ -110,6 +119,8 @@ for k=2 %1:4
                 plot(x(:,1)+xoff,x(:,2)+yoff,[color,'.'],'markersize',.000001','linewidth',.000001')
             end
            
+            confidenceIntervals
+            
             plot(H+xoff,medy(2:end)+yoff,'k')
             plot(means(ST)+xoff,.5+yoff,'rx')
         end
