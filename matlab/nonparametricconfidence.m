@@ -20,7 +20,6 @@ for k=1:4
     clustermeS=zeros(length(trials)-1,1);
     clustermeE=clustermeS;
     for t=1:length(trials)-1
-        plot(trials(t+1).x([1 end],1),trials(t+1).x([1 end],2),'.')
         clustermeS(t)=trials(t+1).x(1,1);
         clustermeE(t)=trials(t+1).x(end,1);
     end
@@ -94,23 +93,21 @@ for k=1:4
             h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff,'k');
             set(h,'Facecolor',.5*[1 1 1]);
 
-            nout=zeros(length(f),1);
+            nout=zeros(length(f),length(bins)-1);
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
                 %plot(x(:,1)+xoff,x(:,2)+yoff,'b.','markersize',.000001')
                 for B=1:length(bins)-1
                     inds=find((x(:,1)>=bins(B))&(x(:,1)<bins(B+1)));
-                    if sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B))
-                        nout(kf)=nout(kf)+1;
-                    end
+                    nout(kf,B)=sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B));
                 end
             end
-            nout2=sort(nout);
-            red_lim=interp1(1:length(f),nout2,.95*length(f))
+            nout2=sum(nout,2);
+            red_lim=interp1(1:length(f),sort(nout2),.95*length(f))
 
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
-                if nout(kf)>red_lim
+                if nout2(kf)>red_lim
                     color='r';
                 else
                     color='b';
@@ -119,13 +116,17 @@ for k=1:4
                 plot(x(:,1)+xoff,x(:,2)+yoff,[color,'.'],'markersize',.000001','linewidth',.000001')
             end
            
-            confidenceIntervals
+            confidenceIntervals(ST,EN).med=medy;
+            confidenceIntervals(ST,EN).lower=lower;
+            confidenceIntervals(ST,EN).upper=upper;
+            confidenceIntervals(ST,EN).bins=bins;
+            confidenceIntervals(ST,EN).baseline=nout;
             
             plot(H+xoff,medy(2:end)+yoff,'k')
-            plot(means(ST)+xoff,.5+yoff,'rx')
+            plot(means(ST)+xoff,.5+yoff,'gx')
+            axis equal
+            axis off
         end
     end
+    save(['../Data/Data_pulse/pulse',num2str(k),'I.mat'],'confidenceIntervals')
 end
-axis equal
-axis off
-
