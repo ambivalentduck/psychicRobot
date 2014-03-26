@@ -14,8 +14,8 @@ clear all
 % --Figure out how much significance it should take to be significant.
 
 for k=1 %:4
-    load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
+    load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
 
     clustermeS=zeros(length(trials)-1,1);
     clustermeE=clustermeS;
@@ -26,10 +26,6 @@ for k=1 %:4
     [cats,means]=kmeans([clustermeE; clustermeE],3,'emptyaction','singleton','start',[-0.175;-0.026;0.125]);
     means=sort(means);
 
-    %For each direction/length/disturbance (2*2*5), plot an example from subject S
-    %UNDER that example, plot the t-statistic: (Y-mean)/(sd(baseline)*sqrt(1+1/Nbaseline)
-    % 95% confidence t<=.2
-
     nclean=2;
     clean=0*dcats;
     for kk=1:nclean
@@ -38,6 +34,11 @@ for k=1 %:4
     clean=(clean==0)';
 
     figure(k)
+    clf
+    hold on
+
+
+    figure(k+4)
     clf
     hold on
 
@@ -68,9 +69,9 @@ for k=1 %:4
                 uT=unique(Tinds);
                 y=0*uT;
                 for uTk=1:length(uT)
-                   finds=find(Tinds==uT(uTk));
-                   [trash,i]=max(abs(Yinds(finds)-medYinds));
-                   y(uTk)=Yinds(finds(i));
+                    finds=find(Tinds==uT(uTk));
+                    [trash,i]=max(abs(Yinds(finds)-medYinds));
+                    y(uTk)=Yinds(finds(i));
                 end
                 y=sort(y);
                 medy(B)=median(y);
@@ -89,6 +90,7 @@ for k=1 %:4
             xoff=ST/3-means(ST);
             yoff=EN/25;
 
+            figure(k)
             H=bins(2:end-1);
             h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff,'k');
             set(h,'Facecolor',.5*[1 1 1]);
@@ -96,7 +98,6 @@ for k=1 %:4
             nout=zeros(length(f),length(bins)-1);
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
-                %plot(x(:,1)+xoff,x(:,2)+yoff,'b.','markersize',.000001')
                 for B=1:length(bins)-1
                     inds=find((x(:,1)>=bins(B))&(x(:,1)<bins(B+1)));
                     nout(kf,B)=sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B));
@@ -111,22 +112,32 @@ for k=1 %:4
                     color='r';
                 else
                     color='b';
-                    %continue
                 end
                 plot(x(:,1)+xoff,x(:,2)+yoff,[color,'.'],'markersize',.000001','linewidth',.000001')
             end
-           
+
             confidenceIntervals(ST,EN).med=medy;
             confidenceIntervals(ST,EN).lower=lower;
             confidenceIntervals(ST,EN).upper=upper;
             confidenceIntervals(ST,EN).bins=bins;
             confidenceIntervals(ST,EN).baseline=nout;
-            
+
             plot(H+xoff,medy(2:end)+yoff,'k')
             plot(means(ST)+xoff,.5+yoff,'gx')
             axis equal
             axis off
+
+            figure(k+4)
+            H=bins(2:end-1);
+            h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff,'k');
+            set(h,'Facecolor',.5*[1 1 1]);
         end
     end
+    
+    %Add the analysis from finalfig4 here. Or maybe just above. Plot trials
+    %and show when a 3-5 frame moving average puts them out maybe by
+    %switching from . to - 
+    
+    
     save(['../Data/Data_pulse/pulse',num2str(k),'I.mat'],'confidenceIntervals')
 end
