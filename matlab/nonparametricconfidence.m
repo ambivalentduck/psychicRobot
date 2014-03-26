@@ -13,7 +13,7 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=1:4
+for k=1 %:4
     load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
