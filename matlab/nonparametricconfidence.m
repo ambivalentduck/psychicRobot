@@ -13,7 +13,9 @@ clear all
 % --For each point of interest, just ask what % of the appropriate list is less than that point.
 % --Figure out how much significance it should take to be significant.
 
-for k=1 %:4
+NBINSOUT=3;
+
+for k=4 %1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
 
@@ -104,7 +106,7 @@ for k=1 %:4
                 end
             end
             nout2=sum(nout,2);
-            red_lim=interp1(1:length(f),sort(nout2),.95*length(f))
+            red_lim=interp1(1:length(f),sort(nout2),.95*length(f));
 
             for kf=1:1:length(f)
                 x=trials(f(kf)).x;
@@ -128,16 +130,71 @@ for k=1 %:4
             axis off
 
             figure(k+4)
-            H=bins(2:end-1);
-            h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff,'k');
-            set(h,'Facecolor',.5*[1 1 1]);
+            for IT=1:5
+                H=bins(2:end-1);
+                h=fill([H H(end:-1:1)]+xoff,[lower(2:end)' upper(end:-1:2)']+yoff+(IT-1)/4,'k');
+                set(h,'Facecolor',.5*[1 1 1]);
+            end
+
+            f=find((starts==ST)&(ends==EN)&dcats');
+            for kf=1:length(f)
+                %for each trial need 2x2 things: N-point moving nout, sum
+                %nout, BUT both start with bool in/outside the boundaries.
+                x=trials(f(kf)).x;
+                y=trials(f(kf)).y;
+                trials(f(kf)).xoutB=zeros(length(bins)-1,1);
+                trials(f(kf)).youtB=zeros(length(bins)-1,1);
+
+                for B=1:length(bins)-1
+                    inds=find((x(:,1)>=bins(B))&(x(:,1)<bins(B+1)));
+                    if isempty(inds)&&(B>1)&&(B<length(bins)-1)
+                        %When a bin is missing, just snag the closest point.
+                        [trash,inds]=min(abs(x-(bins(B)+bins(B+1))/2));
+                    end
+                    trials(f(kf)).xoutB(B)=sum(x(inds,2)<lower(B))||sum(x(inds,2)>upper(B));
+
+                    inds=find((y(:,1)>=bins(B))&(y(:,1)<bins(B+1)));
+                    if isempty(inds)&&(B>1)&&(B<length(bins)-1)
+                        %When a bin is missing, just snag the closest point.
+                        [trash,inds]=min(abs(y-(bins(B)+bins(B+1))/2));
+                    end
+                    trials(f(kf)).youtB(B)=sum(y(inds,2)<lower(B))||sum(y(inds,2)>upper(B));
+                end
+
+                trials(f(kf)).xout=zeros(size(x,1),1);
+                for kx=1:size(x,1)
+                    B=find((x(kx,1)>=bins(1:end-1))&(x(kx,1)<bins(2:end)),1,'first');
+                    trials(f(kf)).xout(kx)=(x(kx,2)<lower(B))||(x(kx,2)>upper(B));
+                end
+                firstxout=find(cumsum(trials(f(kf)).xout)>=NBINSOUT,1,'first');
+
+                trials(f(kf)).yout=zeros(size(y,1),1);
+                for ky=1:size(y,1)
+                    B=find((y(ky,1)>=bins(1:end-1))&(y(ky,1)<bins(2:end)),1,'first');
+                    trials(f(kf)).yout(ky)=(y(ky,2)<lower(B))||(y(ky,2)>upper(B));
+                end
+                firstyout=find(cumsum(trials(f(kf)).yout)>=NBINSOUT,1,'first');
+
+                yoff2=yoff+(dcats(f(kf))-1)/4
+                
+                plot(x(:,1)+xoff,x(:,2)+yoff2,'k')
+                qscale=1000;
+                dsample=3;
+                quiver(x(1:dsample:end,1)+xoff,x(1:dsample:end,2)+yoff2,trials(f(kf)).f(1:dsample:end,1)/qscale,trials(f(kf)).f(1:dsample:end,2)/qscale,0,'g')
+                plot(x(firstxout:end,1)+xoff,x(firstxout:end,2)+yoff2,'k.')
+
+                plot(y(:,1)+xoff,y(:,2)+yoff2,'r')
+                plot(y(firstyout:end,1)+xoff,y(firstyout:end,2)+yoff2,'r.')
+                axis equal
+                axis off
+            end
         end
     end
-    
+
     %Add the analysis from finalfig4 here. Or maybe just above. Plot trials
     %and show when a 3-5 frame moving average puts them out maybe by
-    %switching from . to - 
-    
-    
+    %switching from . to -
+
+
     save(['../Data/Data_pulse/pulse',num2str(k),'I.mat'],'confidenceIntervals')
 end
