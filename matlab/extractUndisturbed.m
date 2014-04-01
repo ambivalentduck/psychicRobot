@@ -29,12 +29,12 @@ for k=1:length(f)
     onset=find(vecmag(trials(kk).v)>.05,1,'first');
     start=max(onset-35,1);
     xvaf=[trials(kk).x trials(kk).v trials(kk).a trials(kk).f];
+    undisturbed(kk).yinds=start:length(trials(kk).t);
     t=trials(kk).t(start:end);
     undisturbed(kk).ty=t;
     t=t'-t(1);
     y=extract(t,xvaf,'reflex');
     undisturbed(kk).y=y;
-    undisturbed(kk).yinds=start:length(t);
     x=trials(kk).x;
 
     [bx,trash1,trash2,trash2,statsx]=regress(x(:,2),[ones(size(x,1),1) x(:,1)]);
@@ -53,4 +53,4 @@ for k=1:length(f)
 end
 axis equal
 
-save(['../Data/Data_pulse/pulse',num2str(k),'U.mat'],'undisturbed')
+save(['../Data/Data_pulse/pulse',num2str(SUBNUM),'U.mat'],'undisturbed')
