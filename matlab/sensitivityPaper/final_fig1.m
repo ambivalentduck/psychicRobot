@@ -73,7 +73,7 @@ plotme(3)=wh;
 
 offset=[0 -.05 -.07];
 
-for k=1:3
+for k=1:2
 plot(plotme(k).xsim(:,1),plotme(k).xsim(:,2)+offset(k),'-','Color',black,'Linewidth',2)
 %quiver(plotme(k).xsim(1:SKIP:end,1),plotme(k).xsim(1:SKIP:end,2)+offset(k),qscale*plotme(k).xvaf(1:SKIP:end,7),qscale*plotme(k).xvaf(1:SKIP:end,8),0,'Color',gray)
 X=[plotme(k).xsim(1:SKIP:end,1) plotme(k).xsim(1:SKIP:end,2)+offset(k)];
