@@ -126,4 +126,4 @@ text(.0005,.51,'10 N','rotation',90,'Horizontalalignment','center','Verticalalig
 
 set(0,'defaulttextinterpreter','none')
 
-laprint(gcf,'fig1raw','width',15,'scalefonts','off','factor',1)
+laprint(gcf,'../figures/fig1raw','width',15,'scalefonts','off','factor',1)

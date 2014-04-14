@@ -73,7 +73,7 @@ oNPLOT=ones(1,NPLOT);
 MSIZE=2;
 for k=1:20
     plot(rawS(k,R(1:NPLOT)),(k+spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[.5 0 .5])
-    plot(rawST(k,R(1:NPLOT)),(k-spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[0 .5 .5])
+    plot(rawST(k,R(1:NPLOT)),(k-spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[0 .8 .8])
 end
 
 names=paramsPopulator('latex');
@@ -101,5 +101,5 @@ set(gca,'position',[.5 margin 1-margin 1-margin],'units','normalized')
 set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
 
-laprint(gcf,'fig2raw','scalefonts','off','asonscreen','on')
+laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
 
