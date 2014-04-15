@@ -16,7 +16,7 @@ lw=1.5;
 
 SKIP=4;
 qscale=.002;
-fade=.9;
+fade=0 %.7;
 
 gray=.5*[1 1 1];
 green=[.1 .7 .3];
@@ -46,7 +46,7 @@ for A=1:length(anecdote)
     for c=1:length(f)
         k=f(c);
         X=[trials(k).x(:,1)-m,trials(k).x(:,2)-.5]*rotmat;
-        plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',fade*[1 1 1],'linewidth',.0000001)
+        plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',green,'linewidth',.01)
         %plot(undisturbed(k).y(:,1),undisturbed(k).y(:,2),'-','linewidth',.0000001,'color',[1 fade fade])
     end
 
@@ -74,7 +74,7 @@ axis equal
 %annotate(h);
 p=[.17 -.105;.17 0;.15 -.149;.121 .023];
 d=[1 -1; -1 -1;1 1;-1 -1];
-colors=[gray; .1*[1 1 1]; red; 0 0 0];
+colors=[gray; green; red; 0 0 0];
 labs{1}='Force Disturbance';
 labs{2}='Undisturbed Hand Trajectories';
 labs{3}='Extracted Desired Hand Trajectory';
@@ -94,4 +94,4 @@ axis off
 
 set(0,'defaulttextinterpreter','none')
 
-laprint(gcf,'../figures/fig3raw','width',15,'scalefonts','off','factor',1)
+laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
