@@ -8,4 +8,4 @@ function out=getR2(X)
 % [b,trash1,trash2,trash2,stats]=regress(X+Y,[ones(length(X),1) X]);
 % out=stats([1 3]);
 
-out=[max(abs(X(:,2)-.5)) 1]*100;
+out=max(abs(X(:,2)-.5))*100;
