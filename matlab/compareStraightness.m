@@ -38,15 +38,21 @@ for k=1:4
             continue
         end
 
-        inds=trialInfo(t).forceinds(1)+(0:59);
+        RANGE=0:10 %59;
+        inds=trialInfo(t).forceinds(1)+RANGE;
         onset=find(vecmag(trials(t).v)>.05,1,'first');
         start=max(onset-35,1);
-        indsy=max(1,trialInfo(t).forceinds(1)-start)+1+(0:59);
-        %figure(13)
-        %plot(trials(t).x(inds,1),trials(t).x(inds,2),'k')
-        %plot(trials(t).y(indsy,1),trials(t).y(indsy,2),'r')
-        %plot(trials(t).yp(1:length(inds),1),trials(t).yp(1:length(inds),2),'b')
-
+        indsy=max(1,trialInfo(t).forceinds(1)-start)+1+RANGE;
+        figure(13)
+        try
+        plot(trials(t).x(inds,1),trials(t).x(inds,2),'k')
+        plot(trials(t).x(inds(40),1),trials(t).x(inds(40),2),'gx')
+        plot(trials(t).y(indsy,1),trials(t).y(indsy,2),'r')
+        plot(trials(t).y(indsy(40),1),trials(t).y(indsy(40),2),'gx')
+        plot(trials(t).yp(1:length(inds),1),trials(t).yp(1:length(inds),2),'b')
+        catch
+            blah=5
+        end
         triStruct(t).R2X=getR2(trials(t).x(inds,:));
         triStruct(t).R2Y=getR2(trials(t).y(indsy,:)); %Alignment issues here
         triStruct(t).R2YP=getR2(trials(t).yp(1:length(inds),:));
@@ -66,8 +72,13 @@ for k=1:4
 
     xoff=.3/2*((k-1)-1.5);
     figure(14)
-    plot(Xlist+xoff+.05*(rand(size(Xlist))-.5),Ylist(:,1),'.','markersize',1)
+    plot(Xlist(:,1)+xoff+.05*(rand(size(Xlist(:,1)))-.5),Ylist(:,1),'g.','markersize',1)
     boxplot(Ylist(:,1),Xlist,'orientation','vertical','notch','on','positions',(1:4)+xoff,'widths',.1,'symbol','r.','labels',{'','','',''})
+    
+    lists(k).x=Xlist(:,1);
+    lists(k).s=Xlist(:,1)*0+k;
+    lists(k).y=Ylist(:,1);
+    
 end
 ylabel('Max Perpendicular Deviation, cm')
 set(gca,'xtick',[1:4])
@@ -86,3 +97,23 @@ set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
 set(gcf,'position',[625   250   440   490])
 laprint(gcf,'figures/fig4raw','scalefonts','off','asonscreen','on')
+
+fullX=vertcat(lists.x);
+fullS=vertcat(lists.s);
+fullY=vertcat(lists.y);
+[p,table,stats]=anova1(fullY,fullX)
+multcompare(stats)
+f=find(fullX==1);
+%[p,table,stats]=kruskalwallis(fullY(f),fullS(f))
+%multcompare(stats)
+
+f2=find(fullX==2);
+mean(fullY(f2)-fullY(f))
+std(fullY(f2)-fullY(f))
+
+f3=find(fullX==3);
+f4=find(fullX==4);
+
+mean(fullY(f3)-fullY(f4))
+std(fullY(f3)-fullY(f4))
+
