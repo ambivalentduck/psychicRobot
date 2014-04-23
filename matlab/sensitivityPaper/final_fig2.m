@@ -55,10 +55,19 @@ rp=randperm(lrs);
 plotS=allS(:,rp(1:1000));
 plotST=allST(:,rp(1:1000));
 
-% for k=1:length(S)
-%     S(k)=1/(2*N)*sum((comb.A-comb.AB(k,:)).^2);
-%     ST(k)=1/N*sum(comb.B.*(comb.AB(k,:)-comb.A));
-% end
+allA=vertcat(justMUE.mueA);
+allB=vertcat(justMUE.mueB);
+allAB=vertcat(justMUE.mueAB);
+
+N=8000;
+for k=1:20
+    S(k)=1/(2*N)*sum((allA-allAB(:,k)).^2);
+    ST(k)=1/N*sum(allB.*(allAB(:,k)-allA));
+end
+v=[S' ST'];
+v=v/var(allAB(:));
+[vals,order]=sort(v(:,1));
+v(order,:)
 
 figure(6)
 clf
@@ -72,16 +81,17 @@ R=randperm(size(rawS,2));
 oNPLOT=ones(1,NPLOT);
 MSIZE=2;
 for k=1:20
-    plot(rawS(k,R(1:NPLOT)),(k+spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[.5 0 .5])
-    plot(rawST(k,R(1:NPLOT)),(k-spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[0 .8 .8])
+    plot(rawS(order(k),R(1:NPLOT)),(k+spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[.5 0 .5])
+    plot(rawST(order(k),R(1:NPLOT)),(k-spacer)*oNPLOT+scatter,'.','markersize',MSIZE,'color',[0 .8 .8])
 end
 
 names=paramsPopulator('latex');
 dat=paramsPopulator('burdet');
+names=names(dat(:,4)>0);
 
 set(gca,'xcolor',[1 1 1])
 set(gca,'ytick',1:20)
-set(gca,'yticklabel',names(dat(:,4)>0))
+set(gca,'yticklabel',names(order))
 set(gca,'xtick',[])
 
 TIGHT=.5;
