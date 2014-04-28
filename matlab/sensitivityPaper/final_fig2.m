@@ -65,9 +65,10 @@ for k=1:20
     ST(k)=1/N*sum(allB.*(allAB(:,k)-allA));
 end
 v=[S' ST'];
-v=v/var(allAB(:));
+%v=v/var(allAB(:));
+v=v/sum(sum(v));
 [vals,order]=sort(v(:,1));
-v(order,:)
+%order=1:length(order)
 
 figure(6)
 clf
@@ -112,4 +113,8 @@ set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
 
 laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
+
+for k=1:20
+    disp([num2str(v(k,1),'%0.2f'),' ',num2str(v(k,2),'%0.2f'),' ',names{k}])
+end
 

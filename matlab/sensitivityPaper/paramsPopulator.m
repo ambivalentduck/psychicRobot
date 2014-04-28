@@ -129,24 +129,24 @@ names={'l1, m';
     'Reflex Kp Ratio, unitless';
     'Kd/Kp ratio for reflexes, unitless'};
 
-latexnames={'Upper Arm Length, m';
-    'Forearm Length, m';
-    '$\frac{L_{c1}}{L_1}$, unitless';
-    '$\frac{L_{c2}}{L_2}$, unitless';
-    'Gross body mass ($m_g$), kg';
-    'Forearm mass ratio $\frac{m_1}{m_g}$, unitless';
-    'Upper arm mass ratio $\frac{m_1}{m_g}$, unitless';
-    '$\frac{ROG_1}{L_1}$, unitless';
-    '$\frac{ROG_2}{L_2}$, unitless';
-    'Shoulder $x$ in robot space, m'
-    'Shoulder $y$ in robot space, m'
-    'Force sensor bias $x$-axis, N';
-    'Force sensor bias $y$-axis, N';
-    'Force sensor Gaussian noise SD $x$-axis, N';
-    'Force sensor Gaussian noise SD $y$-axis, N';
+latexnames={'Upper Arm Length $(L_1)$';
+    'Forearm Length $(L_2)$';
+    'Upper Arm Center of Mass Ratio $(\frac{L_{m1}}{L_1})$';
+    'Forearm Center of Mass Ratio $(\frac{L_{m2}}{L_2})$';
+    'Gross Body Mass $(m_g)$';
+    'Upper Arm Mass Ratio $(\frac{m_1}{m_g})$';
+    'Forearm Mass Ratio $(\frac{m_2}{m_g})$';
+    'Upper Arm Radius of Gyration Ratio $(\frac{ROG_1}{L_1})$';
+    'Forearm Radius of Gyration Ratio $(\frac{ROG_2}{L_2})$';
+    'Shoulder Sagittal Coordinate'
+    'Shoulder Coronal Coordinate'
+    'Force Sensor Miscalibration $x$-axis';
+    'Force Sensor Miscalibration $y$-axis';
+    'Force Sensor Gaussian Noise SD $x$-axis';
+    'Force Sensor Gaussian Noise SD $y$-axis';
     'Whole $K_P$ gain, unitless';
-    '$K_{P1}$ gain, unitless';
-    '$K_{P2}$ gain, unitless';
+    'Torque-Invariant Impedance Misestimation Factor';
+    'Torque-Dependent Impedance Misestimation Factor';
     'Shad-Muss Kp gain, unitless';
     'Shad-Muss Kd gain, unitless';
     '$K_{P0,11}, \frac{N\cdot M}{rad}$';
@@ -165,9 +165,9 @@ latexnames={'Upper Arm Length, m';
     'Shad-Muss kd(1,2), N*M/rad';
     'Shad-Muss kd(2,1), N*M/rad';
     'Shad-Muss kd(2,2), N*M/rad';
-    '$\frac{K_D}{K_P}$, unitless';
-    'Reflex $\frac{K_D}{K_P}$, unitless';
-    'Reflex $\frac{K_D}{K_P}$'};
+    'Damping-to-Stiffness Ratio $(k_d)$';
+    'Reflex Impedance Scale Factor $(\frac{G}{K})$';
+    'Reflex Damping-to-Stiffness Ratio $(g_d)$'};
 
 if nargin==3
     column=varargin{1};
