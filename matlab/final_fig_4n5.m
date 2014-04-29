@@ -127,10 +127,14 @@ set(gcf,'position',[625   250   440   490])
 laprint(gcf,'figures/fig4raw','scalefonts','off','asonscreen','on')
 
 red=[1 .3 .3];
+green=[.1 .7 .3];
 
 figure(NR+1)
 clf
 hold on
+
+fill([rangemids rangemids(end) rangemids(1)],[mids(:,2)+errors(:,2); 0; 0],'w','facecolor',green,'edgecolor',green)
+
 for k=[2 1 3 4]
         if rem(k,2)~=0
             color=[0 0 0];
@@ -138,11 +142,11 @@ for k=[2 1 3 4]
             color=red;
         end
 
-    if k<3
-        fill([rangemids rangemids(end:-1:1)],[mids(:,k)-errors(:,k); mids(end:-1:1,k)+errors(end:-1:1,k)],'facecolor',color)
+    if k>2
+        fill([rangemids rangemids(end:-1:1)],[mids(:,k)-errors(:,k); mids(end:-1:1,k)+errors(end:-1:1,k)],'w','facecolor',color,'edgecolor','w')
         plot(rangemids,mids(:,k),'-','color',color)
     else
-        fill([rangemids rangemids(end) rangemids(1)],[mids(:,k)+errors(:,k); 0; 0],repmat(color,length(rangemids)+2,1))
+        fill([rangemids rangemids(end) rangemids(1)],[mids(:,k)+errors(:,k); 0; 0],'w','facecolor',color,'edgecolor','w')
     end
 end
 xlabel('Time Post Onset of Disturbing Forces, ms')
