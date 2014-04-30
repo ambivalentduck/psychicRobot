@@ -46,7 +46,7 @@ for A=1:length(anecdote)
     for c=1:length(f)
         k=f(c);
         X=[trials(k).x(:,1)-m,trials(k).x(:,2)-.5]*rotmat;
-        plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',green,'linewidth',.01)
+        plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',green,'linewidth',.1)
         %plot(undisturbed(k).y(:,1),undisturbed(k).y(:,2),'-','linewidth',.0000001,'color',[1 fade fade])
     end
 
@@ -72,11 +72,11 @@ set(gcf,'color',[1 1 1])
 axis equal
 
 %annotate(h);
-p=[.17 -.105;.17 0;.15 -.149;.121 .023];
+p=[.17 -.105;.17 .006;.15 -.152;.123 .025];
 d=[1 -1; -1 -1;1 1;-1 -1];
 colors=[gray; green; red; 0 0 0];
 labs{1}='Force Disturbance';
-labs{2}='Undisturbed Hand Trajectories';
+labs{2}='Undisturbed Hand Trajectory';
 labs{3}='Extracted Desired Hand Trajectory';
 labs{4}='Hand Trajectory';
 

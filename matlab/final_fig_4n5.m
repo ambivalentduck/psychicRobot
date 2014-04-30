@@ -9,18 +9,20 @@ close all
 %Plot mean and confidence interval against range
 %call that finalfig5
 
-NR=12;
+NR=21;
 
 for k=1:NR
     ranges{k}=(0:4)+(k-1)*5;
-    f=figure(k);
-    hold on
 end
+
+green=[.1 .7 .3];
 
 for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'U.mat'])
+
+    flag=0;
 
     %In theory, you need to sort by reachcat, which is in reachinfo
 
@@ -46,7 +48,6 @@ for k=1:4
         RANGE=ranges{R};
         for t=1:length(trials)
             if isempty(trialInfo(t).forceinds)
-                thishappens=1
                 continue
             end
             inds=trialInfo(t).forceinds(1)+RANGE;
@@ -69,9 +70,17 @@ for k=1:4
         Ylist=[subject(k).R2BX;subject(k).R2BY;subject(k).R2X;subject(k).R2Y];
 
         xoff=.3/2*((k-1)-1.5);
-        figure(R)
-        plot(Xlist(:,1)+xoff+.05*(rand(size(Xlist(:,1)))-.5),Ylist(:,1),'g.','markersize',1)
-        boxplot(Ylist(:,1),Xlist,'orientation','vertical','notch','on','positions',(1:4)+xoff,'widths',.1,'symbol','r.','labels',{'','','',''})
+
+
+        if ~flag&(ranges{R}(3)*5>185)
+            if k==1
+                figure('name',[num2str(5*ranges{R}(1)),'-',num2str(5*ranges{R}(end)),' ms']);
+                hold on
+            end
+            plot(Xlist(:,1)+xoff+.05*(rand(size(Xlist(:,1)))-.5),Ylist(:,1),'.','color',green,'markersize',2.5)
+            boxplot(Ylist(:,1),Xlist,'orientation','vertical','notch','on','positions',(1:4)+xoff,'widths',.1,'symbol','r.','labels',{'','','',''})
+            flag=1;
+        end
 
         lists(k,R).x=Xlist(:,1);
         lists(k,R).s=Xlist(:,1)*0+k;
@@ -79,48 +88,70 @@ for k=1:4
     end
 end
 
-for k=1:NR
-    figure(k)
-    set(gcf,'name',[num2str(5*ranges{k}(1)),'-',num2str(5*ranges{k}(end)),' ms'])
-    ylabel('Max Perpendicular Deviation, cm')
+h=findall(0,'type','figure');
+for k=1:length(h)
+    figure(h)
+    %ylabel('Max Perpendicular Deviation, cm')
+    plot(.64*[1 1],.1+[0 2],'k','linewidth',2)
+    text(.61,1+.1,'2 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom')
     set(gca,'xtick',[1:4])
-    set(gca,'xticklabels',{'Hand','Extracted','Hand','Extracted'})
-    xlim([.7 4.3])
-    ylim([0 17])
-    ys=ylim;
-    plot(2.5*[1 1],ys,'m-')
-    ylim(ys)
-
-    text(1.5,-1,'Disturbed Reaches','horizontalalignment','center')
-    text(3.5,-1,'Undisturbed Reaches','horizontalalignment','center')
+    set(gca,'xticklabel',{'Hand','Extracted','Hand','Extracted'})
+    xlim([.6 4.4])
+    plot([.7 4.3],[0 0],'k')
+    ylim([0 14])
+    %plot(2.5*[1 1],ys,'m-')
+    %ylim(ys)
+    text(1.5,-1,'Undisturbed Reaches','horizontalalignment','center')
+    text(3.5,-1,'Disturbed Reaches','horizontalalignment','center')
+    set(gca,'Box','off')
+    set(gca,'YColor',[1 1 1])
+    set(gca,'YTick',[])
+    %set(gca,'XColor',[1 1 1])
 end
 
-figure(8) %Have to know figure of interest off-hand
+
+for k=1:NR
+    %for k=1:NR
+    fullX=vertcat(lists(:,k).x);
+    fullY=vertcat(lists(:,k).y);
+    [p,table,stats]=anova1(fullY,fullX,'off');
+    %[c{k} m{k}]=multcompare(stats,'display','off');
+    mids(k,:)=stats.means;
+    errors(k,:)=halfWidth(stats)';
+    rangemids(k)=ranges{k}(1)*5;
+end
+
 set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
 set(gcf,'position',[625   250   440   490])
 laprint(gcf,'figures/fig4raw','scalefonts','off','asonscreen','on')
 
+red=[1 .3 .3];
+green=[.1 .7 .3];
+
 figure(NR+1)
+clf
+hold on
 
-return
+fill([rangemids rangemids(end) rangemids(1)],[mids(:,2)+errors(:,2); 0; 0],'w','facecolor',green,'edgecolor',green)
 
-fullX=vertcat(lists.x);
-fullS=vertcat(lists.s);
-fullY=vertcat(lists.y);
-[p,table,stats]=kruskalwallis(fullY,fullX)
-multcompare(stats)
-f=find(fullX==1);
-%[p,table,stats]=kruskalwallis(fullY(f),fullS(f))
-%multcompare(stats)
+for k=[2 1 3 4]
+        if rem(k,2)~=0
+            color=[0 0 0];
+        else
+            color=red;
+        end
 
-f2=find(fullX==2);
-mean(fullY(f2)-fullY(f))
-std(fullY(f2)-fullY(f))
+    if k>2
+        fill([rangemids rangemids(end:-1:1)],[mids(:,k)-errors(:,k); mids(end:-1:1,k)+errors(end:-1:1,k)],'w','facecolor',color,'edgecolor','w')
+        plot(rangemids,mids(:,k),'-','color',color)
+    else
+        fill([rangemids rangemids(end) rangemids(1)],[mids(:,k)+errors(:,k); 0; 0],'w','facecolor',color,'edgecolor','w')
+    end
+end
+xlabel('Time Post Onset of Disturbing Forces, ms')
+ylabel('Max Perpendicular Distance, cm')
 
-f3=find(fullX==3);
-f4=find(fullX==4);
 
-mean(fullY(f3)-fullY(f4))
-std(fullY(f3)-fullY(f4))
+
 
