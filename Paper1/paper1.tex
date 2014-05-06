@@ -1,0 +1,161 @@
+% Template for PLoS
+% Version 1.0 January 2009
+%
+% To compile to pdf, run:
+% latex plos.template
+% bibtex plos.template
+% latex plos.template
+% latex plos.template
+% dvipdf plos.template
+
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+\usepackage{graphicx}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+\usepackage{color} 
+
+% Use doublespacing - comment out for single spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+% Use the PLoS provided bibtex style
+\bibliographystyle{plos2009}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+
+% Leave date blank
+\date{}
+
+\pagestyle{myheadings}
+%% ** EDIT HERE **
+
+
+%% ** EDIT HERE **
+%% PLEASE INCLUDE ALL MACROS BELOW
+
+%% END MACROS SECTION
+
+\begin{document}
+
+% Title must be 150 characters or less
+\begin{flushleft}
+{\Large
+\textbf{Title}
+}
+% Insert Author names, affiliations and corresponding author email.
+\\
+Justin Horowitz$^{1}$, 
+James Patton$^{12\ast}$
+\\
+\bf{1} Bioengineering, University of Illinois at Chicago, Chicago, Illinois, United States
+\\
+\bf{2} SMPP, RIC, Chicago, Illinois, United States
+\\
+$\ast$ E-mail: Corresponding pattonj@uic.edu
+\end{flushleft}
+
+% Please keep the abstract between 250 and 300 words
+\section*{Abstract}
+\textbf{Needs work.}\\
+We derive and examine the parameter sensitivity of a novel modeling approach for extracting movement intent from a force-disturbed planar arm trajectory. While popular modeling approaches can be algebraically inverted to yield the same result, this more general approach reveals strengths, limitations, and underlying assumptions. After populating our model with measured lengths and masses as well as impedance values from the literature, we perform sensitivity analysis to determine the accuracy of the model relative to the uncertainty naturally inherent in point-to-point reaching. We find that sensitivity to parameter inaccuracy is on the order of microns and lower than the inaccuracy of human reaching. Further, most of the sensitivity results from uncertainty with regard to the stiffness of the joints. The robustness of this model holds promise for real-time determination of error that can free learning enhancement and treatment methods like error augmentation and challenge point from needing to prescribe explicit task goals. In addition, extraction from recorded human motion enables direct inspection of and hypothesis testing on the contents of human motor intent.
+
+\section*{Introduction}
+As machines interact more and more with humans, there is a growing need for a rigorous way to understand what people are trying to do, even if they become disturbed, distracted or influenced by pathology. One can assume that a person who is familiar with a particular task will try to do the same thing each time provided all other conditions are equal. This presumes that what people do is on average what they intended to do and that their goal remains unchanged. However, if there is a disturbance, it is unclear what happens to a person’s intentions because action is decoupled from intention. Lacking a means to discern that intention and changes in intention leads to challenges in human machine interactions. Hence a comprehensive method for understanding what someone means to do (rather than what they actually do or claim to have wanted to do) as they interact within uncertain environments will prove useful in any area where a person might be thwarted from their intent such as national security, operation of machinery, athletic and music performance, rehabilitation, human augmentation, and artificial intelligence.
+
+It is important to distinguish our use of the term intent from other groups that consider \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, or \textit{goal selection decisions}\cite{ziebart2010modeling}. In typical motor control studies, subjects are motivated to complete the experiment in a timely fashion and are usually explicitly provided targets to be reached. Classification of intent is prevalent in both lower \cite{strausser2011development, hargrove2013robotic} and upper limb\cite{englehart2003robust, young2012improving} prosthetics where hybrid control algorithms select from among a set of actions (walking/standing/flexion/extension/etc). While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of the arm) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action when the actual movement is disturbed and hence no longer matches the intent.
+
+Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle’s equilibrium point. Supporters of the so-called lambda model\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement. Upon inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised method---intent extraction---that deduces intended trajectory, even in the face of disturbances. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, the process (a dynamic model of the arm), the actuator (viscoelastic muscles), and the realized trajectory are all readily accessible via measurement and modeling. The underlying framework should be extensible to whole-body movement or even more abstract, psychological processes.
+
+Collectively, the general problem of being able to best extract someone’s intent is critical to many fields, and hinges on our understanding of the underlying mechanisms through which control is accomplished. We have excellent models of the mechanical properties of arm and muscle because the physics that describe their gross behavior is so well-understood and the need to determine particular physical parameter values has long been clear. This wealth of previous work provides strong footing for our technique, which in turn should yield valuable information not previously available by other means. In fields where the process and actuators are not yet well-understood, this approach may help to structure the search for them.
+
+Understanding the intent has many benefits, and one may be a better way to understand the composition of discrete movements into their subunits. Recent research has strived to understand the composition of movements intention during both infant development\cite{von1979observations} and stroke recovery\cite{rohrer2004submovements}, distinct straight-line subunits with bell-shaped speed profiles increasingly overlap and blend until, as in healthy adult reaching\cite{woodworth1899accuracy}, they become indistinguishable. Flash and Henis \cite{flash1991arm} demonstrated that despite this apparent blending, cued corrections can only be produced at predictable places within the reach. They also showed that these modifications appear to take place by superimposing additional straight-line subunits onto the original movement. Novak et al. \cite{novak2002use} detected corrective subunits following disturbance during knob turning. These studies show planning and correction in discrete subunits, but did not analyze the actual intent and hence cannot be compared to a known, correct trajectory except in the trivial case that movement is undisturbed. A disturbed trajectory’s intention is hidden without proper inversion of the model plan for movement. Here we develop a method to extract intent and gain a clearer understanding of subunits from disturbed motions.
+
+In this paper, we employ bidirectional modeling: we convert intent into movement using a forward model so that we can examine the quality and uncertainty of converting movement to intent by intent extraction. We then explore sensitivity and failure modes using standard model analysis techniques. We also demonstrate the accuracy and utility of this on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. We hypothesize that this combination allows intent extraction with less uncertainty than the uncertainty naturally inherent in point-to-point reaching. We show that certain factors and measurements are more sensitive than others, and demonstrate the viability of this method for a providing a better understanding of what a person means to do when they move and are disturbed.
+
+% Results and Discussion can be combined.
+\section*{Results}
+
+\subsection*{Subsection 1}
+
+\subsection*{Subsection 2}
+
+\section*{Discussion}
+
+% You may title this section "Methods" or "Models". 
+% "Models" is not a valid title for PLoS ONE authors. However, PLoS ONE
+% authors may use "Analysis" 
+\section*{Materials and Methods}
+The sections below describe the theoretical method, and then present our evaluations. First, we considered an idealized system using synthetic data that demonstrated the concept and provided an understanding of the computational process. Next we conducted an experiment on humans and the process was then evaluated on human subject data. 
+
+\subsection*{Intent Extraction: Deducing the Desired Trajectory}
+We first demonstrate the \textit{intent extraction} approach in human motor control, but we later show that the process is applicable to any controlled process with an invertible highest order plant term. The process begins by presuming a model of the controller. Here, we choose the well-known motion control structure of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} where the feedforward aspect of the controller perfectly predicts the plant and stabilizes it with linear feedback of position and velocity error. More complex models can be used without any loss of generality. The equation governing the passive planar dynamics (plant) of musculoskeletal structure is of the form:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=0
+\end{equation}
+Where $M$ is the mass matrix, $q$ is the joint angles, $G$ contains both Coriolis and centripal effects, and $E$ is any externally-applied torques that the system might interact with. Dots ($\dot{q}, \ddot{q}$) are used to denote time derivatives of the joint angles. The motion behavior changes with the addition of feedforward and/or feedback controllers:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=\underbrace{\overbrace{\hat{M}(q_d)\ddot{q}_d}^{\text{Inertia}}+\overbrace{\hat{G}(q_d,\dot{q}_d)}^{\text{Coriolis, Centripal}}+\hat{E}}_{\text{Feedforward Controller}}+\underbrace{K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)}_{\text{Impendance, Feedback Controller}}
+\end{equation}
+
+% Do NOT remove this, even if you are not including acknowledgments
+\section*{Acknowledgments}
+
+
+%\section*{References}
+% The bibtex filename
+\bibliography{paper1.bib}
+
+\section*{Figure Legends}
+%\begin{figure}[!ht]
+%\begin{center}
+%%\includegraphics[width=4in]{figure_name.2.eps}
+%\end{center}
+%\caption{
+%{\bf Bold the first sentence.}  Rest of figure 2  caption.  Caption 
+%should be left justified, as specified by the options to the caption 
+%package.
+%}
+%\label{Figure_label}
+%\end{figure}
+
+
+\section*{Tables}
+%\begin{table}[!ht]
+%\caption{
+%\bf{Table title}}
+%\begin{tabular}{|c|c|c|}
+%table information
+%\end{tabular}
+%\begin{flushleft}Table caption
+%\end{flushleft}
+%\label{tab:label}
+% \end{table}
+
+\end{document}
+
