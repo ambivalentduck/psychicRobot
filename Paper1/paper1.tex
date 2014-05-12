@@ -98,6 +98,48 @@ Understanding the intent has many benefits, and one may be a better way to under
 
 In this paper, we employ bidirectional modeling: we convert intent into movement using a forward model so that we can examine the quality and uncertainty of converting movement to intent by intent extraction. We then explore sensitivity and failure modes using standard model analysis techniques. We also demonstrate the accuracy and utility of this on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. We hypothesize that this combination allows intent extraction with less uncertainty than the uncertainty naturally inherent in point-to-point reaching. We show that certain factors and measurements are more sensitive than others, and demonstrate the viability of this method for a providing a better understanding of what a person means to do when they move and are disturbed.
 
+
+% You may title this section "Methods" or "Models". 
+% "Models" is not a valid title for PLoS ONE authors. However, PLoS ONE
+% authors may use "Analysis" 
+\section*{Materials and Methods}
+The sections below describe the theoretical method, and then present our evaluations. First, we considered an idealized system using synthetic data that demonstrated the concept and provided an understanding of the computational process. Next we conducted an experiment on humans and the process was then evaluated on human subject data. 
+
+\subsection*{Intent Extraction: Deducing the Desired Trajectory}
+We first demonstrate the \textit{intent extraction} approach in human motor control, but we later show that the process is applicable to any controlled process with an invertible highest order plant term. The process begins by presuming a model of the controller. Here, we choose the well-known motion control structure of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} where the feedforward aspect of the controller perfectly predicts the plant and linearizes the system through cancellation. Additionally, linear feedback rejects position and velocity error. More complex models can be used without any loss of generality. The equation governing the passive planar dynamics (plant) of musculoskeletal structure is of the form:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=0
+\end{equation}
+Where $M$ is the mass matrix, $q$ is the joint angles, $G$ contains both Coriolis and centripetal effects, and $E$ is externally-applied torque that the system might interact with. Dots ($\dot{q}, \ddot{q}$) are used to denote time derivatives of the joint angles. The motion behavior changes with the addition of feedforward and/or feedback controllers:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=\underbrace{\overbrace{\hat{M}(q_d)\ddot{q}_d}^{\text{Inertia}}+\overbrace{\hat{G}(q_d,\dot{q}_d)}^{\text{Coriolis, Centripal}}+\hat{E}}_{\text{Feedforward Controller}}+\underbrace{K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)}_{\text{Impendance, Feedback Controller}}
+\end{equation}
+Where a hat ($\hat{ }$) over term indicates the nervous system's best estimate of the planar dynamics, also known as the internal model. This portion of the system serves as an inverse-dynamics feedforward controller that cancels out the dynamics of the arm. If the nervous system has sufficient experience and is expecting $E$, it is included as part of the internal model, $\hat{E}$, otherwise $\hat{E}$ is set to zero. $K_p$ and $K_d$ are the lumped impedance and feedback terms that employ a moving state equilibrium to accomplish the desired trajectory, $q_d$. This $q_d$ signifies the unknown desired trajectory that we seek to discover.
+
+For typical dynamic simulations, in order to determine the trajectory the system (i.e., the forward dynamics problem), this second order differential equation requires standard numerical integration to determine the solution to the initial value problem in time. This first involves algebraic manipulation to solve for $\ddot{q}$, and then integration to determine the state trajectory. The intent extraction approach modifies this method by instead solving for $\ddot{q}_d$:
+\begin{equation}
+\ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+\hat{E}+K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)]\right\}
+\end{equation}  
+$\ddot{q}_d$ can then be integrated to determine the intended state trajectory $q_d(t)$. Provided the model of plant and controller are precise, the initial conditions are available and accurate, the mass matrix estimate $\hat{M}$ is invertible, and the constants are accurate and do not vary, and externally-applied force can be accurately measured, then system yields an accurate estimate of the intent.
+
+In fact, this approach can be generalized to any system with an intention that governs the control law, and hence is agnostic to the form of controller. In order to prove this, we introduce one additional layer of complexity by separating the plant into its process and actuator components. Modeling the actuator explicitly allows us to compare our $x_d$ against lambda models \cite{feldman1995origin} and their hypothetical equilibrium trajectory, $x_e$. Additionally, this enables a more general derivation. We describe both as instantaneously linear differential equations.
+\begin{equation}
+\underbrace{\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+\overbrace{\sum_{n=1}^N A_n(x-x_e)^{(n)}}^\text{Actuator}}_\text{Plant}+E=0
+\end{equation}
+Controlling the process as intended requires a specific relationship between the internal model and choice of actuator equilibria, $x_e$, and impedances, $A_n$:
+\begin{equation}
+\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{n=1}^N A_n(x_d-x_e)^{(n)}}^\text{Actuator}=0
+\end{equation}
+
+
+ Taking the system above and generalizing the extraction of intent trajectory $x_d(t)$ to any such feedforward system well-described by a differential equation up to some order N,
+Note that the impedance and feedback functions can take a variety of forms that include delays and other terms that might account for the actuation of many control processes. Similar to before, this can now be reformulated,
+
+    EQUATION HERE 
+   
+Where $P_N$ is the coefficient matrix associated with highest order N, and $P_(1...N)$ are all lower order coefficients. 
+
+
 % Results and Discussion can be combined.
 \section*{Results}
 
@@ -107,29 +149,13 @@ In this paper, we employ bidirectional modeling: we convert intent into movement
 
 \section*{Discussion}
 
-% You may title this section "Methods" or "Models". 
-% "Models" is not a valid title for PLoS ONE authors. However, PLoS ONE
-% authors may use "Analysis" 
-\section*{Materials and Methods}
-The sections below describe the theoretical method, and then present our evaluations. First, we considered an idealized system using synthetic data that demonstrated the concept and provided an understanding of the computational process. Next we conducted an experiment on humans and the process was then evaluated on human subject data. 
-
-\subsection*{Intent Extraction: Deducing the Desired Trajectory}
-We first demonstrate the \textit{intent extraction} approach in human motor control, but we later show that the process is applicable to any controlled process with an invertible highest order plant term. The process begins by presuming a model of the controller. Here, we choose the well-known motion control structure of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} where the feedforward aspect of the controller perfectly predicts the plant and stabilizes it with linear feedback of position and velocity error. More complex models can be used without any loss of generality. The equation governing the passive planar dynamics (plant) of musculoskeletal structure is of the form:
-\begin{equation}
-\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=0
-\end{equation}
-Where $M$ is the mass matrix, $q$ is the joint angles, $G$ contains both Coriolis and centripal effects, and $E$ is any externally-applied torques that the system might interact with. Dots ($\dot{q}, \ddot{q}$) are used to denote time derivatives of the joint angles. The motion behavior changes with the addition of feedforward and/or feedback controllers:
-\begin{equation}
-\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=\underbrace{\overbrace{\hat{M}(q_d)\ddot{q}_d}^{\text{Inertia}}+\overbrace{\hat{G}(q_d,\dot{q}_d)}^{\text{Coriolis, Centripal}}+\hat{E}}_{\text{Feedforward Controller}}+\underbrace{K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)}_{\text{Impendance, Feedback Controller}}
-\end{equation}
-
 % Do NOT remove this, even if you are not including acknowledgments
 \section*{Acknowledgments}
 
 
 %\section*{References}
 % The bibtex filename
-\bibliography{paper1.bib}
+\bibliography{paper1}
 
 \section*{Figure Legends}
 %\begin{figure}[!ht]

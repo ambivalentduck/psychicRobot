@@ -92,6 +92,7 @@ text(.006,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','V
 
 axis off
 
-set(0,'defaulttextinterpreter','none')
+set(gcf,'units','cm')
+get(gcf,'position')
 
-laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
+%laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
