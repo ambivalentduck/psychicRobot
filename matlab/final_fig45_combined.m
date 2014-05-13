@@ -9,8 +9,8 @@ close all
 %Plot mean and confidence interval against range
 %call that finalfig5
 
-NR=10;
-edges=linspace(0,100,NR+1); %sampling rate is 200 Hz = .005 s samples
+NR=20;
+edges=linspace(0,180,NR+1); %sampling rate is 200 Hz = .005 s samples
 
 black=[0 0 0];
 red=[1 .3 .3];
@@ -75,7 +75,7 @@ for k=1:4
         Xlist=[CBX;CX;CY];
         Ylist=[subject(k).R2BX;subject(k).R2X;subject(k).R2Y];
 
-        DOTSIZE=4;
+        DOTSIZE=5;
         LINEWIDTH=5;
         binCenter=5*(edges(R)+edges(R+1))/2;
         drawnWidth=5*.25*(edges(R+1)-edges(R));
@@ -108,11 +108,11 @@ for k=1:NR
     kw(k).c=multcompare(stats,'display','off');
     
     [p,table,stats]=anova1(fullY,fullX,'off');
-    mids(k,:)=stats.means;
-%     for kk=1:3
-%         F=find(fullX==kk);
-%         mids(k,kk)=median(fullY(F));
-%     end
+    %mids(k,:)=stats.means;
+    for kk=1:3
+        F=find(fullX==kk);
+        mids(k,kk)=median(fullY(F));
+    end
     
     errors(k,:)=halfWidth(stats)';
     rangemids(k)=5*(edges(k)+edges(k+1))/2;
@@ -133,8 +133,8 @@ end
 plot([0,0],[0 5],'k-','linewidth',3)
 text(0,2.5,'Error, 5 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom')
 set(gca,'ycolor',[1 1 1])
-set(gca,'xtick',[25 475])
-set(gca,'xticklabels',{'0','500'})
+%set(gca,'xtick',[25 475])
+%set(gca,'xticklabels',{'0','500'})
 set(gca,'ytick',[])
 set(gca,'TickLength',[0 0]);
 set(gca,'linewidth',[1]);
@@ -146,6 +146,9 @@ set(gca,'position',[margin margin width height],'units','normalized')
 set(0,'defaulttextinterpreter','none')
 
 matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
+
+print figures/fig4.eps -depsc
+
 
 
 

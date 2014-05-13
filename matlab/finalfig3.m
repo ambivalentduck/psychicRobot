@@ -92,7 +92,10 @@ text(.006,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','V
 
 axis off
 
-set(gcf,'units','cm')
+set(gcf,'units','centimeters')
 get(gcf,'position')
 
+matlabfrag('figures/fig3raw')
 %laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
+
+print figures/fig3 -depsc

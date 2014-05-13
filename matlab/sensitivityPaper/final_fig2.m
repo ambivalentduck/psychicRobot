@@ -64,9 +64,10 @@ for k=1:20
     S(k)=1/(2*N)*sum((allA-allAB(:,k)).^2);
     ST(k)=1/N*sum(allB.*(allAB(:,k)-allA));
 end
-v=[S' ST'];
+v=[S' ST']
+totalSensitivity=sum(sum(v))
 %v=v/var(allAB(:));
-v=v/sum(sum(v));
+v=v/totalSensitivity;
 [vals,order]=sort(v(:,1));
 %order=1:length(order)
 
@@ -111,8 +112,12 @@ set(gca,'position',[.5 margin 1-margin 1-margin],'units','normalized')
 
 set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
+matlabfrag('..figures/fig2raw');
 
-laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
+print ../figures/fig2 -depsc
+
+
+%laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
 
 for k=1:20
     disp([num2str(v(k,1),'%0.2f'),' ',num2str(v(k,2),'%0.2f'),' ',names{k}])
