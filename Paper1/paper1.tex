@@ -112,40 +112,73 @@ We first demonstrate the \textit{intent extraction} approach in human motor cont
 \end{equation}
 Where $M$ is the mass matrix, $q$ is the joint angles, $G$ contains both Coriolis and centripetal effects, and $E$ is externally-applied torque that the system might interact with. Dots ($\dot{q}, \ddot{q}$) are used to denote time derivatives of the joint angles. The motion behavior changes with the addition of feedforward and/or feedback controllers:
 \begin{equation}
-\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=\underbrace{\overbrace{\hat{M}(q_d)\ddot{q}_d}^{\text{Inertia}}+\overbrace{\hat{G}(q_d,\dot{q}_d)}^{\text{Coriolis, Centripal}}+\hat{E}}_{\text{Feedforward Controller}}+\underbrace{K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)}_{\text{Impendance, Feedback Controller}}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=\underbrace{\overbrace{\hat{M}(q_d)\ddot{q}_d}^{\text{Inertia}}+\overbrace{\hat{G}(q_d,\dot{q}_d)}^{\text{Coriolis, Centripal}}+\hat{E}}_{\text{Feedforward Controller}}+\underbrace{K_p(q_d-q)+K_d(\dot{q}_d-\dot{q})}_{\text{Impendance, Feedback Controller}}
 \end{equation}
 Where a hat ($\hat{ }$) over term indicates the nervous system's best estimate of the planar dynamics, also known as the internal model. This portion of the system serves as an inverse-dynamics feedforward controller that cancels out the dynamics of the arm. If the nervous system has sufficient experience and is expecting $E$, it is included as part of the internal model, $\hat{E}$, otherwise $\hat{E}$ is set to zero. $K_p$ and $K_d$ are the lumped impedance and feedback terms that employ a moving state equilibrium to accomplish the desired trajectory, $q_d$. This $q_d$ signifies the unknown desired trajectory that we seek to discover.
 
 For typical dynamic simulations, in order to determine the trajectory the system (i.e., the forward dynamics problem), this second order differential equation requires standard numerical integration to determine the solution to the initial value problem in time. This first involves algebraic manipulation to solve for $\ddot{q}$, and then integration to determine the state trajectory. The intent extraction approach modifies this method by instead solving for $\ddot{q}_d$:
 \begin{equation}
-\ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+\hat{E}+K_p(q-q_d)+K_d(\dot{q}-\dot{q}_d)]\right\}
+\ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+\hat{E}+K_p(q_d-q)+K_d(\dot{q}_d-\dot{q})]\right\}
 \end{equation}  
 $\ddot{q}_d$ can then be integrated to determine the intended state trajectory $q_d(t)$. Provided the model of plant and controller are precise, the initial conditions are available and accurate, the mass matrix estimate $\hat{M}$ is invertible, and the constants are accurate and do not vary, and externally-applied force can be accurately measured, then system yields an accurate estimate of the intent.
 
-In fact, this approach can be generalized to any system with an intention that governs the control law, and hence is agnostic to the form of controller. In order to prove this, we introduce one additional layer of complexity by separating the plant into its process and actuator components. Modeling the actuator explicitly allows us to compare our $x_d$ against lambda models \cite{feldman1995origin} and their hypothetical equilibrium trajectory, $x_e$. Additionally, this enables a more general derivation. We describe both as instantaneously linear differential equations.
+In fact, this approach can be generalized to any system with an intention that governs the control law, and hence is agnostic to the form of controller. In order to prove this, we introduce one additional layer of complexity by separating the plant into its process and actuator components. Modeling the actuator explicitly allows us to compare our $x_d$ against lambda models \cite{feldman1995origin} and their hypothetical equilibrium trajectory, $x_e$. Additionally, this enables a more general derivation. Without loss of generality, we describe both as instantaneously linear differential equations in some space, $x$:
 \begin{equation}
-\underbrace{\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+\overbrace{\sum_{n=1}^N A_n(x-x_e)^{(n)}}^\text{Actuator}}_\text{Plant}+E=0
+\underbrace{\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+\overbrace{\sum_{m=1}^M A_m(x-x_e)^{(m)}}^\text{Actuator}}_\text{Plant}+E=0
 \end{equation}
-Controlling the process as intended requires a specific relationship between the internal model and choice of actuator equilibria, $x_e$, and impedances, $A_n$:
+Controlling the process as intended requires a specific relationship between the internal model, choice of actuator equilibria $x_e$, and impedances $A_n$:
 \begin{equation}
-\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{n=1}^N A_n(x_d-x_e)^{(n)}}^\text{Actuator}=0
+\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{m=1}^M A_m(x_d-x_e)^{(m)}}^\text{Actuator}=0
 \end{equation}
+Because the actuator's reference trajectory is shared between both representations, we can solve both equations for $\sum_{m=1}^M A_mx_e^{(m)}$, set them equal, and collect the remaining actuator terms into a single feedback component:
+\begin{equation}
+\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+E=\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{m=1}^M A_m (x_d-x)^{(m)}}^\text{Feedback (Actuator)}
+\end{equation}
+We now recover our familiar model and learn its relationship with $x_e$. While a proper choice of $x_e$ was critical in controlling the actuator, a complete model relating actual and intended trajectory does not and need not reflect it. The actuator's equilibrium is not the process's equilibrium unless $x_d$ and all of its derivatives are zero. This upholds Gomi and Kawato's finding that the arm muscles' equilibrium does represent reaching intent\cite{gomi1997human}.
 
+This general form reveals the conditions needed to solve for the intention of an arbitrary process. We can solve for $x_d$ if the actuator's instantaneous impedance is known and either the plant or its highest order term can be inverted. Moreover, the plant model does not need to be explicitly formulated. In cases like national security or athletic performance, the plant (a bomb in a crowded square or an opposing team) may be too complex to model. By substituting a lookup table made up of past state-outcome pairs for an explicit process model, it becomes possible to determine desired outcome even when the state is disturbed. It is not necessarily to allow a bomb to be planted or an opposing team to carry out a play in order to discover their plans.
 
- Taking the system above and generalizing the extraction of intent trajectory $x_d(t)$ to any such feedforward system well-described by a differential equation up to some order N,
-Note that the impedance and feedback functions can take a variety of forms that include delays and other terms that might account for the actuation of many control processes. Similar to before, this can now be reformulated,
+\textcolor{red}{\textbf{This last bit needs work. Solving for the Feldman equilibrium addresses your prior objections and keeps everything in familiar forms throughout. I'm not sure if take-home points for the reader go here or in the discussion. In particular, this gets us back to skewering Feldman.}}
 
-    EQUATION HERE 
-   
-Where $P_N$ is the coefficient matrix associated with highest order N, and $P_(1...N)$ are all lower order coefficients. 
+\subsection*{Generation of synthetic data using simple dynamic simulation}
+We choose one prevailing arm model, that of Burdet et al. (2006), along with the anatomical mass distribution and geometry parameters of Winters (1990) to create a model for estimating intent. The model of Burdet et al (2006) was adapted to reflect measured physical parameters of the subject who provided the reach. Segment lengths were measured directly while gross body mass was self-reported. These values were converted to segment masses, centers of gravity, and moments of inertia inertia using anatomical landmarks and values from Dempster (1955) and Winters (1990). The muscle torque used to calculate stiffness was approximated by looking backward in time a small amount (500 microseconds). Desired trajectory in time was simulated as a minimum jerk, 5th order polynomial of duration 700ms starting and ending with zero velocity and acceleration.
+Simulated reaches were 15 cm long, beginning 38 cm out from and 5.7 cm left of the right shoulder then proceeding right.  We used the following types of perturbing forces for each combination of distance and direction: 
+Pulse forces applied in one of the the two directions perpendicular to the direction of movement began when the subject had moved either 10\% or 50\% of the distance to the target and lasted for 150ms.
+Noise forces began once the subject moved 3 mm, and lasted for the duration of the motion. The forces were drawn from a white noise generator drawn at 1000 Hz with flat power spectral density of 1N, and then passed through a 4th order low-pass Butterworth filter with cutoff $10\pi$ rad/s. 
+
+\subsection*{Error Metric}
+Our error metric used deviation in position, where unsigned error was calculated as the mean magnitude of deviation from the nominal trajectory across each of 150 1mm wide bins spaced evenly throughout the 15cm reach.  Mean unsigned error (MUE) was also used to summarize the overall error in each movement for sensitivity analysis. Maximum unsigned error, also called maximum perpendicular distance, was used to measure reaching accuracy to avoid sensitivity to duration of inspection.
+
+\subsection*{Indices of variance-based sensitivity}
+Sobol-distributed matrices were generated using MATLAB’s sobolset() function and converted to parameter distributions (see Table 1) using inverse cumulative probability density. Distributions were clamped to the range of $\pm3$ standard deviations in order to avoid support for implausible parameter values. Combinations and calculations were made as prescribed by Saltelli et al. (2010) to arrive at direct and indirect sensitivity indices.
+
+\subsection*{Human Subjects}
+The human data trajectories analyzed here are drawn from a four subjects who gave informed consent in accordance with Northwestern University Institutional Review Board. Two male and two female right-handed subjects (ages 24 to 30) performed the reaches with their right arm and was not compensated. Subjects’ arm segment lengths were directly measured in situ while body mass was self-reported.
+
+\subsection*{Apparatus}
+A planar manipulandum (described in Patton and Mussa-Ivaldi, 2004) was programmed to compensate and minimize any handle friction or mass. The MATLAB XPC-TARGET package (Natick, MA) was used to render this force environment at 1000 Hz and data were collected at 1000 Hz.  Visual feedback was performed at 60 Hz using OpenGL. Closed loop data transmission time (position measurement to completed rendering to recognition of rendering by the position measurement system) was <8 ms, ensuring a visual delay less than one 60 Hz frame.
+
+\subsection*{Protocol}
+Subjects made 730 reaches in total, along a line parallel to their coronal plane and approximately 45 cm from their shoulder. Reaches were either 15 or 30 cm long, starting and ending at one of three points spaced 15 cm apart on the line. To prevent any learning effect, forces were presented intermittently with random frequency, but never less than 5 reaches apart. Forces were chosen pseudorandomly such that each type, direction, and distance combination mentioned above was presented 5 times.  
+
+\subsection*{Statistical Analysis}
+The MATLAB statistics toolbox package (Natick, MA) was used to perform comparisons among subjects and trajectory sources using the nonparametric Kruskal-Wallis test with Tukey-Kramer post-hoc for group differences. Nonparametric testing was necessary due to floor effects from using unsigned measures.
 
 
 % Results and Discussion can be combined.
 \section*{Results}
 
-\subsection*{Subsection 1}
+\subsection*{Model Viability}
+Sensitivity analysis fortunately revealed that variance in intended trajectories due to estimated uncertainty in model parameters is lower than the natural variation in undisturbed motions.  Simulated point-to-point reaches disturbed by either filtered white noise forces or a pulse force perpendicular to the direction of the reach (figure 1) were extracted in the presence of 220,000 variations upon the parameters (table 1) according to the methods of Saltelli et al. (2011). Expected variation due to parameter uncertainty was 0.86 microns for pulse forces and 1.5 microns for filtered white forces. Variation in recorded undisturbed point-to-point reaching under the same time and reach distance conditions was 2.93 microns. These variations both fall beneath the instantaneous accuracy of the robot recording the motion (tenths of a millimeter). In other words, while some inversion processes might be highly sensitive to model uncertainty, our process for recovering intent from action is much more precise than its input.
 
-\subsection*{Subsection 2}
+\subsection*{Parameter Sensitivity}
+Simulated error due to direct parameter uncertainty (figure 2) reached the order of millimeters and revealed particular sensitivity to misestimation of stiffness and changes in shoulder position from trial to trial. Indirect sensitivity, which reveals how errors from other parameters are affected by changes in a given parameter, was an order of magnitude lower than direct sensitivity and again implicated stiffness estimation inaccuracy as a primary cause of extraction uncertainty. Note that this sensitivity analysis does not provide information on whether models or parameter estimates are accurate, only how sensitive the model would be if they were inaccurate. 
+
+\subsection*{Human Intent Trajectories}
+Extraction of intent from human point-to-point reaching revealed straight-line movement that persisted for hundreds of milliseconds after the onset of disturbing forces (figure 3). In both pulse timing conditions, intent remained straight line towards the target, supporting the approach.  When disturbances occurred early in reaching, intent showed some signs of correction mid-reach. When disturbances occurred late in reaching, intent tended to continue to onto the target with change of intent occurring on or near the target (figure 3 lower plots). 
+Patterns across all trials and subject revealed some systematic tendencies. For approximately 200 milliseconds after the onset of disturbance (figure 4 compare individual points). At this point intent significantly deviated from the baseline region of tendency. As the movement completed, the hand position and intent re-converged and become statistically indistinguishable at approximately 400ms after the onset of disturbance (figure 4 shaded areas).
+
+
 
 \section*{Discussion}
 
