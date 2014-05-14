@@ -75,14 +75,16 @@ James Patton$^{12\ast}$
 \\
 \bf{1} Bioengineering, University of Illinois at Chicago, Chicago, Illinois, United States
 \\
-\bf{2} SMPP, RIC, Chicago, Illinois, United States
+\bf{2} Sensory Motor Performance Program, RIC, Chicago, Illinois, United States
 \\
 $\ast$ E-mail: Corresponding pattonj@uic.edu
 \end{flushleft}
 
 % Please keep the abstract between 250 and 300 words
 \section*{Abstract}
-We derive and examine the parameter sensitivity of a novel modeling approach for extracting movement intent from a force-disturbed planar arm trajectory. While popular modeling approaches can be algebraically inverted to yield the same result, this more general approach reveals strengths, limitations, and underlying assumptions. After populating our model with measured lengths and masses as well as impedance values from the literature, we perform sensitivity analysis to determine the accuracy of the model relative to the uncertainty naturally inherent in point-to-point reaching. We find that sensitivity to parameter inaccuracy is on the order of microns and lower than the inaccuracy of human reaching. Further, most of the sensitivity results from uncertainty with regard to the stiffness of the joints. The robustness of this model holds promise for real-time determination of error that can free learning enhancement and treatment methods like error augmentation and challenge point from needing to prescribe explicit task goals. In addition, extraction from recorded human motion enables direct inspection of and hypothesis testing on the contents of human motor intent.
+We derive a novel modeling approach for extracting movement intent from a force-disturbed planar arm trajectory, examine its parameter sensitivity, and test it on human reaching data. While popular modeling approaches can be algebraically inverted to yield the same result, this more general approach reveals strengths, limitations, and underlying assumptions. After populating our model with measured lengths and masses as well as impedance values from the literature, we perform sensitivity analysis to determine the accuracy of the model relative to the uncertainty naturally inherent in point-to-point reaching. We find that sensitivity to parameter inaccuracy is on the order of microns and lower than the inaccuracy of human reaching. Further, most of the sensitivity results from uncertainty with regard to the stiffness of the joints. The robustness of this model allows us to apply it to human reaching data
+
+holds promise for real-time determination of error that can free learning enhancement and treatment methods like error augmentation and challenge point from needing to prescribe explicit task goals. In addition, extraction from recorded human motion enables direct inspection of and hypothesis testing on the contents of human motor intent.
 
 \section*{Introduction}
 As machines interact more and more with humans, there is a growing need for a rigorous way to understand what people are trying to do, even if they become disturbed, distracted or influenced by pathology. One can assume that a person who is familiar with a particular task will try to do the same thing each time provided all other conditions are equal. This presumes that what people do is on average what they intended to do and that their goal remains unchanged. However, if there is a disturbance, it is unclear what happens to a person's intentions because action is decoupled from intention. Lacking a means to discern that intention and changes in intention leads to challenges in human machine interactions. Hence a comprehensive method for understanding what someone means to do (rather than what they actually do or claim to have wanted to do) as they interact within uncertain environments will prove useful in any area where a person might be thwarted from their intent such as national security, operation of machinery, athletic and music performance, rehabilitation, human augmentation, and artificial intelligence.
@@ -184,7 +186,9 @@ $\lambda$ models seek to explain reaching intent as the muscles’ equilibrium t
 Not only is intent slow to change, it does not necessarily change due to disturbance. While this work does not examine this directly, our observations are more compatible with intermittent control (or even submovements) than with continuous optimal feedback control. In classic optimal control, the system is always updating the intent in response to errors \cite{todorov2002optimal}. Our results suggest a latent response consistent with sensory feedback latencies \cite{pruszynski2012optimal}. Interestingly, our data disturbances that come later in the movement appeared to not dramatically affect the intent (Figure 3, lower plot), suggesting that people may stubbornly “stick to their guns” when they know that the stiffness and damping characteristics will provide enough restoring torque to arrive at the target. In other words, response latencies may be  dependent on the time of the disturbance in the movement. Another explanation is that control is intermittent \cite{gawthrop2011intermittent}. It remains to be seen if and how change in intent might be triggered. 
 
 This study might have large dividends in the study of error augmentation, which has demonstrated the capacity to increase and speed up learning in healthy patients \cite{patton2004robot} and following stroke \cite{patton2006evaluation}. This relies on dictating the direction of reach. By instead scaling the magnitude of the difference between the desired and realized trajectory, error augmentation during undirected reaching and exploration becomes possible. This permits both error reduction and error magnification. As demonstrated by the success of the challenge-point framework \cite{guadagnoli2004challenge}, dynamic variation of augmentation as task learning progresses can be beneficial. With this extraction, error can be measured and augmented in real time even without an explicit task, potentially enabling wider utility.
+
 While derivation and validation of intent determination was somewhat complicated, the outcome is a single filter that converts force and motion information into an estimate of intention. This filter incorporates the inversion of estimates of the actual human controller into the computation. While a large number of filters have already been proposed, we believe this to be a unique tool to be added to the arsenal of analytical methods for exploring human motor control. It has immediate applications to motor learning, neurorehabilitation, and any field interested in human-machine interaction.  
+
 The ability of such a filter to produce intended trajectories from force-disturbed movements allows for hypothesis testing that previously was not available. It is important to reiterate that because the human arm’s mass is almost always invertible, this approach can take \textbf{any} “candidate model” of human control and create a filter that estimates the intended trajectory. By using tests such as the straight line reaching test employed in this paper, one can evaluate which candidate produces the most plausible intended trajectory, supporting one model over another.  Instead of comparing two generative models to see which better approximates movement, it is now possible to perform element-by-element fitting. Mid-movement replanning is now falsifiable: do intended trajectories from disturbed motions differ from undisturbed motions? Similarly, claims of composition of desired trajectories by submovements should now be directly testable. Finally, optimal feedback models can now gain direct access to an intended trajectory to better understand and fit their cost function.
 
 Nevertheless, there are some drawbacks and limitations to these methods.  One limiting requirement of this method is that accurate interface force (within a few tenths of a newton) is needed. Such instrumentation is available, but must be used with great care in order to preserve the accuracy of the estimate. Our sensitivity analysis on synthetic data revealed that slight error can lead to a trajectory that accumulates a drift due to bias caused by the force term. More importantly, while modern force sensors can be highly accurate with very high signal to noise ratios, they tend to drift over time, leading to error that can grow if the device is not periodically tared. Our empirical approach used several methods to mitigate these effects, and hence the errors became small. It remains to be seen if there are methods to reduce the errors from force error, or better to eliminate their need altogether.  
@@ -196,10 +200,8 @@ This study did not examine all disturbances. Although we have found and validate
 The approximation of stiffness appears to be the most critical factor in accuracy in estimating intent. While serious trial-to-trial stiffness misestimation is unlikely, co-contraction in response to disturbance might plausibly double stiffness mid-reach. Even as the model is insensitive to normal variations, halving or doubling this parameter due to contraction is plausible and has significant impact on accuracy. The limitations are readily overcome by performing this sensitivity analysis on each force environment of interest and taking measures to detect co-contraction where or when it occurs. 
 
 Our simple linear scaling of Burdet et al.'s stiffness model \cite{burdet2006stability} may not be all that is needed. More accurate approaches would provide us with too many free parameters through which to determine the outcome of the eventual extraction. Even scaling the constant and torque-dependent stiffness matrixes separately would enable rotation of the extracted trajectory. Our results point to the possibility of the impedance changing during motion, perhaps also as a function of time. The system was also shown to be sensitive to uncertainties in impedance. While this may be perceived as a shortcoming, switching from a state-varying impedance to ongoing time-varying determination of impedance may overcome these issues.
-[summary and take home; Hypothesize /speculate what data suggest, are there new questions.  What contributions did this paper make? 
+
 In any case, the general intent extraction approach presented here reveals the conditions needed to solve for the moving intent in an arbitrary dynamic process. Moreover, the plant model does not need to be explicitly formulated. Dynamic models that strive to understand intent are wide ranging, and can include mathematical models that range in application from national security to athletic performance. The plant (such as the actions of a crowd in a crowded square or the motions of the opposing team) may be too complex to model with simple linear transformations as we present above. However, by substituting some approximation or lookup table of input-outcome pairs, it is possible to determine in a variety of applications to obtain the intent, even when disturbed. It is not necessarily to allow a bomb to explode or the opposing team to be victorious to understand their plan behind the action.
-
-
 
 % Do NOT remove this, even if you are not including acknowledgments
 \section*{Acknowledgments}
@@ -224,7 +226,7 @@ In any case, the general intent extraction approach presented here reveals the c
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=4in]{fig1.eps}
+%\includegraphics[width=4in]{fig1.eps}
 \end{center}
 \caption{
 {\bf Simulated data illustrating tautology of extraction absent parameter error across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows.
@@ -234,7 +236,7 @@ In any case, the general intent extraction approach presented here reveals the c
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=4in]{fig2.eps}
+%\includegraphics[width=4in]{fig2.eps}
 \end{center}
 \caption{
 {\bf Model sensitivity testing (from the variance-based method of Saltelli et al.\cite{saltelli2010variance}) reveals that the model is mostly sensitive to stiffness.} Direct sensitivity, in purple, shows how modeling error changes with the parameter. Indirect sensitivity, in teal, shows how modeling error from other parameters is affected by changes in the parameter. Variation in individual tests exceeds expected variance by two orders of magnitude.
@@ -244,7 +246,7 @@ In any case, the general intent extraction approach presented here reveals the c
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=4in]{fig3.eps}
+%\includegraphics[width=4in]{fig3.eps}
 \end{center}
 \caption{
 {\bf Subjects' disturbed hand trajectories and extraction of intended trajectories from them reveal that both variance and invariance of the motor plan can occur even in response to very large disturbances.} The hand path, in black, deviates from the green baseline, as a force pulse, gray arrows, are applied. This subject's extracted desired trajectories, in red (baseline in faded red), do not significantly differ from baseline during force application, but show some reaction afterwards.
@@ -254,7 +256,7 @@ In any case, the general intent extraction approach presented here reveals the c
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=4in]{fig4.eps}
+%\includegraphics[width=4in]{fig4.eps}
 \end{center}
 \caption{
 {\bf Comparison of subjects' perpendicular errors across disturbed and undisturbed conditions reveals that intention is statistically indistinguishable from undisturbed reaching up until 100ms after the onset of movement.} Hand errors in the presence of disturbance (black dots, black band is median $\pm$ simultaneous 95\% confidence interval on the median) deviate almost immediately from undisturbed hand errors (green dots, band). Movement intention (red dots, band) deviates at approximately 100ms after the onset of disturbance. The hand rejoins the intention approximately 500ms after the onset of disturbance.
