@@ -10,22 +10,23 @@ close all
 %call that finalfig5
 
 NR=20;
-edges=linspace(0,180,NR+1); %sampling rate is 200 Hz = .005 s samples
+edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
 black=[0 0 0];
 red=[1 .3 .3];
 green=[.1 .7 .3];
 height=7;
 width=9;
-margin=1;
-figmargin=.1;
+lmargin=.5;
+bmargin=1;
+figmargin=.4;
 
 figure(1)
 clf
 hold on
 set(gcf,'color',[1 1 1])
 set(gcf,'units','centimeters')
-set(gcf,'position',[4,8,figmargin+margin+width,figmargin+margin+height])
+set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
 for k=1:4
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
@@ -48,8 +49,9 @@ for k=1:4
 
     clear triStruct
 
-    for R=1:NR
+    for R=1:NR+1
         RANGE=edges(R):edges(R+1);
+        
         for t=1:length(trials)
             if ~sum(trials(t).disturbcat==[1:4]) %Fast-ish skipping instead of indexing
                 continue
@@ -59,8 +61,15 @@ for k=1:4
             start=max(onset-35,1);
             indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
 
-            triStruct(t).R2X=getR2(trials(t).x(inds,:));
-            triStruct(t).R2Y=getR2(trials(t).y(indsy,:));
+            try
+                triStruct(t).R2X=getR2(trials(t).x(inds,:));
+                triStruct(t).R2Y=getR2(trials(t).y(indsy,:));
+            catch
+                st1=size(trials(t).x,1);
+                triStruct(t).R2X=getR2(trials(t).x(inds(1):st1,:));
+                st1=size(trials(t).x,1);
+                triStruct(t).R2Y=getR2(trials(t).y(indsy(1):st1,:));
+            end
         end
         subject(k).R2X=vertcat(triStruct.R2X);
         subject(k).R2Y=vertcat(triStruct.R2Y);
@@ -75,10 +84,11 @@ for k=1:4
         Xlist=[CBX;CX;CY];
         Ylist=[subject(k).R2BX;subject(k).R2X;subject(k).R2Y];
 
-        DOTSIZE=5;
+        DOTSIZE=3;
         LINEWIDTH=5;
-        binCenter=5*(edges(R)+edges(R+1))/2;
-        drawnWidth=5*.25*(edges(R+1)-edges(R));
+        %binCenter=5*(edges(R)+edges(R+1))/2;
+        binCenter=5*edges(R+1);
+        drawnWidth=5*.35*(edges(end)-edges(end-1));
         SCATTER=.2*drawnWidth;
         NLines=4;
         xoff=drawnWidth/2*(2/(NLines-1)*(k-1)-1);
@@ -100,7 +110,7 @@ for k=1:4
     end
 end
 
-for k=1:NR
+for k=1:NR+1
     %for k=1:NR
     fullX=vertcat(lists(:,k).x);
     fullY=vertcat(lists(:,k).y);
@@ -115,7 +125,8 @@ for k=1:NR
     end
     
     errors(k,:)=halfWidth(stats)';
-    rangemids(k)=5*(edges(k)+edges(k+1))/2;
+    %rangemids(k)=5*(edges(k)+edges(k+1))/2;
+    rangemids(k)=5*edges(k+1);
     
 %    text(rangemids(k),-.01,num2str(rangemids(k)),'horizontalalignment','center','verticalalignment','top')
 end
@@ -130,24 +141,25 @@ for k=1:3
     set(h(k),'EdgeAlpha',ALPHA,'FaceAlpha',ALPHA);
 end
 
-plot([0,0],[0 5],'k-','linewidth',3)
-text(0,2.5,'Error, 5 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom')
+plot(-40+[0,0],[0 5],'k-','linewidth',3)
+text(-40,2.5,'Error, 5 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom')
 set(gca,'ycolor',[1 1 1])
-%set(gca,'xtick',[25 475])
+set(gca,'xtick',0:100:1000)
 %set(gca,'xticklabels',{'0','500'})
 set(gca,'ytick',[])
 set(gca,'TickLength',[0 0]);
 set(gca,'linewidth',[1]);
+xlim([-40 1020])
 xlabel('Time Post Onset of Disturbing Forces, ms')
 %ylabel('Max Perpendicular Distance, cm')
 
 set(gca,'units','centimeters')
-set(gca,'position',[margin margin width height],'units','normalized')
+set(gca,'position',[lmargin bmargin width height],'units','normalized')
 set(0,'defaulttextinterpreter','none')
 
 matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
 
-print figures/fig4.eps -depsc
+%print figures/fig4.eps -depsc
 
 
 
