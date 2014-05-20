@@ -61,19 +61,31 @@ allAB=vertcat(justMUE.mueAB);
 
 N=8000;
 for k=1:20
-    S(k)=1/(2*N)*sum((allA-allAB(:,k)).^2);
-    ST(k)=1/N*sum(allB.*(allAB(:,k)-allA));
+    ST(k)=1/(2*N)*sum((allA-allAB(:,k)).^2);
+    S(k)=1/N*sum(allB.*(allAB(:,k)-allA));
 end
 v=[S' ST']
+vall=var(allAB(:))
+v=v/vall
 totalSensitivity=sum(sum(v))
-%v=v/var(allAB(:));
-v=v/totalSensitivity;
-[vals,order]=sort(v(:,1));
+%v=v/totalSensitivity;
+[vals,order]=sort(v(:,2));
 %order=1:length(order)
 
-figure(6)
+height=8;
+width=6;
+lmargin=8;
+bmargin=1;
+figmargin=.4;
+
+figure(1)
 clf
 hold on
+set(gcf,'color',[1 1 1])
+set(gcf,'units','centimeters')
+set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
+set(gcf,'units','normalized')
+
 spacer=.1;
 NPLOT=1000;
 scatter=.15*(rand(1,NPLOT)-.5);
@@ -107,14 +119,15 @@ plot([0 1]+labN,TIGHT*[1 1],'k','linewidth',4)
 text(labN+.5,TIGHT,'1 mm','Horizontalalignment','center','verticalalignment','top')
 
 margin=.05;
-set(gcf,'position',[250 300 625 400])
-set(gca,'position',[.5 margin 1-margin 1-margin],'units','normalized')
 
-set(0,'defaulttextinterpreter','none')
 set(gcf,'color',[1 1 1])
-matlabfrag('..figures/fig2raw');
+set(gca,'units','centimeters')
+set(gca,'position',[lmargin bmargin width height])
+set(0,'defaulttextinterpreter','none')
 
-print ../figures/fig2 -depsc
+matlabfrag('..figures/fig2raw','epspad',5000*[1 1 1 1]);
+
+%print ../figures/fig2 -depsc
 
 
 %laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
