@@ -82,9 +82,9 @@ figure(1)
 clf
 hold on
 set(gcf,'color',[1 1 1])
-set(gcf,'units','centimeters')
-set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
-set(gcf,'units','normalized')
+%set(gcf,'units','centimeters')
+%set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
+%set(gcf,'units','normalized')
 
 spacer=.1;
 NPLOT=1000;
@@ -120,17 +120,15 @@ text(labN+.5,TIGHT,'1 mm','Horizontalalignment','center','verticalalignment','to
 
 margin=.05;
 
-set(gcf,'color',[1 1 1])
-set(gca,'units','centimeters')
-set(gca,'position',[lmargin bmargin width height])
-set(0,'defaulttextinterpreter','none')
+set(gcf,'position',[250 300 625 400])
+set(gca,'position',[.5 margin 1-margin 1-margin],'units','normalized')
 
-matlabfrag('..figures/fig2raw','epspad',5000*[1 1 1 1]);
+set(0,'defaulttextinterpreter','none')
+set(gcf,'color',[1 1 1])
+
+laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
 
 %print ../figures/fig2 -depsc
-
-
-%laprint(gcf,'../figures/fig2raw','scalefonts','off','asonscreen','on')
 
 for k=1:20
     disp([num2str(v(k,1),'%0.2f'),' ',num2str(v(k,2),'%0.2f'),' ',names{k}])

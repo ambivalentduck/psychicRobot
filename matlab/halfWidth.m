@@ -1,4 +1,4 @@
-function out = halfWidth(stats)
+function out = halfWidth(stats,varargin)
 
 %% Code from multcompare.m
 gmeans = stats.means(:);
@@ -7,7 +7,11 @@ s = stats.s;
 ng = sum(n>0);
 df = stats.df;
 
-alpha=.01;
+if nargin>1
+    alpha=varargin{1};
+else
+    alpha=.01;
+end
 
 ctype='tukey-kramer';
 crit = getcrit(ctype, alpha, df, ng);
