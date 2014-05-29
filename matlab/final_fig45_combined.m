@@ -9,6 +9,8 @@ close all
 %Plot mean and confidence interval against range
 %call that finalfig5
 
+SUBS=2;
+
 NR=10;
 edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
@@ -28,7 +30,7 @@ set(gcf,'color',[1 1 1])
 set(gcf,'units','centimeters')
 set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
-for k=1:4
+for k=SUBS
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'U.mat'])
@@ -117,7 +119,7 @@ end
 NR=200; %200
 edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
-for k=1:4
+for k=SUBS
     load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
     load(['../Data/Data_pulse/pulse',num2str(k),'U.mat'])
@@ -155,11 +157,13 @@ for k=1:4
             indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
             
             sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
+            if sPeak > 10
+                continue
+            end
 
             try
                 triStruct(t).R2X=sPeak*getR2(trials(t).x(inds,:));
-                %triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
-                triStruct(t).R2Y=getR2(trials(t).y(indsy,:));
+                triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
             catch
                 thishappened=1
                 st1=size(trials(t).x,1);
@@ -254,13 +258,13 @@ set(gca,'ytick',[])
 set(gca,'xcolor',[1 1 1])
 set(gca,'xtick',[])
 set(gca,'TickLength',[0 0]);
-set(gca,'linewidth',1);
+%set(gca,'linewidth',1);
 xlim([-40 1020])
 ylim([-13 15])
 for k=0:100:1000
     text(k,-1.4,num2str(k),'horizontalalignment','center','verticalalignment','top','color',color)
 end
-plot([0,1000],[0 0],'-','linewidth',3,'color',color)
+plot([0,1000],[0 0],'-','linewidth',2,'color',color)
 text(500,-10,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','middle','color',color)
 
 set(gca,'units','centimeters')

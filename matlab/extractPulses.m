@@ -6,10 +6,12 @@ figure(k)
 clf
 hold on
 
+scale=.8;
+
 load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
-kp0gain=W(end,1);
-kp1gain=W(end,1);
+kp0gain=scale*W(end,1);
+kp1gain=scale*W(end,1);
 set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
 
 offsetForce=onset;
