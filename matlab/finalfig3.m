@@ -1,16 +1,16 @@
 clc
 clear all
 
-% anecdote(1).sub=4;
-% anecdote(1).SE=[3 1];
-% anecdote(1).dcat=2;
-% anecdote(1).rot=0;
-% anecdote(1).yoff=0;
 anecdote(1).sub=1;
 anecdote(1).SE=[1 3];
 anecdote(1).dcat=2;
 anecdote(1).rot=0;
 anecdote(1).yoff=0;
+% anecdote(1).sub=1;
+% anecdote(1).SE=[1 3];
+% anecdote(1).dcat=2;
+% anecdote(1).rot=0;
+% anecdote(1).yoff=0;
 anecdote(2).sub=4;
 anecdote(2).SE=[3 1];
 anecdote(2).dcat=4;
