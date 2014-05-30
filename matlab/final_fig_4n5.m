@@ -133,7 +133,7 @@ figure(NR+1)
 clf
 hold on
 
-fill([rangemids rangemids(end) rangemids(1)],[mids(:,1)+errors(:,1); 0; 0],'w','facecolor',green,'edgecolor',green)
+%fill([rangemids rangemids(end) rangemids(1)],[mids(:,1)+errors(:,1); 0; 0],'w','facecolor',green,'edgecolor',green)
 plot(rangemids,mids(:,2)+errors(:,2),'-.','color',green)
 
 for k=[3 4]

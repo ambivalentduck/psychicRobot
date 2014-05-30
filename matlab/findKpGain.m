@@ -125,8 +125,8 @@ set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 figure(5)
 clf
 hold on
-fitlower=0;
-fitupper=.25;
+fitlower=.0;
+fitupper=.5;
 for U=1:length(urc)
     f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
     catx=[catme(U,:).x]';
@@ -172,17 +172,27 @@ figure(2666)
 clf
 hold on
 for kk=1:length(time)
-    plot(Eb(kk),Ts(kk),'.','markersize',1,'color',[.3,time(kk)/.25,0])
+    plot(Eb(kk),Ts(kk),'.','markersize',1,'color',[.3,kk/length(time),0])
 end
-for kk=0:.01:fitupper
-    X=Eb(time<=kk);
-    Y=Ts(time<=kk);
-    W=X\Y;
+
+spans=fitlower:.005:fitupper;
+Wd=zeros(length(spans),1);
+for kk=1:length(spans)-1
+    inds=(time>=spans(kk))&(time<=spans(kk+1));
+    X=Eb(inds);
+    Y=Ts(inds);
+    Wd(kk)=X\Y;
     minX=min(X);
     maxX=max(X);
-    plot([minX,maxX],W*[minX,maxX],'-','color',[0 kk/fitupper 1])
-    text(maxX,W*maxX,num2str(kk))
+    plot([minX,maxX],Wd(kk)*[minX,maxX],'-','color',[0 kk/length(spans) 1])
+    %text(maxX,Wd(kk)*maxX,[num2str(kk),' ',num2str(Wd(kk),2)])
 end
+Wd(end)=Wd(end-1);
+
+figure(27)
+clf
+plot(spans,Wd)
+drawnow
 
 nT=ceil(log2(length(u)));
 W=zeros(nT+2,3);
@@ -205,12 +215,12 @@ clf
 subplot(2,1,1)
 plot(-1:U,W(:,1),'-')
 ylabel('Fit Feedback Gain, unitless')
-set(gca,'xticklabels',[])
+set(gca,'xticklabel',[])
 subplot(2,1,2)
 plot(-1:U,W(:,2),'-b',-1:U,W(:,3),'-r')
 ylabel('Mean Error, Nm')
 xlabel('Trials Used to Determine Weight')
-set(gca,'xticklabels',labels)
+set(gca,'xticklabel',labels)
 
 baselineCatme=catme;
-save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'W','labels','trialInfo','means','onset')
+save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'Wd','W','labels','trialInfo','means','onset')

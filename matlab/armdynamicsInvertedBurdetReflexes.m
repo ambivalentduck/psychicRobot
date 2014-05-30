@@ -1,6 +1,6 @@
 function [dqi,torque_fb,torque_inertial]=armdynamicsInvertedBurdetReflexes(t,qi)
 
-global measuredVals measuredTime errorVals errorTime kp0gain kp1gain
+global measuredVals measuredTime errorVals errorTime tFit kpFit
 
 interped=twoNearestNeighbor(measuredVals,measuredTime,t);
 theta_real=interped(1:2)';
@@ -23,7 +23,9 @@ omega_desired=qi(3:4);
 kp0=[10.8 2.83; 2.51 8.67];
 joint_torques=abs(D_real*alpha_real+C_real+torque_outside);
 kp1=[3.18 2.15; 2.34 6.18];
-kp=kp0gain*kp0+kp1gain*kp1*diag(joint_torques);
+kp=kp0+kp1*diag(joint_torques);
+
+kp=kp*twoNearestNeighbor(kpFit,tFit,t);
 
 torque_fb=kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired))+(kp/50)*(reflexE+2*reflexV);
 

@@ -1,3 +1,5 @@
-function out=getMaxPerp(X)
+function out=getR2(X)
 
-out=max(abs(X(:,2)-.5))*100;
+x=(X(:,2)-.5)*100;
+
+out=mean(x);
