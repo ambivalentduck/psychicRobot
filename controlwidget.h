@@ -40,7 +40,7 @@ private:
 	void closeEvent(QCloseEvent *event);
 	void goGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(false); }
 	void unGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(true); }
-	point loadTrial(int T);
+	void loadTrial(int T);
 	
 	QByteArray in,out;
 	int inSize, outSize;
@@ -60,8 +60,8 @@ private:
 	twoLinkArm::ArmParams params;
 	timespec zero, now, trialStart, targetAcquired, holdStart, lastFade;
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, firstpush, leftSide, hideCursor;
-	int trial, subject, pulls;
-	point x0, origin, cursor, desposition, position, velocity, accel, target, force, center;
+	int trial, subject, pulls, acquisitionsNeeded;
+	point x0, origin, cursor, desposition, position, velocity, accel, claimedTarget, target, force, center;
 	
 signals:
 	void endApp();

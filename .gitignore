@@ -7,8 +7,15 @@ moc*
 *.mat
 manipulandumDisplay
 fJ*.m
+dynamicSimFile*.m
 getAlpha*.m
 *.png
 *.jpg
+*.dat
 Pictures/*
 SfN Poster/*
+BasicCompensator-Reset2v2/*
+matlab/sensitivityPaper/*
+matlab/posterprep/*
+*.eps
+*.odp

@@ -1,11 +1,12 @@
 #include "armsolver.h"
 
-ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpedance)
+#define REFLEXDELAY .06l
+
+ArmSolver::ArmSolver(twoLinkArm::ArmParams P, Models m, bool solveIntent)
 {
+	model=m;
 	solveDes=solveIntent;
-	constImp=constImpedance;
-	impSeeded=false;
-	arm=new twoLinkArm(P);
+	arm=new twoLinkArm(P); //This is where you should set the arm model, no switching later.
 	voidpointer=(void*) this;
 	sys = {statfunc, statjac, 4, voidpointer};
 	#ifdef NEWGSL
@@ -17,6 +18,7 @@ ArmSolver::ArmSolver(twoLinkArm::ArmParams P, bool solveIntent, bool constImpeda
 	odeevolve=gsl_odeiv_evolve_alloc(4);
 	#endif
 	seeded=false;
+	impedanceGain=1;
 }
 
 ArmSolver::~ArmSolver()
@@ -33,17 +35,81 @@ ArmSolver::~ArmSolver()
 
 int ArmSolver::func(double t, const double y[], double f[])
 {
+	//Standard linear interpolation
 	double s=(t-times[0])/(times[1]-times[0]);
 	double oms=1l-s;
 	point qmi=qm[0]*oms+qm[1]*s;
 	point qmdoti=qmdot[0]*oms+qmdot[1]*s;
 	point qmddoti=qmddot[0]*oms+qmddot[1]*s;
 	point torquemi=torquem[0]*oms+torquem[1]*s;
+	point eri, erdoti; //initialize reflex/delayed errors to zeros
+	int etimesSize=etimes.size();
 	
-	mat2 kpi;
-	mat2 kdi;
-	if(constImp) {kpi=Kp; kdi=Kd;}
-	else {kpi=Kpm[0]*oms+Kpm[1]*s; kdi=Kdm[0]*oms+Kdm[1]*s;}
+	/*Because sampling is potentially extremely uneven, search starting from the back until NEXT time both exists and is larger than t-delay
+	We're quietly assuming that the front end of the array is getting trimmed intelligently. Probing for t=-1 would find 0<t<1 from t=[0 1 2...] */
+	bool flag=false;
+	int k=0;
+	while((k+2)<etimesSize) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
+	{
+		if((t-REFLEXDELAY)<=etimes[k+1]) //Handles the corner case t-delay==a sampling time without requiring an additional sample
+		{
+			flag=true;
+			break;
+		}
+		k++;
+	}
+	
+	if(flag) //We have two points: the upper of which is past t-delay, the lower of which is not. 
+	{
+		s=((t-REFLEXDELAY)-etimes[k])/(etimes[k+1]-etimes[k]);
+		oms=1l-s;
+		eri=qm[k]*oms+qm[k+1]*s;
+		erdoti=qmdot[k]*oms+qmdot[k+1]*s;
+	}
+	else //Absent data, assume error was zero.
+	{
+		eri=point(0,0);
+		erdoti=point(0,0);
+	}
+	
+	point torqueFB;
+	point torqueReflex=point(0,0);
+	point e, edot;
+	//Direction of solve changes which variables contain real vs desired trajectories
+	if(solveDes) {e=qmi-point(y[0],y[1]); edot=qmdoti-point(y[2],y[3]);}
+	else {e=point(y[0],y[1])-qmi; edot=point(y[2],y[3])-qmdoti;}
+	
+	mat2 Dreal,kp,kp0,kp1;
+	point jointTorques, Creal;
+	double jt1, jt2;
+	
+	switch(model)
+	{
+	case CONSTIMP:
+		torqueFB=mat2(15,6,6,16)*e+mat2(2.3, .09, .09, 2.4)*edot;
+		break;
+	case TORQUESCALEDANDREFLEX:
+		torqueReflex=(eri+erdoti*2l)/50l;
+		//Explicitly choose NOT to call break so that we fall through into the next case.
+	case TORQUESCALEDIMP:
+		arm->computeInertiaCoriolis(qmi,qmdoti,Dreal,Creal);
+		/*Sign conventions work out so that muscle-generated torques (FF+FB) = external + inertial torques.
+		In the case that you measure the physical acceleration of the arm, this is well and good.
+		In the case that you know the intention a priori, you don't have access to the inertial torque OR the feedback torque until you've solved.
+		We look back a timestep and make the assumption that arm torque isn't changing quickly relative to our sampling rate.
+		Still, our simulation of realization from intent requires assumptions and/or hacks.*/
+		if(solveDes) jointTorques=Dreal*qmddoti+Creal+torquemi;
+		else jointTorques=Dreal*qstdot+Creal+torquemi;
+		jt1=jointTorques[0];
+		jt2=jointTorques[1];
+		jointTorques=point(jt1,jt2);
+		kp0=mat2(10.8,2.83,2.51,8.67);
+		kp1=mat2(3.18l*jointTorques.X(),2.15l*jointTorques.Y(),2.34l*jointTorques.X(),6.18l*jointTorques.Y());
+		kp=kp0+kp1;
+		torqueFB=kp*(e+edot/12l+torqueReflex); //Unless we fell through, reflex torque is 0.
+		break;
+	}
+	torqueFB=torqueFB*impedanceGain;
 	
 	f[0]=y[2];
 	f[1]=y[3];
@@ -51,8 +117,9 @@ int ArmSolver::func(double t, const double y[], double f[])
 	point qsDDot;
 	
 	paramsMutex.lock();
-	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
-	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, kpi, kdi);
+		
+	if(solveDes) qsDDot=arm->computeInvDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, torqueFB);
+	else qsDDot=arm->computeDynamics(qmi, qmdoti, qmddoti, point(y[0],y[1]), point(y[2],y[3]), torquemi, torqueFB);
 	paramsMutex.unlock();
 	
 	f[2]=qsDDot[0];
@@ -68,11 +135,19 @@ void ArmSolver::setParams(twoLinkArm::ArmParams P)
 	paramsMutex.unlock();
 }
 
-void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, mat2 kd)
+void ArmSolver::setModel(Models m)
+{	
+	paramsMutex.lock();
+	model=m;
+	paramsMutex.unlock();
+}
+
+void ArmSolver::push(double t, point p, point v, point a, point force)
 {
-	destructomutex.lock();
+	destructomutex.lock(); //We block here just in case we push at the moment of a crash.
 	point q;
-	while(!arm->ikin(p,q)) {paramsMutex.lock(); arm->moveShoulder(point(0,-.01)); paramsMutex.unlock();}
+	if(arm->ikin(p,q)) questionable.push_back(false); //Deal with what's usually trunk or shoulder motility allowing impossible reaches.
+	else {arm->ikinAbs(p,q); questionable.push_back(true);}
 	qm.push_back(q);
 	
 	mat2 fJ=arm->jacobian(q);
@@ -87,17 +162,10 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 	
 	times.push_back(t);
 	
-	if(!constImp)
-	{
-		Kpm.push_back(kp);
-		Kdm.push_back(kd);
-	}
-	
-	if(!seeded)
+	if(!seeded) //Set the initial conditions to the measured conditions
 	{
 		qst=q;
 		qstdot=qdot;
-		if(constImp){Kp=kp; Kd=kd;}
 		seeded=true;
 	}
 	else solvesemaphore.release();	
@@ -106,14 +174,15 @@ void ArmSolver::push(double t, point p, point v, point a, point force, mat2 kp, 
 
 void ArmSolver::solve()
 {
-	if(!isRunning()) start();
+	if(!isRunning()) //If a thread is already active, don't deal in unnecessary concurrency. Solution is fundamentally serial. 
+		start(); //start() is inherited from QThread and executes run() in a new thread.
 }
 
 void ArmSolver::run()
 {
 	while(true)
 	{
-		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving
+		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving, in practice means single-threaded solution.
 		double y[4];
 		y[0]=qst[0];
 		y[1]=qst[1];
@@ -135,17 +204,15 @@ void ArmSolver::run()
 		if(status!=GSL_SUCCESS)
 		{
 			std::cout<<"Oops. Cuh-rash."<<std::endl;
-			destructomutex.lock();
+			destructomutex.lock(); //We lock a mutex so that we can safely remove extant solutions.
 			qm.clear();
 			qmdot.clear();
 			qmddot.clear();
 			torquem.clear();
 			times.clear();
-			if(!constImp)
-			{
-				Kpm.clear();
-				Kdm.clear();
-			}
+			es.clear();
+			esdot.clear();
+			etimes.clear();
 			seeded=false;
 			//Since we just emptied the queues, also empty the semaphore
 			solvesemaphore.acquire(solvesemaphore.available());
@@ -153,12 +220,13 @@ void ArmSolver::run()
 			break; //We just emptied the semaphore
 		}
 		
-		qst=point(y[0],y[1]);
+		qst=point(y[0],y[1]); //Initial conditions for next run-through are final conditions from this one.
 		qstdot=point(y[2],y[3]);
 		
 		qs.push_back(qst);
 		qsdot.push_back(qstdot);
 		stimes.push_back(t);
+		questionableGrab.push_back(questionable.front());
 		grabsemaphore.release();
 		
 		qm.pop_front();
@@ -166,18 +234,23 @@ void ArmSolver::run()
 		qmddot.pop_front();
 		torquem.pop_front();
 		times.pop_front();
-		if(!constImp)
+		questionable.pop_front();
+		
+		if(etimes[1]<(tk-REFLEXDELAY)) //When the first point is no longer needed
 		{
-			Kpm.pop_front();
-			Kdm.pop_front();
+			etimes.pop_front();
+			es.pop_front();
+			esdot.pop_front();
 		}
 	}
 }
 
-bool ArmSolver::pull(point &p, int timeout)
+bool ArmSolver::pull(point &p, bool &dodgy, int timeout)
 {
 	if(!grabsemaphore.tryAcquire(1,timeout)) return false;
 	p=arm->fkin(qs.front()); //Update with braindead q+qdot*delta(t)?
+	dodgy=questionableGrab.front();
+	questionableGrab.pop_front();
 	qs.pop_front();
 	qsdot.pop_front();
 	stimes.pop_front();

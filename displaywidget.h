@@ -11,12 +11,12 @@
 #include "point.h"
 
 
-#define LEFT .32l
-#define RIGHT -.37l
-#define TOP .17l
-#define BOTTOM .68l
-#define PROJECTORX .025l
-#define PROJECTORY .66l
+#define LEFT .272l
+#define RIGHT -.35l
+#define TOP .192l
+#define BOTTOM .661l
+#define PROJECTORX -0.016l
+#define PROJECTORY .637l
 #define PROJECTORZ 1.35l
 
 #define LOWERBAR .50l
@@ -47,7 +47,7 @@ public:
 	void setBGColor(point color) {dataMutex.lock(); backgroundColor=color; dataMutex.unlock();}
 	void setSpheres(std::vector<Sphere> s) {dataMutex.lock(); spheres=s; dataMutex.unlock();}
 	void setBars(std::deque<double> t) {dataMutex.lock(); times=t; dataMutex.unlock();}
-	void setText(QString t) {dataMutex.lock(); text=t; dataMutex.unlock();}
+	void setText(QString t, point p) {dataMutex.lock(); textLocation=p; text=t; dataMutex.unlock();}
 	void setShape(Shapes s, bool on) {drawShapes[s]=on;}
 	void setShapes(bool triangle, bool square, bool circle, bool infsign) {drawShapes[0]=triangle; drawShapes[1]=square; drawShapes[2]=circle; drawShapes[3]=infsign;}
 	
@@ -59,7 +59,7 @@ private:
 	QBasicTimer timer;
 	std::vector<Sphere> spheres;
 	std::deque<double> times;
-	point backgroundColor,deepBackgroundColor;
+	point backgroundColor,deepBackgroundColor, textLocation;
 	QMutex dataMutex;
 	double min;
 	QString text;

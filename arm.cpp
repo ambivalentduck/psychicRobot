@@ -30,7 +30,7 @@ void twoLinkArm::moveShoulder(point x0)
 point twoLinkArm::fkin(point q)
 {
 	return point(params.x0.X()+params.l1*std::cos(q.X())+params.l2*std::cos(q.X()+q.Y()),
-		params.x0.Y()+params.l1*std::sin(q.X())+params.l2*std::sin(q.X()+q.Y()));
+		     params.x0.Y()+params.l1*std::sin(q.X())+params.l2*std::sin(q.X()+q.Y()));
 }
 
 void twoLinkArm::fkin(point q, point &x, point &x1)
@@ -49,6 +49,14 @@ bool twoLinkArm::ikin(point x, point &q)
 	return true;
 }
 
+void twoLinkArm::ikinAbs(point x, point &q)
+{
+	x=x-params.x0;
+	double S=(std::pow(params.l1+params.l2,2)-(std::pow(x.X(),2)+std::pow(x.Y(),2)))/(std::pow(x.X(),2)+std::pow(x.Y(),2)-std::pow(params.l1-params.l2,2));
+	q[1]=-2.0*std::atan(std::sqrt(std::abs(S))); //Negative sign indicates elbow right.
+	q[0]=std::atan2(x.Y(),x.X())-std::atan2(params.l2*std::sin(q[1]),params.l1+params.l2*std::cos(q[1]));
+}
+
 void twoLinkArm::computeInertiaCoriolis(point q, point qdot, mat2 &D, point &C)
 {
 	double c2=std::cos(q.Y());
@@ -56,31 +64,29 @@ void twoLinkArm::computeInertiaCoriolis(point q, point qdot, mat2 &D, point &C)
 	double d12=params.m2*(std::pow(params.lc2,2)+params.l1*params.lc2*c2)+params.I2;
 	double d21=d12;
 	double d22=params.m2*std::pow(params.lc2,2)+params.I2;
-	double h=-params.m2*params.l1*params.lc2*std::sin(q.Y());
+	double h=params.m2*params.l1*params.lc2*std::sin(q.Y());
 	
 	D=mat2(d11,d12,d21,d22);
-	C=point(2.0*h*qdot.X()*qdot.Y()+h*std::pow(qdot.Y(),2), -h*std::pow(qdot.X(),2));
+	C=point(h*qdot.Y()*(2*qdot.X()+qdot.Y()), h*std::pow(qdot.X(),2));
 }
 
-point twoLinkArm::computeDynamics(point qDes, point qDesDot, point qDesDDot, point q, point qDot, point torque, mat2 Kp, mat2 Kd)
+point twoLinkArm::computeDynamics(point qDes, point qDesDot, point qDesDDot, point q, point qDot, point torque, point torqueFB)
 {
 	mat2 Dreal, Dexp;
 	point Creal, Cexp;
 	computeInertiaCoriolis(q,qDot,Dreal,Creal);
 	computeInertiaCoriolis(qDes,qDesDot,Dexp,Cexp);
 	point torqueFF=Dexp*qDesDDot+Cexp;
-	point torqueFB=Kp*(qDes-q)+Kd*(qDesDot-qDot);
 	return point(Dreal/(torqueFF+torqueFB-torque-Creal));
 }
 
-point twoLinkArm::computeInvDynamics(point q, point qDot, point qDDot, point qDes, point qDesDot, point torque, mat2 Kp, mat2 Kd)
+point twoLinkArm::computeInvDynamics(point q, point qDot, point qDDot, point qDes, point qDesDot, point torque, point torqueFB)
 {
 	mat2 Dreal, Dexp;
 	point Creal, Cexp;
 	computeInertiaCoriolis(q,qDot,Dreal,Creal);
 	computeInertiaCoriolis(qDes,qDesDot,Dexp,Cexp);
 	point torqueFFreal=Dreal*qDDot+Creal;
-	point torqueFB=Kp*(qDes-q)+Kd*(qDesDot-qDot);
 	return point(Dexp/(torqueFFreal-torqueFB+torque-Cexp));
 }
 

@@ -19,16 +19,21 @@
 class ArmSolver : public QThread
 {
 public:
-	ArmSolver(twoLinkArm::ArmParams P, bool solveIntent=true, bool constImpedance=true);
+	enum Models {CONSTIMP=0, TORQUESCALEDIMP=1, TORQUESCALEDANDREFLEX=2} model;
+	
+	ArmSolver(twoLinkArm::ArmParams P, Models m=TORQUESCALEDANDREFLEX, bool solveIntent=true);
 	~ArmSolver();
 	int func(double t, const double y[], double f[]);
 	void setParams(twoLinkArm::ArmParams P);
-	void push(double t, point p, point v, point a, point force, mat2 kp=mat2(0,0,0,0), mat2 kd=mat2(0,0,0,0));
-	bool pull(point &p, int timeout=-1);
+	void setModel(Models m);
+	void setImpedanceGain(double g) {impedanceGain=g;}
+	void push(double t, point p, point v, point a, point force);
+	bool pull(point &p, bool &dodgy, int timeout=-1);
 	void solve();
 	void run();
 	static int statfunc(double t, const double y[], double f[], void *params);
 	static int statjac(double t, const double y[], double *dfdy, double dfdt[], void *params);
+	
 private:
 	#ifdef NEWGSL
 	gsl_odeiv2_driver * driver;
@@ -43,14 +48,14 @@ private:
 		
 	void * voidpointer;
 	twoLinkArm * arm;
-	bool solveDes, constImp, seeded, impSeeded;
-	std::deque<point> qm,qs,qmdot,qsdot,qmddot,torquem;
-	std::deque<mat2> Kpm,Kdm;
-	std::deque<double> times, stimes;
-	mat2 Kd, Kp;
+	bool solveDes, seeded;
+	std::deque<point> qm,qs,qmdot,qsdot,qmddot,torquem,es,esdot;
+	std::deque<double> times, stimes, etimes;
+	std::deque<bool> questionable, questionableGrab;
 	QSemaphore solvesemaphore, grabsemaphore;
 	QMutex destructomutex, paramsMutex;
 	point qst, qstdot;
+	double impedanceGain;
 };
 
 

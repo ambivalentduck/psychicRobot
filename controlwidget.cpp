@@ -6,8 +6,8 @@
 #define targetDuration .5
 #define HOLDTIME .5
 #define oRadius min/40.0
-#define cRadius min/40.0
-#define tRadius min/40.0
+#define cRadius min/160.0
+#define tRadius min/160.0
 #define calRadius min/40.0
 #define TAB << "\t" <<
 
@@ -115,8 +115,8 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	x0.X()=0;
 	connect(x0xBox, SIGNAL(valueChanged(double)), this, SLOT(setX0x(double)));
 	
-	layout->addRow(tr("Subject Shoulder Pos X (m):"), x0yBox=new QDoubleSpinBox(this));
-	x0yBox->setValue(.8);
+	layout->addRow(tr("Subject Shoulder Pos Y (m):"), x0yBox=new QDoubleSpinBox(this));
+	x0yBox->setValue(.9);
 	x0yBox->setMaximum(2);
 	x0yBox->setMinimum(0);
 	x0yBox->setDecimals(4);
@@ -267,7 +267,7 @@ void ControlWidget::readPending()
 		return;
 	}
 	
-	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force,mat2(15,6,6,16)*1.5l,mat2(2.3, .09, .09, 2.4));
+	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;
@@ -280,20 +280,23 @@ void ControlWidget::readPending()
 		if((state!=inTarget)||(!leftOrigin)) sphere.color=point(1,0,0); //Red
 		else //Yellow -> too slow, White -> too fast
 		{
-			double acquire_time=targetAcquired-trialStart;
+			/* double acquire_time=targetAcquired-trialStart;
 			if (acquire_time<.4) sphere.color=point(1,1,0);
 			else if (acquire_time>.6) sphere.color=point(1,1,1);
-			else sphere.color=point(0,1,0);
+			else sphere.color=point(0,1,0); */
+			sphere.color=point(0,1,0); //Switched to "natural" pace.
 		}
 		sphere.position=target;
 		sphere.radius=tRadius;
 		sphereVec.push_back(sphere);
-	}
+	} //In the hold case, the target is not drawn.
 	
 	//Cursor
-	while(armsolver->pull(desposition, 0)) pulls++;
+	bool cursorDodgy;
+	while(armsolver->pull(desposition, cursorDodgy, 0)) pulls++;
 	cursor=desposition*(1l-eaGain)+position*eaGain;
-	sphere.color=point(0,0,1); //Blue
+	if((eaGain!=1)&&(cursorDodgy)) sphere.color=point(.5,.5,1); //Dark blue
+	else sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
 	sphere.radius=cRadius;
 	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
@@ -360,6 +363,8 @@ void ControlWidget::readPending()
 	
 	userWidget->setSpheres(sphereVec);
 	
+	QString showText;
+	
 	switch(state)
 	{
 	case acquireTarget:
@@ -372,16 +377,28 @@ void ControlWidget::readPending()
 		break;
 	case inTarget:
 		perturbGain=0;
-		if (cursor.dist(target)<(tRadius+cRadius))
+		if (acquisitionsNeeded<=1)
 		{
-			if((now-targetAcquired)>=targetDuration)
+			showText.clear();
+			userWidget->setText(showText,point()); //Offscreen empty string
+			if (cursor.dist(target)<(tRadius+cRadius))
 			{
-				origin=target;
-				loadTrial(trial+1);
-				leftOrigin=false;
+				if((now-targetAcquired)>=targetDuration)
+				{
+					origin=target;
+					loadTrial(trial+1);
+					leftOrigin=false;
+				}
 			}
+			else state=acquireTarget;
 		}
-		else state=acquireTarget;
+		else if (cursor.dist(target)>(tRadius+cRadius)) //Decrement on leaving and get state machine ready for next encounter with target.
+		{
+			acquisitionsNeeded--;
+			showText.setNum(acquisitionsNeeded);
+			userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
+			state=acquireTarget;
+		}
 		break;
 	case hold:
 		if((now-holdStart)>HOLDTIME) state=acquireTarget;
@@ -390,11 +407,11 @@ void ControlWidget::readPending()
 	}
 	
 	white=perturbGain*blwnGain;
-	
+
 	originTargetLine[0]=origin.X();
 	originTargetLine[1]=origin.Y();
-	originTargetLine[2]=target.X();
-	originTargetLine[3]=target.Y();
+	originTargetLine[2]=claimedTarget.X();
+	originTargetLine[3]=claimedTarget.Y();
 	
 	out=QByteArray(in.data(),sizeof(double));//Copy the timestamp from the input
 	out.append(reinterpret_cast<char*>(&virtualMass),sizeof(double));
@@ -408,20 +425,11 @@ void ControlWidget::readPending()
 	
 	if (resetTG>0) resetTG=0;
 		
-	outStream << trial TAB now-zero TAB cursor.X() TAB cursor.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() << endl;
+	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
 }
 
 void ControlWidget::startClicked()
 {
-	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params,true,true);
-	
-	//Make UI Changes
-	userWidget->setDeepBGColor(point(0,0,0));
-	userWidget->setShapes(false,false,false,false);
-	goGray();
-	startButton->setText("Experiment running...");
-	
 	//Get a file open and recording...or not.
 	if(subject>0)
 	{
@@ -432,10 +440,11 @@ void ControlWidget::startClicked()
 		outStream.setDevice(&contFile);
 		std::sprintf(fname, "./Data/input.dat");
 		trialFile.setFileName(fname);
-		if(trialFile.exists()) {trialFile.open(QIODevice::ReadOnly); target=loadTrial(trial);}
-		else
+		if(trialFile.exists()) trialFile.open(QIODevice::ReadOnly);
+		else 
 		{
 			QMessageBox::critical(this, "File Not Found!", "File not found, please select a different file.");
+			return; //Should not start experiment with bad input file.
 		}
 	}
 	else
@@ -444,7 +453,16 @@ void ControlWidget::startClicked()
 		contFile.open(QIODevice::Append);
 		outStream.setDevice(&contFile);
 	}
-	target=loadTrial(trial);
+	//Get the armsolver class initialized with default blah.
+	armsolver=new ArmSolver(params);
+	
+	//Make UI Changes
+	userWidget->setDeepBGColor(point(0,0,0));
+	userWidget->setShapes(false,false,false,false);
+	goGray();
+	startButton->setText("Experiment running...");
+	
+	loadTrial(trial);
 	ExperimentRunning=true;
 	ignoreInput=false;
 	zero=getTime(); //Get first time point.
@@ -465,45 +483,63 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 
 
 
-point ControlWidget::loadTrial(int T)
+void ControlWidget::loadTrial(int T)
 {
-	if (subject>0)
-	{
-	trial=T;
-	if(trialFile.atEnd()) emit(endApp());
-
-	char line[201];
-	std::string qline;
-	int tempmeta,tempshape,temptrial;
-	double tempx, tempy, tempEarly, tempLate, tempWhite;
-	std::cout << "Loading Trial " << T << std::endl;
-	do
-	{
-		trialFile.readLine(line,200);
-		std::cout << line << std::endl;
-		if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempmeta));
-		else
-		{
-			std::cout << "Complete failure to read line: " << line << std::endl; return center;
-		}
-	} while ((temptrial < T)&&(!trialFile.atEnd()));
-	origin=target;
-	target=point(tempx,tempy);
-	earlyPulseGain=tempEarly;
-	earlyPulseGainBox->setValue(tempEarly);
-	latePulseGain=tempLate;
-	latePulseGainBox->setValue(tempLate);
-	blwnGain=tempWhite;
-	blwnGainBox->setValue(tempWhite);
-	userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
-	if(tempshape>=0) {target=point(min/6.0,center.Y()); hideCursor=true;}
-	else hideCursor=false;
-	
-	trialNumBox->setValue(T);
-	std::cout << "Finished Loading Trial " << temptrial << std::endl;
-	
 	state=hold;
 	holdStart=now;
+	
+	if (subject>0)
+	{
+		trial=T;
+		if(trialFile.atEnd()) {emit(endApp()); return;} //Hold begins so that app can end gracefully
+	
+		char line[201];
+		std::string qline;
+		int tempShowCursor,tempshape,temptrial,tempAcquisitionsNeeded;
+		double tempx, tempy, tempEarly, tempLate, tempWhite;
+		std::cout << "Loading Trial " << T << std::endl;
+		do
+		{
+			trialFile.readLine(line,200);
+			std::cout << line << std::endl;
+			if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
+			else
+			{
+				std::cout << "Complete failure to read line: " << line << std::endl; emit(endApp()); return;
+			}
+		} while ((temptrial < T)&&(!trialFile.atEnd()));
+		acquisitionsNeeded=tempAcquisitionsNeeded;
+		
+		QString showText;
+		if(acquisitionsNeeded>1)
+		{
+			showText.setNum(acquisitionsNeeded);
+			userWidget->setText(showText,point(center.X()+min/6.0+.03,center.Y()+.05));
+		}
+		else
+		{
+			showText.clear();
+			userWidget->setText(showText,point());
+		}
+				
+		origin=target;
+		target=point(tempx,tempy);
+		earlyPulseGain=tempEarly;
+		earlyPulseGainBox->setValue(tempEarly);
+		latePulseGain=tempLate;
+		latePulseGainBox->setValue(tempLate);
+		blwnGain=tempWhite;
+		blwnGainBox->setValue(tempWhite);
+		userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
+		if(tempshape>=0) {target=point(center.X()+min/6.0,center.Y()+.05); claimedTarget=center;}
+		else claimedTarget=target;
+		if(tempShowCursor>0) hideCursor=false;
+		else hideCursor=true;
+		
+		trialNumBox->setValue(T);
+		std::cout << "Finished Loading Trial " << temptrial << std::endl;
+		
+		armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	}
 	else
 	{
@@ -518,13 +554,11 @@ point ControlWidget::loadTrial(int T)
 		else leftSide=true;
 		origin=target;
 		target=point(mean+randb(-.05,.05),center.Y());
-			
-		state=hold;
-		holdStart=now;
+		acquisitionsNeeded=1;
 		trial=T;
 		hideCursor=false;
+		claimedTarget=target;
 	}
-	return target;
 }
 
 

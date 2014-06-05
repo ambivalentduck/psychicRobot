@@ -146,7 +146,7 @@ void DisplayWidget::paintGL()
 	glDisable(GL_DEPTH_TEST);
 	
 	glPushMatrix();
-	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0,0);
+	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0+.05,0);
 	glScaled(min*(1.0/6.0),min*(1.0/6.0),1.0);
 	glColor3d(.5,.5,.5); //Grey because...why not?
 	for(int k=0;k<4;k++)
@@ -190,7 +190,7 @@ void DisplayWidget::paintGL()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	
-	renderText(0,.4,0,text);
+	renderText(textLocation.X(),textLocation.Y(),textLocation.Z(),text);
 	
 	dataMutex.unlock();
 	swapBuffers();
