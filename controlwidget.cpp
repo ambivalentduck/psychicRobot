@@ -267,7 +267,8 @@ void ControlWidget::readPending()
 		return;
 	}
 	
-	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
+	//armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
+	armsolver->push(xpcTime, point(0,.44), velocity*0, accel*0, force*0);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;

@@ -2,7 +2,7 @@
 #define ARMSOLVER_H
 
 #include <gsl/gsl_errno.h>
-//#define NEWGSL
+#define NEWGSL
 #ifdef NEWGSL
 	#include <gsl/gsl_odeiv2.h>
 #else

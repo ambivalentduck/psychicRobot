@@ -123,6 +123,7 @@ void DisplayWidget::resizeGL(int w, int h)
 	glLoadIdentity();
 	//Render from projector's perspective, projector must be 0,0,0, looking down -Z
 	glFrustum(LEFT-PROJECTORX,RIGHT-PROJECTORX,PROJECTORY-BOTTOM,PROJECTORY-TOP,.999*PROJECTORZ,1.495);
+	glRotated(-3,0,0,1);
 	update();
 }
 
