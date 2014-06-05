@@ -299,7 +299,7 @@ void ControlWidget::readPending()
 	else sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
 	sphere.radius=cRadius;
-	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
+	if((!hideCursor)||(cursor.dist(target)<(.05l))) //Simply fail to encounter too often otherwise
 		sphereVec.push_back(sphere);
 	
 	double fade;
@@ -449,7 +449,7 @@ void ControlWidget::startClicked()
 		outStream.setDevice(&contFile);
 		std::sprintf(fname, "./Data/input.dat");
 		trialFile.setFileName(fname);
-		if(trialFile.exists()) {trialFile.open(QIODevice::ReadOnly); target=loadTrial(trial);}
+		if(trialFile.exists()) {trialFile.open(QIODevice::ReadOnly);}
 		else
 		{
 			QMessageBox::critical(this, "File Not Found!", "File not found, please select a different file.");
