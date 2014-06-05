@@ -1,8 +1,6 @@
-function y=extract(t,xvaf,params,armdynamics,x0)
+function y=extract(t,xvaf,armdynamics,x0)
 
 global measuredVals measuredTime fJ getAlpha
-
-set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 
 measuredVals=xvaf;
 measuredTime=t;
@@ -12,15 +10,20 @@ for k=1:size(xvaf,1)
     fJq=fJ(q);
     qdot=fJq\xvaf(k,3:4)';
     qddot=getAlpha(q,qdot,xvaf(k,5:6)');
-    torque=fJq'*xvaf(k,7:8)';
+    torque=-fJq'*xvaf(k,7:8)';
     measuredVals(k,:)=[q' qdot' qddot' torque'];
 end
 
-if nargin<=4
-    [T,X]=ode45(armdynamics,t,measuredVals(1,1:4));
+if nargin<4
+    q0=measuredVals(1,1:4);
 else
-    q=ikin(x0(1:2));
-    q0=[q fJ(q)\x0(3:4)'];
+    q0=ikin(x0(1:2));
+    q0(3:4)=fJ(q0)\x0(3:4)';
+end
+
+if strcmp(armdynamics,'reflex')
+    [T,X]=extractionReflexHelper(t,q0);
+else
     [T,X]=ode45(armdynamics,t,q0);
 end
     

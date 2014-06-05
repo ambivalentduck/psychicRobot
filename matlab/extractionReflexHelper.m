@@ -1,32 +1,36 @@
-function [T,X]=extractionReflexHelper(T,Q0,E0)
+function [T,X]=extractionReflexHelper(T,Q0)
 
 global measuredVals measuredTime errorVals errorTime
 
-errorVals=E0';
-errorTime=T(1);
+%Deal with the first 60ms where there's presumably zero error in the
+%history to cause reflexes.
+f=find(T<(T(1)+.06));
+if length(f)<=1
+    error('You passed a single point or less?')
+end
+[t,X]=ode45(@armdynamicsInvertedBurdet,T(f),Q0');
+sols(1).t=t';
+sols(1).X=X';
 
-k=0;
-X0=Q0;
-lastf=2;
-while (T(1)+.06*(k-1))<T(end)
-    k=k+1;
-    f=find(T<(T(1)+.06*k),1,'last');
-    [t,X]=ode45(@armdynamicsInvertedBurdetReflexes,T(lastf-1:f),[X0(1:2),X0(3:4)]);
-    if f-lastf>1
-        sols(k).X=X(2:end-1,:)';
-        errorTime=T(lastf+1:f);
-    else
-        sols(k).X=X(end,:)';
-        errorTime=T(f);
-    end
+lastend=f(end);
+f=find((T>T(lastend))&(T<T(lastend)+.06));
+while ~isempty(f)
+    errorTime=sols(end).t;
     tNN=twoNearestNeighbor(measuredVals,measuredTime,errorTime);
-    errorVals=(tNN(:,1:4)-sols(k).X');
-    X0=X(end,:);
-    lastf=f;
+    errorVals=(tNN(:,1:4)-sols(end).X');
+    [t,X]=ode45(@armdynamicsInvertedBurdetReflexes,T([lastend f]),X(end,:));
+
+    if length(f)~=1
+        sols(end+1).t=t(2:end)';
+        sols(end).X=X(2:end,:)';
+    else
+        sols(end+1).t=t(end)';
+        sols(end).X=X(end,:)';
+    end
+
+    lastend=f(end);
+    f=find((T>T(lastend))&(T<T(lastend)+.06));
 end
 
-try
-    X=[Q0' sols.X]';
-catch
-    X=[Q0 sols.X]';
-end
+t=[sols.t];
+X=[sols.X]';

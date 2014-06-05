@@ -21,12 +21,15 @@ else
     m2=.022*mass;
 end
 %model using parameters from shadmehr and mussa-ivaldi and Winters (1990)
+%rog of gyration numbers from winters, rog=sqrt(I/m)
+% I'm getting numbers in the clouds. Triple checked. WHY?
 I1=m1*(.322*l1)^2;
 I2=m2*(.468*l2)^2;
+%I1=.0141;
+%I2=.0188;
 
 %Shoulder location
 x0=origin+shoulder;
-%Consequence: Workspace is a circle with center at 0, radius .67
 
 %Dynamic code modification requires random function names
 hash=floor(rand(5,1)*24+1);
@@ -34,10 +37,10 @@ hash=char('A'+hash)';
 aName=['getAlpha',hash];
 fName=['fJ',hash];
 %Command torques based on Jacobian, so build one
-[fJ,Jt, getAlpha, getAccel]=makeJacobians(aName,fName);
+[fJ, getAlpha, getAccel]=makeJacobians(aName,fName);
 pause(.1)
 disp('Jacobians complete.')
 fJ=str2func(fName);
-feval(fName,[5 6])
+feval(fName,[5 6]); %Necessary to force compilation
 getAlpha=str2func(aName);
-feval(aName,[1 2]',[3 4]',[5 6]')
+feval(aName,[1 2]',[3 4]',[5 6]'); %Necessary to force compilation

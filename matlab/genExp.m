@@ -47,8 +47,7 @@ while cost>3
     cost=abs(onevtwo_)+abs(signbalance_);
 end
 
-
-
+diffs=y(2:end)-y(1:end-1);
 x=[y [0;sign(diffs)] [0;abs(diffs)]];
 
 N=5;
@@ -88,7 +87,8 @@ while c<len
     if (sum(x(c,2:3)'==deck(1:2,d))~=2)&&(k>5)
         deck(:,d:end)=deck(:,d-1+randperm(sd2-d+1));
     end
-    if sum(x(c,2:3)'==deck(1:2,d))==2
+    
+    if sum(x(c,2:3)'==deck(1:2,d))~=2 % Can't match
         out(c).dat=[y(c); .5; 0; 0; 0; -1; 1; 1];
         continue
     end
@@ -120,39 +120,62 @@ size([out.dat])
 [h]=hist(dist(2:end)-dist(1:end-1),5:11);
 [(5:11)' h']
 
-out(c).dat=[0; 0; 0; 0; 0; 0; 1; 1]; %Extra copy of the first shape to allow target acquisition
-for s=0:3 %5 warmups on each, cursor shown
-        c=c+1;
-        out(c).dat=[0; 0; 0; 0; 0; s; 1; 5];
-end
-
-for s=0:3 %5 more warmups on each, cursor shown
-        c=c+1;
-        out(c).dat=[0; 0; 0; 0; 0; s; 1; 5]; 
-end
-
-SnMag=zeros(2,4*5*4);
-k=0;
-for s=0:3
-    for n=linspace(0,1,5)
-        for ITER=1:4
-            k=k+1;
-            SnMag(:,k)=[n;s];
-        end
-    end
-end
-SnMag=SnMag(:,randperm(k));
-
-for k=1:4*5*4
-    c=c+1;
-    out(c).dat=[0; 0; 0; 0; SnMag(:,k); 1; 5];
-end
+% out(c).dat=[0; 0; 0; 0; 0; 0; 1; 1]; %Extra copy of the first shape to allow target acquisition
+% for s=0:3 %5 warmups on each, cursor shown
+%         c=c+1;
+%         out(c).dat=[0; 0; 0; 0; 0; s; 1; 5];
+% end
+% 
+% for s=0:3 %5 more warmups on each, cursor shown
+%         c=c+1;
+%         out(c).dat=[0; 0; 0; 0; 0; s; 1; 5]; 
+% end
+% 
+% SnMag=zeros(2,4*5*4);
+% k=0;
+% for s=0:3
+%     for n=linspace(0,1,5)
+%         for ITER=1:4
+%             k=k+1;
+%             SnMag(:,k)=[n;s];
+%         end
+%     end
+% end
+% SnMag=SnMag(:,randperm(k));
+% 
+% for k=1:4*5*4
+%     c=c+1;
+%     out(c).dat=[0; 0; 0; 0; SnMag(:,k); 1; 5];
+% end
 
 o=[out.dat]';
 o(1:730,1)=o(1:730,1)*.15-.025;
-o(:,3:4)=o(:,3:4)*30;
-o(1:730,5)=o(1:730,5)*2;
+o(:,3:4)=o(:,3:4)*15;
+o(1:730,5)=o(1:730,5)*1.5;
 o=[(1:length(out))' o];
 fid=fopen('../Data/input.dat','w');
 fprintf(fid,'%5.0f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%6.4f\t%1.0f\t%1.0f\t%1.0f\n',o');
 fclose(fid);
+
+diff=[o(2:end,2)-o(1:end-1,2)];
+dist=abs(diff);
+udist=unique(dist);
+dir=sign(diff);
+udir=unique(dir);
+diff=[0; diff];
+dist=[0; dist];
+dir=[0; dir];
+type=o(:,4)*pi+o(:,5)*exp(1)+o(:,6);
+types=unique(type);
+types=types(types~=0);
+counts=zeros(5,4);
+
+for T=1:length(types)
+    for k=1:2
+        for kk=1:2
+            counts(T,k+2*(kk-1))=length(find((type==types(T))&(dir==udir(k))&(dist==udist(kk))));
+        end
+    end
+end
+counts
+sum(sum(counts))

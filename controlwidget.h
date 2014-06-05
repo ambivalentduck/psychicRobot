@@ -40,7 +40,7 @@ private:
 	void closeEvent(QCloseEvent *event);
 	void goGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(false); }
 	void unGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(true); }
-	point loadTrial(int T);
+	void loadTrial(int T);
 	
 	QByteArray in,out;
 	int inSize, outSize;
