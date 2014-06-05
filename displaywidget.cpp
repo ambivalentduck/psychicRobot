@@ -9,7 +9,7 @@
 DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 :QGLWidget(QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer), parent, 0, FullScreen?Qt::X11BypassWindowManagerHint:Qt::Widget)
 {
-	pbuffer = new QGLPixelBuffer(QSize(BUFFSIZE,BUFFSIZE),QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer),this);
+	pbuffer = new QGLPixelBuffer(QSize(BUFFSIZE,BUFFSIZE),QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel),this);
 	
 	//Take care of window and input initialization.
 	timer.start(16, this); //Draw again shortly after constructor finishes
