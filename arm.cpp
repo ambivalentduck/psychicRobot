@@ -77,7 +77,7 @@ point twoLinkArm::computeDynamics(point qDes, point qDesDot, point qDesDDot, poi
 	computeInertiaCoriolis(q,qDot,Dreal,Creal);
 	computeInertiaCoriolis(qDes,qDesDot,Dexp,Cexp);
 	point torqueFF=Dexp*qDesDDot+Cexp;
-	return point(Dreal/(torqueFF+torqueFB-torque-Creal));
+	return point(Dreal/(torqueFF-torqueFB-torque-Creal));
 }
 
 point twoLinkArm::computeInvDynamics(point q, point qDot, point qDDot, point qDes, point qDesDot, point torque, point torqueFB)
@@ -87,7 +87,7 @@ point twoLinkArm::computeInvDynamics(point q, point qDot, point qDDot, point qDe
 	computeInertiaCoriolis(q,qDot,Dreal,Creal);
 	computeInertiaCoriolis(qDes,qDesDot,Dexp,Cexp);
 	point torqueFFreal=Dreal*qDDot+Creal;
-	return point(Dexp/(torqueFFreal-torqueFB+torque-Cexp));
+	return point(Dexp/(torqueFFreal+torqueFB+torque-Cexp));
 }
 
 mat2 twoLinkArm::jacobian(point q)

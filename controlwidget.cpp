@@ -120,7 +120,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	x0yBox->setMaximum(2);
 	x0yBox->setMinimum(0);
 	x0yBox->setDecimals(4);
-	x0.Y()=0;
+	x0.Y()=.9;
 	connect(x0yBox, SIGNAL(valueChanged(double)), this, SLOT(setX0y(double)));
 	params=twoLinkArm::calcParams(160,.33,.34,x0);
 	
@@ -268,7 +268,7 @@ void ControlWidget::readPending()
 	}
 	
 	//armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
-	armsolver->push(xpcTime, point(0,.44), velocity*0, accel*0, force*0);
+	armsolver->push(xpcTime, position, velocity, accel, -force);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;
@@ -365,7 +365,7 @@ void ControlWidget::readPending()
 	userWidget->setSpheres(sphereVec);
 	
 	QString showText;
-	
+		
 	switch(state)
 	{
 	case acquireTarget:
@@ -455,7 +455,8 @@ void ControlWidget::startClicked()
 		outStream.setDevice(&contFile);
 	}
 	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params);
+	//armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
+	armsolver=new ArmSolver(params,ArmSolver::TORQUESCALEDIMP);
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
@@ -559,6 +560,7 @@ void ControlWidget::loadTrial(int T)
 		trial=T;
 		hideCursor=false;
 		claimedTarget=target;
+		armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	}
 }
 

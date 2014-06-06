@@ -11,8 +11,8 @@
 #include "point.h"
 
 
-#define LEFT -.45l
-#define RIGHT .44l
+#define LEFT .45l
+#define RIGHT -.44l
 #define TOP .192l
 #define BOTTOM .687l
 #define PROJECTORX 0.02l

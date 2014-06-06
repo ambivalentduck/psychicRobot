@@ -85,8 +85,8 @@ public slots:
 	void setEarlyPulseGain(double g) {earlyPulseGain=g;}
 	void setLatePulseGain(double g) {latePulseGain=g;}
 	void setBLWNGain(double g) {blwnGain=g;}
-	void setX0x(double p) {x0.X()=p;}
-	void setX0y(double p) {x0.Y()=p;}
+	void setX0x(double p) {x0.X()=p; params=twoLinkArm::calcParams(weight,params.l1,params.l2,x0);}
+	void setX0y(double p) {x0.Y()=p; params=twoLinkArm::calcParams(weight,params.l1,params.l2,x0);}
 };
 
 #endif
