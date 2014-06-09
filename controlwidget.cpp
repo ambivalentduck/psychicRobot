@@ -5,10 +5,9 @@
 
 #define targetDuration .5
 #define HOLDTIME .5
-#define oRadius min/40.0
-#define cRadius min/160.0
-#define tRadius min/160.0
-#define calRadius min/40.0
+#define oRadius .01
+#define cRadius .01
+#define tRadius .01
 #define TAB << "\t" <<
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
@@ -17,12 +16,11 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	//Take care of window and input initialization.
 	setFocus(); //Foreground window that gets all X input
 	
-	center=point((LEFT+RIGHT)/2l,(TOP+BOTTOM)/2l); //Known from direct observation, do not change
-	cursor=center;
-	origin=center;
+	min=.49;
+	cursor=point(0,.5);
+	origin=point(0,.5);
 	//state=acquireTarget;
-	
-	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
+
 	target=point(5,5);
 	
 	//Snag a UDP Socket and call a function (readPending) every time there's a new packet.
@@ -175,47 +173,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
 	userWidget->show();
-	userWidget->setShapes(true,true,true,true);
 	
-	//Set up a "calibration" field. Should be a 1/4 circle in each corner
-	sphereVec.clear();
-	sphere.color=point(0,.5,0);
-	sphere.position=center;
-	sphere.radius=min;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5);
-	sphere.position=center;
-	sphere.radius=min/2l;
-	sphereVec.push_back(sphere);
-	sphere.color=point(1,0,0);
-	sphere.position=center;
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	point unit(1,0);
-	for(double k=0;k<4;k++)
-	{
-		sphere.color=point(1,0,0);
-		sphere.position=center+unit.rotateZero(k*3.14159l/2l)*(min/2l);
-		sphere.radius=calRadius;
-		sphereVec.push_back(sphere);
-	}
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(LEFT,TOP);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(LEFT,BOTTOM);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(RIGHT,TOP);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(RIGHT,BOTTOM);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	userWidget->setSpheres(sphereVec);
 	userWidget->setDeepBGColor(point(1,0,0));
 	
 	inSize=0;

@@ -3,14 +3,12 @@
 #include <cmath>
 #include <iostream>
 
-#define BUFFSIZE 1024
+#define BUFFSIZE 1920
 #define LINEWIDTH 5
 
 DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 :QGLWidget(QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer), parent, 0, FullScreen?Qt::X11BypassWindowManagerHint:Qt::Widget)
 {
-	pbuffer = new QGLPixelBuffer(QSize(BUFFSIZE,BUFFSIZE),QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel),this);
-	
 	//Take care of window and input initialization.
 	timer.start(16, this); //Draw again shortly after constructor finishes
 	if(FullScreen)
@@ -24,8 +22,20 @@ DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 	setAutoBufferSwap(false); //Don't let QT swap automatically, we want to control timing.
 	backgroundColor=point(0,0,0);
 	deepBackgroundColor=point(0,0,0);
-	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
+
 	for(int k=0;k<4;k++) drawShapes[k]=false;
+	calibrationMode=true;
+	
+	//Set up a "calibration" field. Should be a 1/4 circle in each corner
+	Sphere sphere;
+	sphere.color=point(0,.5,0);
+	sphere.position=point(0,0,HANDLEDEPTH);
+	sphere.radius=.1;
+	spheres.push_back(sphere);
+	sphere.position=(LEFTPROBE,0,HANDLEDEPTH);
+	spheres.push_back(sphere);
+	sphere.position=(0, UPPROBE,HANDLEDEPTH);
+	spheres.push_back(sphere);
 }
 
 DisplayWidget::~DisplayWidget()
@@ -95,7 +105,37 @@ void DisplayWidget::initializeGL()
 	
 	glEnable(GL_POINT_SMOOTH);
 	glPointSize(1);
+}
+
+void DisplayWidget::calibrate(point Center, point probe1, point probe2)
+{
+	center=Center;
+	double rot=std::atan2(probe1.Y()-center.Y(),probe1.X()-center.X()); //In theory, any one point is enough
+	screenRotation=(180l/M_PI)*rot; //OpenGL likes degrees.
+	point one=(probe1-center).rotateZero(-rot);
+	point two=(probe2-center).rotateZero(-rot);
+	std::cout << (180l/M_PI)*std::atan2(one.Y(),one.X()) << " " << (180l/M_PI)*std::atan2(two.Y(),two.X()) << std::endl; //Why not?
 	
+	if(two.mag()>one.mag()) // make sure one > two
+	{
+		point temp=two;
+		two=one;
+		one=temp;
+	}
+	
+	if(std::abs(LEFTPROBE)>std::abs(UPPROBE))
+	{
+		width=SCREENWIDTH/LEFTPROBE*one.X();
+		height=SCREENHEIGHT/UPPROBE*two.Y();
+	}
+	else
+	{
+		width=SCREENWIDTH/LEFTPROBE*two.X();
+		height=SCREENHEIGHT/UPPROBE*one.Y();
+	}
+	calibrationMode=false;
+	
+	pbuffer = new QGLPixelBuffer(QSize(BUFFSIZE,BUFFSIZE),QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel),this);
 	pbuffer->makeCurrent();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -109,7 +149,7 @@ void DisplayWidget::initializeGL()
 	glViewport(0,0,BUFFSIZE,BUFFSIZE);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(LEFT,RIGHT,BOTTOM,TOP,-1,1);
+	glOrtho(-width/2l,width/2l,height/2l,height/2l,MINDEPTH,MAXDEPTH);
 
 	dyntexture=pbuffer->generateDynamicTexture();
 }
@@ -121,9 +161,17 @@ void DisplayWidget::resizeGL(int w, int h)
 	glViewport(0,0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//Render from projector's perspective, projector must be 0,0,0, looking down -Z
-	glFrustum(LEFT-PROJECTORX,RIGHT-PROJECTORX,PROJECTORY-BOTTOM,PROJECTORY-TOP,.999*PROJECTORZ,1.495);
-	glRotated(-3,0,0,1);
+	if(calibrationMode)
+	{
+		//Naively assume the screen is the center of the universe.
+		glFrustum(-SCREENWIDTH/2l,SCREENWIDTH/2l,-SCREENHEIGHT/2l,SCREENHEIGHT/2l,MINDEPTH,MAXDEPTH);
+	}
+	else
+	{
+		//Render from projector's perspective, projector must be 0,0,0, looking down -Z
+		glFrustum(-width/2l-center.X(),width/2l-center.X(),-height/2l-center.Y(),height/2l-center.Y(),MINDEPTH,MAXDEPTH);
+		glRotated(-screenRotation,0,0,1);
+	}
 	update();
 }
 
@@ -131,33 +179,43 @@ void DisplayWidget::paintGL()
 {
 	timer.stop();
 	dataMutex.lock();
-
-	pbuffer->makeCurrent();
-	glClearColor(backgroundColor.X(), backgroundColor.Y(), backgroundColor.Z(),1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glShadeModel(GL_FLAT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity(); 
 	
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_POLYGON_SMOOTH);
-	glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_DEPTH_TEST);
-	
-	glPushMatrix();
-	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0+.05,0);
-	glScaled(min*(1.0/6.0),min*(1.0/6.0),1.0);
-	glColor3d(.5,.5,.5); //Grey because...why not?
-	for(int k=0;k<4;k++)
+	if(calibrationMode)
 	{
-		if(drawShapes[k])
-		{
-			glCallList(shapeList[k]);
-		}
+		makeCurrent();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		//gluLookAt(0,0,0,0,0,HANDLEDEPTH,0,-1,0);
 	}
-	glPopMatrix();
+	else
+	{
+		pbuffer->makeCurrent();
+		glClearColor(backgroundColor.X(), backgroundColor.Y(), backgroundColor.Z(),1);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glShadeModel(GL_FLAT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity(); 
+		
+		glEnable(GL_LINE_SMOOTH);
+		glEnable(GL_POLYGON_SMOOTH);
+		glEnable(GL_POINT_SMOOTH);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_DEPTH_TEST);
+		
+		glPushMatrix();
+		glTranslated(center.X(),center.Y()+.05,0);
+		glScaled(min*(1.0/6.0),min*(1.0/6.0),1.0);
+		glColor3d(.5,.5,.5); //Grey because...why not?
+		for(int k=0;k<4;k++)
+		{
+			if(drawShapes[k])
+			{
+				glCallList(shapeList[k]);
+			}
+		}
+		glPopMatrix();
+	}
 	
 	for(std::vector<Sphere>::iterator it=spheres.begin();it!=spheres.end();++it)
 	{
@@ -170,29 +228,31 @@ void DisplayWidget::paintGL()
 		glPopMatrix();
 	}
 
-	pbuffer->updateDynamicTexture(dyntexture);
+	if(!calibrationMode)
+	{
+		pbuffer->updateDynamicTexture(dyntexture);
 
-	makeCurrent();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glScaled(1,-1,1);
-	glTranslated(-PROJECTORX,-PROJECTORY,-PROJECTORZ); //Projector now ignored
+		makeCurrent();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		//glScaled(1,-1,1);
+		glTranslated(-center.X(),-center.Y(),HANDLEDEPTH); //Projector now ignored
+			
+		glClearColor(deepBackgroundColor.X(), deepBackgroundColor.Y(), deepBackgroundColor.Z(),1);  //Unused area is unlit by default
+		glClear(GL_COLOR_BUFFER_BIT);
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glBindTexture(GL_TEXTURE_2D,dyntexture);
+		glBegin(GL_POLYGON);
+			glTexCoord2f(0,0); glVertex2f(-width/2l,-height/2l);
+			glTexCoord2f(0,1); glVertex2f(-width/2l,height/2l);
+			glTexCoord2f(1,1); glVertex2f(width/2l,height/2l);
+			glTexCoord2f(1,0); glVertex2f(width/2l,height/2l);
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
 		
-	glClearColor(deepBackgroundColor.X(), deepBackgroundColor.Y(), deepBackgroundColor.Z(),1);  //Unused area is unlit by default
-	glClear(GL_COLOR_BUFFER_BIT);
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glBindTexture(GL_TEXTURE_2D,dyntexture);
-	glBegin(GL_POLYGON);
-		glTexCoord2f(0,0); glVertex2f(LEFT,BOTTOM);
-		glTexCoord2f(0,1); glVertex2f(LEFT,TOP);
-		glTexCoord2f(1,1); glVertex2f(RIGHT,TOP);
-		glTexCoord2f(1,0); glVertex2f(RIGHT,BOTTOM);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-	
-	renderText(textLocation.X(),textLocation.Y(),textLocation.Z(),text);
-	
+		renderText(textLocation.X(),textLocation.Y(),textLocation.Z(),text);
+	}
 	dataMutex.unlock();
 	swapBuffers();
 	glFinish();  //Get precise timing by recording time after this, blocks until swap succeeds.  Swap happens during refresh.
