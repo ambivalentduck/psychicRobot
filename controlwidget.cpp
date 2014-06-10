@@ -302,8 +302,8 @@ void ControlWidget::readPending()
 		return;
 	}
 	
-	//armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
-	armsolver->push(xpcTime, position, velocity, accel, -force);
+	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
+	//armsolver->push(xpcTime, position, velocity, accel, -force);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;
@@ -493,7 +493,7 @@ void ControlWidget::startClicked()
 	userWidget->calibrate(probe0,probe1,probe2);
 	//Get the armsolver class initialized with default blah.
 	//armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
-	armsolver=new ArmSolver(params,ArmSolver::TORQUESCALEDIMP);
+	armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
