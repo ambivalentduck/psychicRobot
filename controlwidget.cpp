@@ -2,6 +2,7 @@
 #include "randb.h"
 #include <QDesktopWidget>
 #include <cstdio>
+#include <sstream>
 
 #define targetDuration .5
 #define HOLDTIME .5
@@ -158,11 +159,54 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(resetTGButton, SIGNAL(clicked()), this, SLOT(resetTGClicked()));
 	resetTG=1;
 	
+	//Need to populate with calibration data or make it
+	QFile calibFile("calibration.dat");
+	QTextStream calibStream;
+	bool success=false;
+	bool firstLine, secondLine, thirdLine;
+	if(calibFile.exists())
+	{
+		calibFile.open(QIODevice::ReadOnly);
+		char line[41];
+		double tempx, tempy;
+		calibFile.readLine(line,40);
+		firstLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe0=point(tempx,tempy);
+		calibFile.readLine(line,40);
+		secondLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe1=point(tempx,tempy);
+		calibFile.readLine(line,40);
+		thirdLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe2=point(tempx,tempy);
+		if(firstLine&&secondLine&&thirdLine) success=true;
+	}
+	
+	if(!success) //The file doesn't exist or has formatting issues
+	{
+		calibFile.open(QIODevice::WriteOnly);
+		calibStream.setDevice(&calibFile);
+		double zero=0;
+		calibStream << zero TAB zero << endl;
+		calibStream << double(LEFTPROBE) TAB zero << endl;
+		calibStream << zero TAB double(UPPROBE) << endl;
+		probe0=point(0,0);
+		probe1=point(LEFTPROBE,0);
+		probe2=point(0,UPPROBE);
+	}
+	center=probe0;
+	
+	//With data in hand, fill text labels with it, make buttons, and connect them
+	layout->addRow(probe0Label=new QLabel(makeProbeText(probe0,0),this), probe0Button=new QPushButton("Acquire"));
+	connect(probe0Button, SIGNAL(clicked()), this, SLOT(acquireProbe0()));
+	layout->addRow(probe1Label=new QLabel(makeProbeText(probe1,1),this), probe1Button=new QPushButton("Acquire"));
+	connect(probe1Button, SIGNAL(clicked()), this, SLOT(acquireProbe1()));
+	layout->addRow(probe2Label=new QLabel(makeProbeText(probe2,2),this), probe2Button=new QPushButton("Acquire"));
+	connect(probe2Button, SIGNAL(clicked()), this, SLOT(acquireProbe2()));		
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
 	QRect geo=qdw->screenGeometry();
-	geo.setWidth(2*geo.width()/3);
+	geo.setWidth(1*geo.width()/3);
 	geo.setHeight(4*geo.height()/5);
 	geo.translate(80,80);
 	setGeometry(geo);
@@ -174,7 +218,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
 	userWidget->show();
 	
-	userWidget->setDeepBGColor(point(1,0,0));
+	userWidget->setDeepBGColor(point(0,0,0));
 	
 	inSize=0;
 	perturbGain=1;
@@ -182,6 +226,39 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	//Initialize everything UPD-related to values that prevent problems
 	ExperimentRunning=false;
 }
+
+QString ControlWidget::makeProbeText(point P, int N)
+{
+	QString buildme;
+	std::ostringstream stringStream;
+	switch(N)
+	{
+		case 0:
+			stringStream << "Red";
+			break;
+		case 1:
+			stringStream << "Green";
+			break;
+		case 2:
+			stringStream << "Blue";
+			break;
+	}
+	stringStream << " Target. X="<<P.X()<<", Y=" << P.Y();
+
+	return buildme.fromStdString(stringStream.str());	
+}
+
+void ControlWidget::writeCalib2File()
+{
+	QFile calibFile("calibration.dat");
+	QTextStream calibStream;
+	calibFile.open(QIODevice::WriteOnly);
+	calibStream.setDevice(&calibFile);
+	calibStream << probe0.X() TAB probe0.Y() << endl;
+	calibStream << probe1.X() TAB probe1.Y() << endl;
+	calibStream << probe2.X() TAB probe2.Y() << endl;
+}
+
 
 void ControlWidget::readPending()
 {
@@ -260,6 +337,7 @@ void ControlWidget::readPending()
 	sphere.radius=cRadius;
 	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
 		sphereVec.push_back(sphere);
+	
 	
 	double fade;
 	double fade2;
@@ -412,6 +490,7 @@ void ControlWidget::startClicked()
 		contFile.open(QIODevice::Append);
 		outStream.setDevice(&contFile);
 	}
+	userWidget->calibrate(probe0,probe1,probe2);
 	//Get the armsolver class initialized with default blah.
 	//armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
 	armsolver=new ArmSolver(params,ArmSolver::TORQUESCALEDIMP);
@@ -440,8 +519,6 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 	emit(endApp());
 	event->accept();
 }
-
-
 
 void ControlWidget::loadTrial(int T)
 {

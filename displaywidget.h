@@ -10,10 +10,10 @@
 #include <deque>
 #include "point.h"
 
-#define SCREENWIDTH .889l
+#define SCREENWIDTH .8763l
 #define SCREENHEIGHT .4953l
-#define LEFTPROBE -.05
-#define UPPROBE .03
+#define LEFTPROBE -.20l
+#define UPPROBE .10l
 #define MINDEPTH .2286l
 #define MAXDEPTH .4826l
 #define HANDLEDEPTH .44l
@@ -63,7 +63,6 @@ private:
 	double min;
 	double height,width,screenRotation;
 	QString text;
-	QGLPixelBuffer * pbuffer;
 };
 
 #endif

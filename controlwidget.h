@@ -33,6 +33,8 @@ private:
 	QPushButton *startButton, *resetTGButton; 	
 	QComboBox *stimulusBox;
 	QFormLayout * layout;
+	QLabel * probe0Label, *probe1Label, *probe2Label;
+	QPushButton *probe0Button, *probe1Button, *probe2Button;
 		
 	DisplayWidget * userWidget;
 	ArmSolver * armsolver;
@@ -41,6 +43,8 @@ private:
 	void goGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(false); }
 	void unGray() {for(std::vector<QWidget*>::iterator it=grayList.begin();it!=grayList.end();++it) (*it)->setEnabled(true); }
 	void loadTrial(int T);
+	QString makeProbeText(point P, int N);
+	void writeCalib2File();
 	
 	QByteArray in,out;
 	int inSize, outSize;
@@ -62,6 +66,7 @@ private:
 	bool ExperimentRunning, inputReady, outputReady, ignoreInput, leftOrigin, firstpush, leftSide, hideCursor;
 	int trial, subject, pulls, acquisitionsNeeded;
 	point x0, origin, cursor, desposition, position, velocity, accel, claimedTarget, target, force, center;
+	point probe0,probe1,probe2;
 	
 signals:
 	void endApp();
@@ -87,6 +92,9 @@ public slots:
 	void setBLWNGain(double g) {blwnGain=g;}
 	void setX0x(double p) {x0.X()=p; params=twoLinkArm::calcParams(weight,params.l1,params.l2,x0);}
 	void setX0y(double p) {x0.Y()=p; params=twoLinkArm::calcParams(weight,params.l1,params.l2,x0);}
+	void acquireProbe0() {probe0=position; writeCalib2File(); probe0Label->setText(makeProbeText(probe0,0)); center=probe0;}
+	void acquireProbe1() {probe1=position; writeCalib2File(); probe1Label->setText(makeProbeText(probe1,1));}
+	void acquireProbe2() {probe2=position; writeCalib2File(); probe2Label->setText(makeProbeText(probe2,2));}
 };
 
 #endif
