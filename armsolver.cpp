@@ -1,6 +1,7 @@
 #include "armsolver.h"
+#include <cstdio>
 
-#define REFLEXDELAY .06l
+#define REFLEXDELAY .05l
 
 ArmSolver::ArmSolver(twoLinkArm::ArmParams P, Models m, bool solveIntent)
 {
@@ -45,31 +46,34 @@ int ArmSolver::func(double t, const double y[], double f[])
 	point eri, erdoti; //initialize reflex/delayed errors to zeros
 	int etimesSize=etimes.size();
 	
-	/*Because sampling is potentially extremely uneven, search starting from the back until NEXT time both exists and is larger than t-delay
-	We're quietly assuming that the front end of the array is getting trimmed intelligently. Probing for t=-1 would find 0<t<1 from t=[0 1 2...] */
-	bool flag=false;
-	int k=0;
-	while((k+2)<etimesSize) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
+	if(model==TORQUESCALEDANDREFLEX)
 	{
-		if((t-REFLEXDELAY)<=etimes[k+1]) //Handles the corner case t-delay==a sampling time without requiring an additional sample
+		/*Because sampling is potentially extremely uneven, search starting from the back until the NEXT time both exists and is larger than t-delay
+		We're quietly assuming that the front end of the array is getting trimmed intelligently. Probing for t=-1 would find 0<t<1 from t=[0 1 2...] */
+		bool flag=false;
+		int k=0;
+		while((k+2)<etimesSize) //Restrict ourselves to points we actually have. Remember that 0-indexing means k==0 implies size==2.
 		{
-			flag=true;
-			break;
+			if((t-REFLEXDELAY)<=etimes[k+1]) //Handles the corner case t-delay==a sampling time without requiring an additional sample
+			{
+				flag=true;
+				break;
+			}
+			k++;
 		}
-		k++;
-	}
-	
-	if(flag) //We have two points: the upper of which is past t-delay, the lower of which is not. 
-	{
-		s=((t-REFLEXDELAY)-etimes[k])/(etimes[k+1]-etimes[k]);
-		oms=1l-s;
-		eri=qm[k]*oms+qm[k+1]*s;
-		erdoti=qmdot[k]*oms+qmdot[k+1]*s;
-	}
-	else //Absent data, assume error was zero.
-	{
-		eri=point(0,0);
-		erdoti=point(0,0);
+		
+		if(flag) //We have two points: the upper of which is past t-delay, the lower of which is not. 
+		{
+			s=((t-REFLEXDELAY)-etimes[k])/(etimes[k+1]-etimes[k]);
+			oms=1l-s;
+			eri=es[k]*oms+es[k+1]*s;
+			erdoti=esdot[k]*oms+esdot[k+1]*s;
+		}
+		else //Absent data, assume error was zero.
+		{
+			eri=point(0,0);
+			erdoti=point(0,0);
+		}
 	}
 	
 	point torqueFB;
@@ -109,7 +113,7 @@ int ArmSolver::func(double t, const double y[], double f[])
 		torqueFB=kp*(e+edot/12l+torqueReflex); //Unless we fell through, reflex torque is 0.
 		break;
 	}
-	torqueFB=torqueFB*impedanceGain;
+	torqueFB=torqueFB*impedanceGain; //I think this is just multiplication by 1.
 	
 	f[0]=y[2];
 	f[1]=y[3];
@@ -182,6 +186,7 @@ void ArmSolver::run()
 {
 	while(true)
 	{
+		if(solvesemaphore.available()<2) break; //We have to be able to snag two data points for interpolation in our ODE function.
 		if(!solvesemaphore.tryAcquire(1,17)) break; //Try for at least 1 frame to start solving, in practice means single-threaded solution.
 		double y[4];
 		y[0]=qst[0];
@@ -223,6 +228,24 @@ void ArmSolver::run()
 		qst=point(y[0],y[1]); //Initial conditions for next run-through are final conditions from this one.
 		qstdot=point(y[2],y[3]);
 		
+		if(model==TORQUESCALEDANDREFLEX)
+		{
+			point e, edot;
+			etimes.push_back(tk);
+			if(solveDes) {e=qm[1]-qst; edot=qmdot[1]-qstdot;}
+			else {e=qst-qm[1]; edot=qstdot-qmdot[1];}
+			es.push_back(e);
+			esdot.push_back(edot);
+			
+			if (etimes.size()>2) //Only read elements that are actually there...
+				while(etimes[1]<(tk-REFLEXDELAY)) //While the 0th point is no longer needed, ie. because we just used it
+				{
+					etimes.pop_front();
+					es.pop_front();
+					esdot.pop_front();
+				}
+		}
+		
 		qs.push_back(qst);
 		qsdot.push_back(qstdot);
 		stimes.push_back(t);
@@ -235,13 +258,6 @@ void ArmSolver::run()
 		torquem.pop_front();
 		times.pop_front();
 		questionable.pop_front();
-		
-		if(etimes[1]<(tk-REFLEXDELAY)) //When the first point is no longer needed
-		{
-			etimes.pop_front();
-			es.pop_front();
-			esdot.pop_front();
-		}
 	}
 }
 

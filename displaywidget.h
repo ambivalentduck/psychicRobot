@@ -10,14 +10,13 @@
 #include <deque>
 #include "point.h"
 
-
-#define LEFT .28l
-#define RIGHT -.395l
-#define TOP .18l
-#define BOTTOM .68l
-#define PROJECTORX -0.02l
-#define PROJECTORY .644l
-#define PROJECTORZ 1.36l
+#define SCREENWIDTH .8763l
+#define SCREENHEIGHT .4953l
+#define LEFTPROBE -.20l
+#define UPPROBE .10l
+#define MINDEPTH .2286l
+#define MAXDEPTH .4826l
+#define HANDLEDEPTH .44l
 
 #define LOWERBAR .50l
 #define UPPERBAR .65l
@@ -50,20 +49,20 @@ public:
 	void setText(QString t, point p) {dataMutex.lock(); textLocation=p; text=t; dataMutex.unlock();}
 	void setShape(Shapes s, bool on) {drawShapes[s]=on;}
 	void setShapes(bool triangle, bool square, bool circle, bool infsign) {drawShapes[0]=triangle; drawShapes[1]=square; drawShapes[2]=circle; drawShapes[3]=infsign;}
-	
+	void calibrate(point Center, point probe1, point probe2);
 	
 private:
 	GLuint sphereList, dyntexture, shapeList[4];
-	bool drawShapes[4];
+	bool drawShapes[4], calibrationMode;
 	int W, H;
 	QBasicTimer timer;
 	std::vector<Sphere> spheres;
 	std::deque<double> times;
-	point backgroundColor,deepBackgroundColor, textLocation;
+	point backgroundColor,deepBackgroundColor, textLocation, center;
 	QMutex dataMutex;
 	double min;
+	double height,width,screenRotation;
 	QString text;
-	QGLPixelBuffer * pbuffer;
 };
 
 #endif

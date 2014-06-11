@@ -3,14 +3,12 @@
 #include <cmath>
 #include <iostream>
 
-#define BUFFSIZE 1024
+#define BUFFSIZE 1920
 #define LINEWIDTH 5
 
 DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 :QGLWidget(QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer), parent, 0, FullScreen?Qt::X11BypassWindowManagerHint:Qt::Widget)
 {
-	pbuffer = new QGLPixelBuffer(QSize(BUFFSIZE,BUFFSIZE),QGLFormat(QGL::DoubleBuffer|QGL::AlphaChannel|QGL::SampleBuffers|QGL::AccumBuffer),this);
-	
 	//Take care of window and input initialization.
 	timer.start(16, this); //Draw again shortly after constructor finishes
 	if(FullScreen)
@@ -24,8 +22,23 @@ DisplayWidget::DisplayWidget(QWidget *parent,bool FullScreen)
 	setAutoBufferSwap(false); //Don't let QT swap automatically, we want to control timing.
 	backgroundColor=point(0,0,0);
 	deepBackgroundColor=point(0,0,0);
-	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
+
 	for(int k=0;k<4;k++) drawShapes[k]=false;
+	calibrationMode=true;
+	
+	//Set up a "calibration" field. Should be a 1/4 circle in each corner
+	Sphere sphere;
+	spheres.clear();
+	sphere.color=point(1,0,0);
+	sphere.position=point(0,0,HANDLEDEPTH);
+	sphere.radius=.018;
+	spheres.push_back(sphere);
+	sphere.color=point(0,1,0);
+	sphere.position=point(LEFTPROBE,0,HANDLEDEPTH);
+	spheres.push_back(sphere);
+	sphere.color=point(0,0,1);
+	sphere.position=point(0, UPPROBE,HANDLEDEPTH);
+	spheres.push_back(sphere);
 }
 
 DisplayWidget::~DisplayWidget()
@@ -95,23 +108,29 @@ void DisplayWidget::initializeGL()
 	
 	glEnable(GL_POINT_SMOOTH);
 	glPointSize(1);
+}
+
+void DisplayWidget::calibrate(point Center, point probe1, point probe2)
+{
+	center=Center;
+	double rot=std::atan2(probe1.Y()-center.Y(),probe1.X()-center.X())-std::atan2(0,LEFTPROBE); //In theory, any one point is enough
+	screenRotation=(180l/M_PI)*rot; //OpenGL likes degrees.
+	point one=(probe1-center).rotateZero(-rot);
+	point two=(probe2-center).rotateZero(-rot);
+	std::cout << rot << " " << one.X() << " " << one.Y() << " " << two.X() << " " << two.Y() << std::endl; //Why not?
 	
-	pbuffer->makeCurrent();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	width=SCREENWIDTH/LEFTPROBE*one.X();
+	height=SCREENHEIGHT/UPPROBE*two.Y();
 	
-	glClearColor(0,0,0,1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glShadeModel(GL_FLAT);
-	glViewport(0,0,BUFFSIZE,BUFFSIZE);
+	calibrationMode=false;
+	std::cout << width << " " << height << std::endl; //Why not?
+	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(LEFT,RIGHT,BOTTOM,TOP,-1,1);
-
-	dyntexture=pbuffer->generateDynamicTexture();
+	glOrtho(-width/2l+center.X(),width/2l+center.X(),-height/2l+center.Y(),height/2l+center.Y(),MINDEPTH,MAXDEPTH);
+	glTranslated(center.X(),center.Y(),0);
+	glRotated(fmod(screenRotation,180),0,0,1);
+	glTranslated(-center.X(),-center.Y(),0);
 }
 
 void DisplayWidget::resizeGL(int w, int h)
@@ -121,8 +140,19 @@ void DisplayWidget::resizeGL(int w, int h)
 	glViewport(0,0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//Render from projector's perspective, projector must be 0,0,0, looking down -Z
-	glFrustum(LEFT-PROJECTORX,RIGHT-PROJECTORX,PROJECTORY-BOTTOM,PROJECTORY-TOP,.999*PROJECTORZ,1.495);
+	if(calibrationMode)
+	{
+		//Naively assume the screen is the center of the universe.
+		glOrtho(-SCREENWIDTH/2l,SCREENWIDTH/2l,-SCREENHEIGHT/2l,SCREENHEIGHT/2l,MINDEPTH,MAXDEPTH);
+	}
+	else
+	{
+		//Post-calibration, assume you know where the center of the screen really is.
+		glOrtho(-width/2l+center.X(),width/2l+center.X(),-height/2l+center.Y(),height/2l+center.Y(),MINDEPTH,MAXDEPTH);
+		glTranslated(-center.X(),-center.Y(),0);
+		glRotated(-screenRotation,0,0,1);
+		glTranslated(center.X(),center.Y(),0);
+	}
 	update();
 }
 
@@ -130,23 +160,29 @@ void DisplayWidget::paintGL()
 {
 	timer.stop();
 	dataMutex.lock();
-
-	pbuffer->makeCurrent();
-	glClearColor(backgroundColor.X(), backgroundColor.Y(), backgroundColor.Z(),1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glShadeModel(GL_FLAT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity(); 
 	
+	makeCurrent();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	if(calibrationMode) gluLookAt(0,0,0,0,0,HANDLEDEPTH,0,-1,0); //Camera has opposite default orientation
+	//else gluLookAt(center.X(),center.Y(),0,center.X(),center.Y(),HANDLEDEPTH,0,1,0); //Camera has opposite default orientation
+	else gluLookAt(0,0,0,0,0,HANDLEDEPTH,0,1,0); //Camera has opposite default orientation
+	
+	//Unused area is unlit by default
+	if(calibrationMode) glClearColor(deepBackgroundColor.X(), deepBackgroundColor.Y(), deepBackgroundColor.Z(),1);
+	else glClearColor(backgroundColor.X(), backgroundColor.Y(), backgroundColor.Z(),1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	glShadeModel(GL_FLAT);
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_POINT_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
-	
+		
 	glPushMatrix();
-	glTranslated((LEFT+RIGHT)/2.0,(TOP+BOTTOM)/2.0+.05,0);
+	glTranslated(center.X(),center.Y()+.05,0);
 	glScaled(min*(1.0/6.0),min*(1.0/6.0),1.0);
 	glColor3d(.5,.5,.5); //Grey because...why not?
 	for(int k=0;k<4;k++)
@@ -163,33 +199,13 @@ void DisplayWidget::paintGL()
 		if(it->radius<=0) continue;
 		glColor3dv(it->color);
 		glPushMatrix();
+		if(!calibrationMode) glTranslated(0,0,HANDLEDEPTH);
 		glTranslated(it->position.X(),it->position.Y(),it->position.Z());
 		glScaled(it->radius,it->radius,it->radius);
 		glCallList(sphereList);
 		glPopMatrix();
 	}
 
-	pbuffer->updateDynamicTexture(dyntexture);
-
-	makeCurrent();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glScaled(1,-1,1);
-	glTranslated(-PROJECTORX,-PROJECTORY,-PROJECTORZ); //Projector now ignored
-		
-	glClearColor(deepBackgroundColor.X(), deepBackgroundColor.Y(), deepBackgroundColor.Z(),1);  //Unused area is unlit by default
-	glClear(GL_COLOR_BUFFER_BIT);
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glBindTexture(GL_TEXTURE_2D,dyntexture);
-	glBegin(GL_POLYGON);
-		glTexCoord2f(0,0); glVertex2f(LEFT,BOTTOM);
-		glTexCoord2f(0,1); glVertex2f(LEFT,TOP);
-		glTexCoord2f(1,1); glVertex2f(RIGHT,TOP);
-		glTexCoord2f(1,0); glVertex2f(RIGHT,BOTTOM);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-	
 	renderText(textLocation.X(),textLocation.Y(),textLocation.Z(),text);
 	
 	dataMutex.unlock();

@@ -2,13 +2,13 @@
 #include "randb.h"
 #include <QDesktopWidget>
 #include <cstdio>
+#include <sstream>
 
 #define targetDuration .5
 #define HOLDTIME .5
-#define oRadius min/40.0
-#define cRadius min/160.0
-#define tRadius min/160.0
-#define calRadius min/40.0
+#define oRadius .01
+#define cRadius .01
+#define tRadius .01
 #define TAB << "\t" <<
 
 ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->primaryScreen()))
@@ -17,12 +17,11 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	//Take care of window and input initialization.
 	setFocus(); //Foreground window that gets all X input
 	
-	center=point((LEFT+RIGHT)/2l,(TOP+BOTTOM)/2l); //Known from direct observation, do not change
-	cursor=center;
-	origin=center;
+	min=.49;
+	cursor=point(0,.5);
+	origin=point(0,.5);
 	//state=acquireTarget;
-	
-	min=(fabs(LEFT-RIGHT)>fabs(TOP-BOTTOM)?fabs(TOP-BOTTOM):fabs(LEFT-RIGHT)); //Screen diameter (shortest dimension) known from direct observation, do not change
+
 	target=point(5,5);
 	
 	//Snag a UDP Socket and call a function (readPending) every time there's a new packet.
@@ -120,7 +119,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	x0yBox->setMaximum(2);
 	x0yBox->setMinimum(0);
 	x0yBox->setDecimals(4);
-	x0.Y()=0;
+	x0.Y()=.9;
 	connect(x0yBox, SIGNAL(valueChanged(double)), this, SLOT(setX0y(double)));
 	params=twoLinkArm::calcParams(160,.33,.34,x0);
 	
@@ -160,11 +159,54 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	connect(resetTGButton, SIGNAL(clicked()), this, SLOT(resetTGClicked()));
 	resetTG=1;
 	
+	//Need to populate with calibration data or make it
+	QFile calibFile("calibration.dat");
+	QTextStream calibStream;
+	bool success=false;
+	bool firstLine, secondLine, thirdLine;
+	if(calibFile.exists())
+	{
+		calibFile.open(QIODevice::ReadOnly);
+		char line[41];
+		double tempx, tempy;
+		calibFile.readLine(line,40);
+		firstLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe0=point(tempx,tempy);
+		calibFile.readLine(line,40);
+		secondLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe1=point(tempx,tempy);
+		calibFile.readLine(line,40);
+		thirdLine=sscanf(line, "%lf\t%lf",&tempx,&tempy);
+		probe2=point(tempx,tempy);
+		if(firstLine&&secondLine&&thirdLine) success=true;
+	}
+	
+	if(!success) //The file doesn't exist or has formatting issues
+	{
+		calibFile.open(QIODevice::WriteOnly);
+		calibStream.setDevice(&calibFile);
+		double zero=0;
+		calibStream << zero TAB zero << endl;
+		calibStream << double(LEFTPROBE) TAB zero << endl;
+		calibStream << zero TAB double(UPPROBE) << endl;
+		probe0=point(0,0);
+		probe1=point(LEFTPROBE,0);
+		probe2=point(0,UPPROBE);
+	}
+	center=probe0;
+	
+	//With data in hand, fill text labels with it, make buttons, and connect them
+	layout->addRow(probe0Label=new QLabel(makeProbeText(probe0,0),this), probe0Button=new QPushButton("Acquire"));
+	connect(probe0Button, SIGNAL(clicked()), this, SLOT(acquireProbe0()));
+	layout->addRow(probe1Label=new QLabel(makeProbeText(probe1,1),this), probe1Button=new QPushButton("Acquire"));
+	connect(probe1Button, SIGNAL(clicked()), this, SLOT(acquireProbe1()));
+	layout->addRow(probe2Label=new QLabel(makeProbeText(probe2,2),this), probe2Button=new QPushButton("Acquire"));
+	connect(probe2Button, SIGNAL(clicked()), this, SLOT(acquireProbe2()));		
 	setLayout(layout);
 	
 	//Plop window in a sane place on the primary screen	
 	QRect geo=qdw->screenGeometry();
-	geo.setWidth(2*geo.width()/3);
+	geo.setWidth(1*geo.width()/3);
 	geo.setHeight(4*geo.height()/5);
 	geo.translate(80,80);
 	setGeometry(geo);
@@ -175,48 +217,8 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	userWidget=new DisplayWidget(qdw->screen(notprimary), true);
 	userWidget->setGeometry(qdw->screenGeometry(notprimary));
 	userWidget->show();
-	userWidget->setShapes(true,true,true,true);
 	
-	//Set up a "calibration" field. Should be a 1/4 circle in each corner
-	sphereVec.clear();
-	sphere.color=point(0,.5,0);
-	sphere.position=center;
-	sphere.radius=min;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5);
-	sphere.position=center;
-	sphere.radius=min/2l;
-	sphereVec.push_back(sphere);
-	sphere.color=point(1,0,0);
-	sphere.position=center;
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	point unit(1,0);
-	for(double k=0;k<4;k++)
-	{
-		sphere.color=point(1,0,0);
-		sphere.position=center+unit.rotateZero(k*3.14159l/2l)*(min/2l);
-		sphere.radius=calRadius;
-		sphereVec.push_back(sphere);
-	}
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(LEFT,TOP);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(LEFT,BOTTOM);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(RIGHT,TOP);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	sphere.color=point(.5,.5,.5); //Grey
-	sphere.position=point(RIGHT,BOTTOM);
-	sphere.radius=calRadius;
-	sphereVec.push_back(sphere);
-	userWidget->setSpheres(sphereVec);
-	userWidget->setDeepBGColor(point(1,0,0));
+	userWidget->setDeepBGColor(point(0,0,0));
 	
 	inSize=0;
 	perturbGain=1;
@@ -224,6 +226,39 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	//Initialize everything UPD-related to values that prevent problems
 	ExperimentRunning=false;
 }
+
+QString ControlWidget::makeProbeText(point P, int N)
+{
+	QString buildme;
+	std::ostringstream stringStream;
+	switch(N)
+	{
+		case 0:
+			stringStream << "Red";
+			break;
+		case 1:
+			stringStream << "Green";
+			break;
+		case 2:
+			stringStream << "Blue";
+			break;
+	}
+	stringStream << " Target. X="<<P.X()<<", Y=" << P.Y();
+
+	return buildme.fromStdString(stringStream.str());	
+}
+
+void ControlWidget::writeCalib2File()
+{
+	QFile calibFile("calibration.dat");
+	QTextStream calibStream;
+	calibFile.open(QIODevice::WriteOnly);
+	calibStream.setDevice(&calibFile);
+	calibStream << probe0.X() TAB probe0.Y() << endl;
+	calibStream << probe1.X() TAB probe1.Y() << endl;
+	calibStream << probe2.X() TAB probe2.Y() << endl;
+}
+
 
 void ControlWidget::readPending()
 {
@@ -268,6 +303,7 @@ void ControlWidget::readPending()
 	}
 	
 	armsolver->push(xpcTime, position, velocity, accel, accel*-virtualMass-force);
+	//armsolver->push(xpcTime, position, velocity, accel, -force);
 	armsolver->solve();
 
 	if (!leftOrigin) trialStart=now;
@@ -301,6 +337,7 @@ void ControlWidget::readPending()
 	sphere.radius=cRadius;
 	if((!hideCursor)||(cursor.dist(target)<(tRadius+cRadius)))
 		sphereVec.push_back(sphere);
+	
 	
 	double fade;
 	double fade2;
@@ -364,7 +401,7 @@ void ControlWidget::readPending()
 	userWidget->setSpheres(sphereVec);
 	
 	QString showText;
-	
+		
 	switch(state)
 	{
 	case acquireTarget:
@@ -453,8 +490,10 @@ void ControlWidget::startClicked()
 		contFile.open(QIODevice::Append);
 		outStream.setDevice(&contFile);
 	}
+	userWidget->calibrate(probe0,probe1,probe2);
 	//Get the armsolver class initialized with default blah.
-	armsolver=new ArmSolver(params);
+	//armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
+	armsolver=new ArmSolver(params,ArmSolver::CONSTIMP);
 	
 	//Make UI Changes
 	userWidget->setDeepBGColor(point(0,0,0));
@@ -480,8 +519,6 @@ void ControlWidget::closeEvent(QCloseEvent *event)
 	emit(endApp());
 	event->accept();
 }
-
-
 
 void ControlWidget::loadTrial(int T)
 {
@@ -558,6 +595,7 @@ void ControlWidget::loadTrial(int T)
 		trial=T;
 		hideCursor=false;
 		claimedTarget=target;
+		armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	}
 }
 
