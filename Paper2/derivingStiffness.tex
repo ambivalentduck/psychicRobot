@@ -1,0 +1,84 @@
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+\usepackage{graphicx}
+\usepackage{color} 
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+\pagestyle{myheadings}
+
+\begin{document}
+
+% Title must be 150 characters or less
+Define terms: $x$ is hand, $y$ is intent. Capital $F$, $X$ and $Y$ are Laplace transforms. $M$, $B$, and $K$ are mass, damping, and stiffness. $f$ is some externally applied force. Hats ( $\hat{ }$ ) are estimates from an internal model.
+\begin{equation}
+M\ddot{x}+B\dot{x}+Kx+f=\hat{M}\ddot{y}+\hat{B}\dot{y}+\hat{K}y
+\end{equation}
+Drop the hats because mass and damping are more or less correctly estimated and we're going to re-represent stiffness misestimation later. Also, switch to the Laplace domain:
+\begin{equation}
+(Ms^2+Bs+K)X+F=(Ms^2+Bs+K)Y
+\end{equation}  
+\begin{equation}
+F=(Ms^2+Bs+K)(Y-X)
+\end{equation}  
+Define the quantity, $E=Y-X$, which is essentially error:
+\begin{equation}
+F=(Ms^2+Bs+K)E
+\end{equation} 
+Since X and F are presumably matters of record, Y and the arm parameters are the only unknowns, so we can extract. Now, extract with some stiffness estimation error, $\epsilon$. This means that the stiffness used in the extraction, $K_e=K+\epsilon$.
+\begin{equation}
+F=(Ms^2+Bs+K+\epsilon)E_e
+\end{equation}
+So the extracted error, $E_e$ is \textit{not} the same as $E$ because of $\epsilon$. But they're related through $F$:
+\begin{equation}
+(Ms^2+Bs+K)E=(Ms^2+Bs+K+\epsilon)E_e
+\end{equation} 
+\begin{equation}
+(Ms^2+Bs+K)(E-E_e)=\epsilon E_e
+\end{equation} 
+\begin{equation}
+\frac{E-E_e}{E_e}=\frac{\epsilon}{Ms^2+Bs+K}
+\end{equation} 
+Generally speaking, this next equation is probably a fair place to stop:
+\begin{equation}
+\frac{E}{E_e}=1+\frac{\epsilon}{Ms^2+Bs+K}
+\end{equation}
+But we can re-write it a bit:
+\begin{equation}
+\frac{Y-X}{Y_e-X}=1+\frac{\epsilon}{Ms^2+Bs+K}
+\end{equation} 
+\begin{equation}
+Y-Y_e=\frac{\epsilon}{Ms^2+Bs+K}(Y_e-X)
+\end{equation}
+\begin{equation}
+\frac{Y-Y_e}{Y_e-X}=\frac{\epsilon}{Ms^2+Bs+K}
+\end{equation}
+Stiffness misestimation creates a transient in the extraction whose frequency response is entirely defined by the true dynamics of the system. Because we know $E_e$, the sum of $\epsilon$ and $K$, we have two unknowns: $Y$ and $\epsilon$. A difference of two different extractions using equation 11 does not contain this term:
+\begin{equation}
+(Y-Y_{1e})-(Y-Y_{2e})=(\frac{\epsilon_1}{Ms^2+Bs+K}(Y_{1e}-X))-(\frac{\epsilon_2}{Ms^2+Bs+K}(Y_{2e}-X))
+\end{equation}
+\begin{equation}
+Y_{2e}-Y_{1e}=\frac{\epsilon_1 Y_{1e}-\epsilon_2 Y_{2e}+(\epsilon_2-\epsilon_1)X}{Ms^2+Bs+K}=\epsilon_1 \frac{Y_{1e}-X}{Ms^2+Bs+K}- \epsilon_2 \frac{Y_{2e}-X}{Ms^2+Bs+K}
+\end{equation}
+Because we know the difference in $K_e$ values used for the two extractions ($K_{1e}$ and $K_{2e}$), we know the difference in $\epsilon$ values already.
+\begin{equation}
+Y_{2e}-Y_{1e}=\frac{\epsilon_1 Y_{1e}-\epsilon_2 Y_{2e}+(\epsilon_2-\epsilon_1)X}{Ms^2+Bs+K}=\epsilon_1 \frac{Y_{1e}-X}{Ms^2+Bs+K}- (\epsilon_1+K_{2e}-K_{1e}) \frac{Y_{2e}-X}{Ms^2+Bs+K}
+\end{equation}
+Because $Y_{1e}$, $Y_{2e}$, and $X$ are known, we can solve for our unknown. In order to deal with the dynamics in the denominators, a slightly lagged value of $K$ should be fine (1 samples = 1 ms, $K_{next}=K_{now}-\epsilon_1$). This implies that dynamic tracking of stiffness should be possible in real time. Convergence properties remain unexamined.
+\end{document}

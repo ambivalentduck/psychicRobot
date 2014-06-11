@@ -4,13 +4,13 @@ function out = halfWidth(stats,varargin)
 gmeans = stats.means(:);
 n = stats.n(:);
 s = stats.s;
-ng = sum(n>0);
+ng = sum(n>0)-1;
 df = stats.df;
 
 if nargin>1
     alpha=varargin{1};
 else
-    alpha=.01;
+    alpha=.1;
 end
 
 ctype='tukey-kramer';
