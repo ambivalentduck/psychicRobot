@@ -138,15 +138,15 @@ latexnames={'Upper Arm Length $(L_1)$';
     'Forearm Mass Ratio $(\frac{m_2}{m_g})$';
     'Upper Arm Radius of Gyration Ratio $(\frac{ROG_1}{L_1})$';
     'Forearm Radius of Gyration Ratio $(\frac{ROG_2}{L_2})$';
-    'Shoulder Sagittal Coordinate'
-    'Shoulder Coronal Coordinate'
+    'Shoulder Parallel Coordinate'
+    'Shoulder Perpendicular Coordinate'
     'Force Sensor Miscalibration $x$-axis';
     'Force Sensor Miscalibration $y$-axis';
     'Force Sensor Gaussian Noise SD $x$-axis';
     'Force Sensor Gaussian Noise SD $y$-axis';
     'Whole $K_P$ gain, unitless';
-    'Torque-Invariant Impedance Misestimation Factor';
-    'Torque-Dependent Impedance Misestimation Factor';
+    'Torque-Invariant Impedance Misestimation Ratio';
+    'Torque-Dependent Impedance Misestimation Ratio';
     'Shad-Muss Kp gain, unitless';
     'Shad-Muss Kd gain, unitless';
     '$K_{P0,11}, \frac{N\cdot M}{rad}$';
