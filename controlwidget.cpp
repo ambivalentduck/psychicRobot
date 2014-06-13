@@ -533,13 +533,13 @@ void ControlWidget::loadTrial(int T)
 		char line[201];
 		std::string qline;
 		int tempShowCursor,tempshape,temptrial,tempAcquisitionsNeeded;
-		double tempx, tempy, tempEarly, tempLate, tempWhite;
+		double tempx, tempy, tempEarly, tempLate, tempWhite, tempeaGain;
 		std::cout << "Loading Trial " << T << std::endl;
 		do
 		{
 			trialFile.readLine(line,200);
 			std::cout << line << std::endl;
-			if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded));
+			if(sscanf(line, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\t%d\t%lf",&temptrial,&tempx,&tempy,&tempEarly,&tempLate,&tempWhite,&tempshape,&tempShowCursor, &tempAcquisitionsNeeded,&tempeaGain));
 			else
 			{
 				std::cout << "Complete failure to read line: " << line << std::endl; emit(endApp()); return;
@@ -567,6 +567,8 @@ void ControlWidget::loadTrial(int T)
 		latePulseGainBox->setValue(tempLate);
 		blwnGain=tempWhite;
 		blwnGainBox->setValue(tempWhite);
+		eaGain=tempeaGain;
+		eaGainBox->setValue(eaGain);
 		userWidget->setShapes(tempshape==0,tempshape==1,tempshape==2,tempshape==3);
 		if(tempshape>=0) {target=point(center.X()+min/6.0,center.Y()+.05); claimedTarget=center;}
 		else claimedTarget=target;
@@ -574,7 +576,7 @@ void ControlWidget::loadTrial(int T)
 		else hideCursor=true;
 		
 		trialNumBox->setValue(T);
-		std::cout << "Finished Loading Trial " << temptrial << std::endl;
+		std::cout << "Finished Loading Trial " << temptrial << " " << acquisitionsNeeded << std::endl;
 		
 		armsolver->setParams(params); //Any weirdness with the shoulder should be gone.
 	}
