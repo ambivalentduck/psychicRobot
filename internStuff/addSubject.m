@@ -1,0 +1,50 @@
+function addSubject(k)
+
+name=num2str(k);
+
+input=load('./input.dat');
+output=load(['./output',name,'.dat']);
+params=getSubjectParams(name);
+
+%outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
+
+traw=output(:,2);
+xvafraw=output(:,3:10);
+trial=output(:,1);
+lastTrial=max(trial)-1;
+f=find(trial==lastTrial,1,'last');
+samprate=1/mean(gradient(traw))
+if samprate<300 %our filtering method apparently has nonlinear algorithmic complexity and goes from seconds to hours+.
+    inds=1:f;
+else
+    inds=1:5:f;
+end
+trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
+
+y=output(:,11:12);
+y=y(inds,:);
+trial=trial(inds);
+
+%Because trial 1 starts from an unknown location/where the robot is
+%turned on
+
+cats=[1 0 2];
+dists=[.15 .3];
+
+[a,b,c]=unique(sum(input(:,2:3),2));
+remap=[1 0 2 3];
+targs=remap(c);
+
+
+for c=1:length(trials)
+    trials(c).disturbance=input(c,6);
+    if c==1
+        trials(c).orig=trials(c).x(1,:);
+    else
+        trials(c).orig=targs(c-1).targ;
+    end
+    trials(c).targ=targs(c);
+    trials(c).y=y(trial==c,:);
+end
+
+save(['./intern',num2str(k),'.mat'],'trials','params')
