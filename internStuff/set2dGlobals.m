@@ -29,7 +29,7 @@ I2=m2*(.468*l2)^2;
 %I2=.0188;
 
 %Shoulder location
-x0=origin+shoulder;
+x0=shoulder;
 
 %Dynamic code modification requires random function names
 hash=floor(rand(5,1)*24+1);
