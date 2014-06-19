@@ -69,6 +69,7 @@ Y-Y_e=\frac{\epsilon}{Ms^2+Bs+K}(Y_e-X)
 \begin{equation}
 \frac{Y-Y_e}{Y_e-X}=\frac{\epsilon}{Ms^2+Bs+K}
 \end{equation}
+
 Stiffness misestimation creates a transient in the extraction whose frequency response is entirely defined by the true dynamics of the system. Because we know the value of $K$ used for each extraction, $K_e=\epsilon+K$, we have two unknowns: $Y$ and $\epsilon$. A difference of two different extractions using equation 11 does not contain the $Y$ term:
 \begin{equation}
 (Y-Y_{1e})-(Y-Y_{2e})=\epsilon_1 \frac{Y_{1e}-X}{Ms^2+Bs+K}- \epsilon_2 \frac{Y_{2e}-X}{Ms^2+Bs+K}
@@ -103,6 +104,8 @@ Back to zero unknowns, which basically dooms equation 15. Notice that this is eq
 \begin{equation}
 \frac{Y-Y_{1e}}{Y_{2e}-X}=\frac{\epsilon_2}{Ms^2+Bs+K}-\frac{K_{2e}-K_{1e}}{Ms^2+Bs+K_{1e}}
 \end{equation}
+
+
 
 \newpage
 What if you know that $Y=720/s^6-360/s^5+60/s^4$ because of minimum jerk submovements?
