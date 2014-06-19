@@ -26,7 +26,8 @@ t=0:tstep:1.5;
 Y=[[xd vd ad];zeros(length(t)-length(ta),6)];
 Y(:,1)=Y(:,1)+1;
 F=zeros(length(t),2);
-F((t>.1)&(t<.2),1)=-10;
+%F((t>.1)&(t<.2),1)=-10;
+F(:,1)=5*cos(3*t);
 K=16*ones(length(t),2);
 
 Xh=forward(t,Y,F,K);
@@ -34,7 +35,7 @@ Xh=forward(t,Y,F,K);
 %For shits and giggles, make a bank
 nBank=8;
 maxRatio=.4;
-minK=15.5;
+minK=16;
 bank=zeros(length(t),nBank);
 eps=(1+maxRatio*((1:nBank)-1)/(nBank-1))*minK
 for k=1:nBank
@@ -50,41 +51,118 @@ threshFcorr=.05*max(abs(Fcorr(:,1))); % 5% of a 1N pulse is nothing.
 
 minned=zeros(length(t),2);
 for k=1:length(t)
-    warning offmin
+    warning off
     minme=@(m) std(bank(k,:)-m.*eps.*Fcorr(k,1));
     minned(k,1)=fminunc(minme,1,optimset('display','off'));
 end
 
 inds=find(abs(Fcorr(:,1))>threshFcorr);
 andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(eps(1)-m).*Fcorr(inds,1)).^2);
+%andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(eps(1)-m).*Fcorr(inds,1)).^2);
 minned(:,2)=fminunc(andmetoo,5,optimset('display','off'));
 
 figure(1)
 clf
 hold on
-for G=-15:3:15
 for k=1:nBank
-    plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)+G).*Fcorr(:,1),'r')
-    %plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
-end
+    plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
+    plot(t,bank(:,k)-minned(:,1).*(eps(k)-16).*Fcorr(:,1),'r')
 end
 plot(t,10*Fcorr(:,1)+1,'b')
 plot(t,Y(:,1),'g')
-title('Constant K')
+title('Constant K by minimizing Pearson''s R^2')
 minned(1,2)
+
+figure(2)
+clf
+hold on
+mY=norm(Y(:,1));
+corrFcorr=minned(:,1).*Fcorr(:,1);
+corrFcorr=corrFcorr-mean(corrFcorr); %have to make stationary
+mFcorr=norm(corrFcorr);
+for k=1:nBank
+    mbank=norm(bank(:,k));
+    d2=inf;
+    dcum=0;
+    while abs(d2)>1e-5
+        tempcalc=bank(:,k)-(eps(k)+dcum)*corrFcorr;
+        tempcalc=tempcalc-mean(tempcalc);
+        d=dot(tempcalc,corrFcorr)/(mFcorr); %*norm(bank(:,k)-eps(k)*corrFcorr))
+        dcum=dcum+d
+        ycalc=bank(:,k)-(eps(k)+dcum)*corrFcorr;
+        ycalc=ycalc-mean(ycalc);
+        d2=dot(corrFcorr,ycalc)/(mFcorr*norm(ycalc));
+    end
+    dcum
+    plot(t,bank(:,k)-(eps(k))*corrFcorr-mean(bank(:,k)-(eps(k))*corrFcorr),'c')
+    plot(t,ycalc,'r')
+
+end
+plot(t,Y(:,1)-mean(Y(:,1)),'g')
+plot(t,corrFcorr*100,'color',[.5 .5 .5])
+title(['Local non-stationarity prevents global use of dot product. Kcalc=',num2str(-dcum)])
 
 figure(3)
 clf
 hold on
-for G=-15:3:15
+corrFcorr=minned(:,1).*Fcorr(:,1);
+Fspan=60;
+kcalc=zeros(length(t),1);
+kcalc(1:Fspan)=minK;
 for k=1:nBank
-    plot(t,gradient(bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)+G).*Fcorr(:,1)),'r')
-    %plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
+    %Now have to have yet another for-loop to deal with subindexing.
+    %Locally stationary we can probably do, so this is in many/most senses
+    %ideal for time-varying K.
+    for kk=Fspan+1:length(t)
+        inds=max(1,kk-Fspan):kk;
+
+        ibank=bank(inds,k);
+        
+        iFc=corrFcorr(inds);
+        iFc=iFc-mean(iFc);
+        mFcorr=norm(iFc);
+
+        d2=inf;
+        dcum=0;
+        its=0;
+        while (abs(d2)>1e-3)&&(its<15)
+            its=its+1;
+            tempcalc=ibank-(eps(k)+dcum).*iFc;
+            tempcalc=tempcalc-mean(tempcalc);
+            d=dot(tempcalc,iFc)/(mFcorr); %*norm(bank(:,k)-eps(k)*corrFcorr))
+            dcum=dcum+d;
+            if its==1
+                dcum
+            end
+            ycalc=ibank-(eps(k)+dcum).*iFc;
+            ycalc=ycalc-mean(ycalc);
+            d2=dot(iFc,ycalc)/(mFcorr*norm(ycalc));
+        end
+        kcalc(kk)=-dcum;
+        [k kk]
+    end
+    plot(t,bank(:,k)-(eps(k)-kcalc).*corrFcorr,'r.')
+    plot(t,kcalc/10,'y')
+    plot(t,bank(:,k)-(eps(k)-0)*corrFcorr,'c')
+    drawnow
 end
-end
-plot(t,gradient(10*Fcorr(:,1)+1),'b')
-plot(t,gradient(Y(:,1)),'g')
-title('Constant K')
+plot(t,Y(:,1),'g')
+plot(t,corrFcorr*100,'color',[.5 .5 .5])
+title('We''d like to make everything local anyways, but does it work?')
+
+
+% figure(2)
+% clf
+% hold on
+% for G=-15:3:15
+% for k=1:nBank
+%     plot(t,gradient(bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)+G).*Fcorr(:,1)),'r')
+%     %plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
+% end
+% end
+% plot(t,gradient(10*Fcorr(:,1)+1),'b')
+% plot(t,gradient(Y(:,1)),'g')
+% title('Constant K')
 
 
 return
