@@ -33,7 +33,9 @@ dists=[.15 .3];
 
 [a,b,c]=unique(sum(input(:,2:3),2));
 remap=[1 0 2 3];
-targs=remap(c);
+targs=c;
+
+targlocs=input(b,2:3);
 
 
 for c=1:length(trials)
@@ -41,9 +43,10 @@ for c=1:length(trials)
     if c==1
         trials(c).orig=trials(c).x(1,:);
     else
-        trials(c).orig=targs(c-1).targ;
+        trials(c).orig=targlocs(targs(c-1),:);
     end
-    trials(c).targ=targs(c);
+    trials(c).targ=targlocs(targs(c),:);
+    trials(c).targcat=remap(targs(c));
     trials(c).y=y(trial==c,:);
 end
 

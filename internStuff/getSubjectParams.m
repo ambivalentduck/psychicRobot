@@ -6,6 +6,16 @@ switch num
         l2=.34;
         mass=175;
         shoulder=[.025 .92-.4378];
+    case {'2'} %tejas
+        l1=.34;
+        l2=.36;
+        mass=145;
+        shoulder=[0 .99-.4378];
+    case {'3'} %christine
+        l1=.33;
+        l2=.34;
+        mass=120;
+        shoulder=[.14 .96-.4378];
 end
 
 params.l1=l1;

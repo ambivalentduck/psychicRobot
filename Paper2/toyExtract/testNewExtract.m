@@ -11,7 +11,7 @@ ta=(0:tstep:tspan)/tspan;
 M=.41;
 B=2.3;
 
-xi=[1; 0];
+xi=[.1; 0];
 xf=[0; 0];
 
 xd=(xi*ones(size(ta))+(xf-xi)*(10*ta.^3-15*ta.^4+6*ta.^5))';
@@ -26,8 +26,8 @@ t=0:tstep:1.5;
 Y=[[xd vd ad];zeros(length(t)-length(ta),6)];
 Y(:,1)=Y(:,1)+1;
 F=zeros(length(t),2);
-%F((t>.1)&(t<.2),1)=-10;
-F(:,1)=5*cos(3*t);
+F((t>.1)&(t<.2),1)=-10;
+%F(:,1)=5*cos(3*t);
 K=16*ones(length(t),2);
 
 Xh=forward(t,Y,F,K);
@@ -79,29 +79,19 @@ hold on
 mY=norm(Y(:,1));
 corrFcorr=minned(:,1).*Fcorr(:,1);
 corrFcorr=corrFcorr-mean(corrFcorr); %have to make stationary
-mFcorr=norm(corrFcorr);
+mFcorr=dot(corrFcorr,corrFcorr); %norm(corrFcorr);
 for k=1:nBank
-    mbank=norm(bank(:,k));
-    d2=inf;
-    dcum=0;
-    while abs(d2)>1e-5
-        tempcalc=bank(:,k)-(eps(k)+dcum)*corrFcorr;
-        tempcalc=tempcalc-mean(tempcalc);
-        d=dot(tempcalc,corrFcorr)/(mFcorr); %*norm(bank(:,k)-eps(k)*corrFcorr))
-        dcum=dcum+d
-        ycalc=bank(:,k)-(eps(k)+dcum)*corrFcorr;
-        ycalc=ycalc-mean(ycalc);
-        d2=dot(corrFcorr,ycalc)/(mFcorr*norm(ycalc));
-    end
-    dcum
-    plot(t,bank(:,k)-(eps(k))*corrFcorr-mean(bank(:,k)-(eps(k))*corrFcorr),'c')
-    plot(t,ycalc,'r')
-
+    tempcalc=bank(:,k)-eps(k)*corrFcorr;
+    tempcalc=tempcalc-mean(tempcalc);
+    d=dot(tempcalc,corrFcorr)/(mFcorr);
+    ycalc=bank(:,k)-(eps(k)+d)*corrFcorr;
+    plot(t,ycalc-mean(ycalc),'r')
+    maxerror=max(abs(ycalc-Y(:,1)))
 end
 plot(t,Y(:,1)-mean(Y(:,1)),'g')
-plot(t,corrFcorr*100,'color',[.5 .5 .5])
-title(['Local non-stationarity prevents global use of dot product. Kcalc=',num2str(-dcum)])
-
+plot(t,corrFcorr*10,'color',[.5 .5 .5])
+title(['Local non-stationarity prevents global use of dot product. Kcalc=',num2str(-d)])
+return
 figure(3)
 clf
 hold on
@@ -117,7 +107,7 @@ for k=1:nBank
         inds=max(1,kk-Fspan):kk;
 
         ibank=bank(inds,k);
-        
+
         iFc=corrFcorr(inds);
         iFc=iFc-mean(iFc);
         mFcorr=norm(iFc);
@@ -218,7 +208,7 @@ for k=1:length(t)
     %Calculate the local epsilon scaling factor
     minme=@(m) std(bank(k,:)-m.*eps.*Fcorr(k,1));
     minned(k,1)=fminunc(minme,1,optimset('display','off'));
-    
+
     %Calculate a somewhat lagged version of K
     inds=max(1,k-Fspan):k;
     tempF=Fcorr(inds,1);
