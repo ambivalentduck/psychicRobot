@@ -1,4 +1,4 @@
-function [out,ind]=maxperpendicular(x,x0,x1)
+function [out,rms]=maxperpendicular(x,x0,x1)
 
 % clc
 % clear all
@@ -19,3 +19,5 @@ for k=1:length(dists)
 end
 
 [out,ind]=max(dists);
+
+rms=sqrt(mean(dists.^2));

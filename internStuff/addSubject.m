@@ -2,8 +2,8 @@ function addSubject(k)
 
 name=num2str(k);
 
-input=load('./input.dat');
-output=load(['./output',name,'.dat']);
+input=load('./Data/input.dat');
+output=load(['./Data/output',name,'.dat']);
 params=getSubjectParams(name);
 
 %outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;

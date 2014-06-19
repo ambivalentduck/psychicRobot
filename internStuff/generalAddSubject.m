@@ -8,7 +8,7 @@ newline=sprintf('\n');
 disp(['Loading Data for Subject ',name])
 tic
 
-set2dGlobals(params.l1, params.l2, params.origin, params.shoulder,params.mass) %Make sure mass actually in kg
+set2dGlobals(params.l1, params.l2, params.shoulder,params.mass) %Make sure mass actually in kg
 
 toc
 disp(newline)
