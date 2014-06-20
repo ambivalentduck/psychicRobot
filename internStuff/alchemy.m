@@ -40,13 +40,13 @@ end
 
 
 %% Plot
-
 close all
 
 nV=1:lT;
 
 mX=mean(error.x,3);
 mY=mean(error.y,3);
+mT=mean(error.t,3);
 
 mXF=mean(error.x./error.f,3);
 mYF=mean(error.y./error.f,3);
@@ -75,6 +75,15 @@ ylim([lLim uLim])
 
 [h,p]=ttest(mXF(96+1:2*96,2)-mYF(96+1:2*96,2),mXF(2*96+1:3*96,2)-mYF(2*96+1:3*96,2))
 
+phases=zeros(96*5,1);
+for k=1:5
+    phases(96*(k-1)+1:96*k)=k;
+end
+
+[p,blah,stats]=anova1(mX(:,1),phases);
+multcompare(stats)
+
+
 return
 
 plot(dists(:,1),dists(:,2),'.')
@@ -83,10 +92,7 @@ f=find((dists(:,1)<.5)&(dists(:,2)<.5));
 
 [dists(f,1) 0*dists(f,1)+1]\dists(f,2)
 
-phases=zeros(96*5,1);
-for k=1:5
-    phases(96*(k-1)+1:96*k)=k;
-end
+
 
 [p,blah,stats]=anova1(dists(:,1)-dists(:,2),phases);
 multcompare(stats)

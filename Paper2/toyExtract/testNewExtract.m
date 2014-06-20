@@ -92,6 +92,7 @@ plot(t,Y(:,1)-mean(Y(:,1)),'g')
 plot(t,corrFcorr*10,'color',[.5 .5 .5])
 title(['Local non-stationarity prevents global use of dot product. Kcalc=',num2str(-d)])
 return
+
 figure(3)
 clf
 hold on
