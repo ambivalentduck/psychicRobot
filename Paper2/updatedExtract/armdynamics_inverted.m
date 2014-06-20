@@ -1,8 +1,6 @@
-function [dqi,torque_outside]=armdynamics_inverted(t,qi)
+function dqi=armdynamics_inverted(t,qi)
 
 global K1diag K2diag Koffdiag measuredVals measuredTime
-
-lqi=length(qi);
 
 interped=twoNearestNeighbor(measuredVals,measuredTime,t);
 theta_real=interped(1:2)'; 
