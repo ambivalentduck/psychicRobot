@@ -17,5 +17,16 @@ SfN Poster/*
 BasicCompensator-Reset2v2/*
 matlab/sensitivityPaper/*
 matlab/posterprep/*
+matlab/figures/*
+Paper1
+Paper2
+!Paper2/toyExtract
+!Paper2/updatedExtract
+
+!*.bib
+!*.tex
+*raw.tex
+
 *.eps
 *.odp
+.asv

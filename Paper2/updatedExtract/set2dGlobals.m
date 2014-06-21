@@ -1,4 +1,4 @@
-function set2dGlobals(l1_, l2_, shoulder, mass)
+function set2dGlobals(l1_, l2_, origin, shoulder,mass)
 
 global kd l1 l2 m1 m2 lc1 lc2 I1 I2 x0 getAccel fJ getAlpha
 
@@ -29,7 +29,7 @@ I2=m2*(.468*l2)^2;
 %I2=.0188;
 
 %Shoulder location
-x0=shoulder;
+x0=origin+shoulder;
 
 %Dynamic code modification requires random function names
 hash=floor(rand(5,1)*24+1);

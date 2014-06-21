@@ -3,7 +3,7 @@ clear all
 
 global M B measuredVals measuredTime
 
-%% Set up a minimum jerk movement.
+%% Constant K, pulse Force
 tspan=.5;
 tstep=.005;
 ta=(0:tstep:tspan)/tspan;
@@ -11,7 +11,7 @@ ta=(0:tstep:tspan)/tspan;
 M=.41;
 B=2.3;
 
-xi=[1; 0];
+xi=[.1; 0];
 xf=[0; 0];
 
 xd=(xi*ones(size(ta))+(xf-xi)*(10*ta.^3-15*ta.^4+6*ta.^5))';
@@ -24,24 +24,22 @@ ad=((xf-xi)*(60*ta-180*ta.^2+120*ta.^3)/(tspan^2))';
 
 t=0:tstep:1.5;
 Y=[[xd vd ad];zeros(length(t)-length(ta),6)];
-%Y(:,1)=Y(:,1)+1;
-
-%% Constant K, pulse Force
+Y(:,1)=Y(:,1)+1;
 F=zeros(length(t),2);
-%F((t>.1)&(t<.2),1)=-10;
-F(:,1)=5*cos(3*t);
-K=12*ones(length(t),2);
+F((t>.1)&(t<.2),1)=-10;
+%F(:,1)=5*cos(3*t);
+K=16*ones(length(t),2);
 
 Xh=forward(t,Y,F,K);
 
-% Make a battery of extractions at known, constant stiffness
-nBank=16;
-maxRatio=1;
-minK=10;
+%For shits and giggles, make a bank
+nBank=8;
+maxRatio=.4;
+minK=16;
 bank=zeros(length(t),nBank);
-Ke=(1+maxRatio*((1:nBank)-1)/(nBank-1))*minK
+eps=(1+maxRatio*((1:nBank)-1)/(nBank-1))*minK
 for k=1:nBank
-    Xtemp=reverse(t,Xh,F,Ke(k)*ones(length(t),2));
+    Xtemp=reverse(t,Xh,F,eps(k)*ones(length(t),2));
     bank(:,k)=Xtemp(:,1);
     if k==1
         %Want the lowest suspected overestimate in place
@@ -54,24 +52,25 @@ threshFcorr=.05*max(abs(Fcorr(:,1))); % 5% of a 1N pulse is nothing.
 minned=zeros(length(t),2);
 for k=1:length(t)
     warning off
-    minme=@(m) std(bank(k,:)-m.*Ke.*Fcorr(k,1));
+    minme=@(m) std(bank(k,:)-m.*eps.*Fcorr(k,1));
     minned(k,1)=fminunc(minme,1,optimset('display','off'));
 end
 
 inds=find(abs(Fcorr(:,1))>threshFcorr);
-andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(Ke(1)-m).*Fcorr(inds,1)).^2);
-%andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(Ke(1)-m).*Fcorr(inds,1)).^2);
+andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(eps(1)-m).*Fcorr(inds,1)).^2);
+%andmetoo=@(m) sum(corr(Fcorr(inds,1),bank(inds,1)-minned(inds,1).*(eps(1)-m).*Fcorr(inds,1)).^2);
 minned(:,2)=fminunc(andmetoo,5,optimset('display','off'));
 
 figure(1)
 clf
 hold on
 for k=1:nBank
-    plot(t,bank(:,k)-minned(:,1).*(Ke(k)-minned(:,2)).*Fcorr(:,1),'r')
+    plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
+    plot(t,bank(:,k)-minned(:,1).*(eps(k)-16).*Fcorr(:,1),'r')
 end
-plot(t,10*Fcorr(:,1),'b')
+plot(t,10*Fcorr(:,1)+1,'b')
 plot(t,Y(:,1),'g')
-title(['Constant K by minimizing Pearson''s R^2. Kcalc=',num2str(minned(1,2))])
+title('Constant K by minimizing Pearson''s R^2')
 minned(1,2)
 
 figure(2)
@@ -80,21 +79,18 @@ hold on
 mY=norm(Y(:,1));
 corrFcorr=minned(:,1).*Fcorr(:,1);
 corrFcorr=corrFcorr-mean(corrFcorr); %have to make stationary
-mFcorr=dot(corrFcorr,corrFcorr);
-ds=zeros(nBank,1);
+mFcorr=dot(corrFcorr,corrFcorr); %norm(corrFcorr);
 for k=1:nBank
-    cyan=bank(:,k)-Ke(k)*corrFcorr;
-    mCyan=mean(cyan);
-    d=-dot(cyan-mCyan,corrFcorr)/mFcorr
-    ds(k)=d;
-    plot(t,cyan,'c')
-    plot(t,bank(:,k)-(Ke(k)-d)*corrFcorr,'r')
+    tempcalc=bank(:,k)-eps(k)*corrFcorr;
+    tempcalc=tempcalc-mean(tempcalc);
+    d=dot(tempcalc,corrFcorr)/(mFcorr);
+    ycalc=bank(:,k)-(eps(k)+d)*corrFcorr;
+    plot(t,ycalc-mean(ycalc),'r')
+    maxerror=max(abs(ycalc-Y(:,1)))
 end
-plot(t,Y(:,1),'g')
-plot(t,Y(:,1)-(16+dot(Y(:,1)-16*corrFcorr,corrFcorr)/mFcorr)*corrFcorr,'k')
+plot(t,Y(:,1)-mean(Y(:,1)),'g')
 plot(t,corrFcorr*10,'color',[.5 .5 .5])
-title(['Constant K calculated via dot product. Kcalc=',num2str(mean(ds)),'\pm',num2str(1.96*std(ds))])
-
+title(['Local non-stationarity prevents global use of dot product. Kcalc=',num2str(-d)])
 return
 
 figure(3)
@@ -122,23 +118,23 @@ for k=1:nBank
         its=0;
         while (abs(d2)>1e-3)&&(its<15)
             its=its+1;
-            tempcalc=ibank-(Ke(k)+dcum).*iFc;
+            tempcalc=ibank-(eps(k)+dcum).*iFc;
             tempcalc=tempcalc-mean(tempcalc);
-            d=dot(tempcalc,iFc)/(mFcorr); %*norm(bank(:,k)-Ke(k)*corrFcorr))
+            d=dot(tempcalc,iFc)/(mFcorr); %*norm(bank(:,k)-eps(k)*corrFcorr))
             dcum=dcum+d;
             if its==1
                 dcum
             end
-            ycalc=ibank-(Ke(k)+dcum).*iFc;
+            ycalc=ibank-(eps(k)+dcum).*iFc;
             ycalc=ycalc-mean(ycalc);
             d2=dot(iFc,ycalc)/(mFcorr*norm(ycalc));
         end
         kcalc(kk)=-dcum;
         [k kk]
     end
-    plot(t,bank(:,k)-(Ke(k)-kcalc).*corrFcorr,'r.')
+    plot(t,bank(:,k)-(eps(k)-kcalc).*corrFcorr,'r.')
     plot(t,kcalc/10,'y')
-    plot(t,bank(:,k)-(Ke(k)-0)*corrFcorr,'c')
+    plot(t,bank(:,k)-(eps(k)-0)*corrFcorr,'c')
     drawnow
 end
 plot(t,Y(:,1),'g')
@@ -151,8 +147,8 @@ title('We''d like to make everything local anyways, but does it work?')
 % hold on
 % for G=-15:3:15
 % for k=1:nBank
-%     plot(t,gradient(bank(:,k)-minned(:,1).*(Ke(k)-minned(:,2)+G).*Fcorr(:,1)),'r')
-%     %plot(t,bank(:,k)-minned(:,1).*(Ke(k)-minned(:,2)).*Fcorr(:,1),'r')
+%     plot(t,gradient(bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)+G).*Fcorr(:,1)),'r')
+%     %plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
 % end
 % end
 % plot(t,gradient(10*Fcorr(:,1)+1),'b')
@@ -183,9 +179,9 @@ nBank=8;
 maxRatio=.4;
 minK=15.5;
 bank=zeros(length(t),nBank);
-Ke=(1+maxRatio*((1:nBank)-1)/(nBank-1))*minK
+eps=(1+maxRatio*((1:nBank)-1)/(nBank-1))*minK
 for k=1:nBank
-    Xtemp=reverse(t,Xh,F,Ke(k)*ones(length(t),2));
+    Xtemp=reverse(t,Xh,F,eps(k)*ones(length(t),2));
     bank(:,k)=Xtemp(:,1);
 end
 
@@ -210,8 +206,8 @@ for k=1:length(t)
         [T,FcorrSim]=ode45(@integrateForce,t(k-1:k),Fcorr(k-1,:));
         Fcorr(k,:)=FcorrSim(end,:);
     end
-    %Calculate the local Keilon scaling factor
-    minme=@(m) std(bank(k,:)-m.*Ke.*Fcorr(k,1));
+    %Calculate the local epsilon scaling factor
+    minme=@(m) std(bank(k,:)-m.*eps.*Fcorr(k,1));
     minned(k,1)=fminunc(minme,1,optimset('display','off'));
 
     %Calculate a somewhat lagged version of K
@@ -223,10 +219,10 @@ for k=1:length(t)
     elseif length(subinds)<5
         minned(k,2)=minned(k-1,2);
     else
-        andmetoo=@(m) sum(corr(Fcorr(inds(subinds),1),bank(inds(subinds),:)-repmat(minned(inds(subinds),1),1,nBank).*(repmat(Ke,length(subinds),1)-m).*repmat(Fcorr(inds(subinds),1),1,nBank)).^2);
+        andmetoo=@(m) sum(corr(Fcorr(inds(subinds),1),bank(inds(subinds),:)-repmat(minned(inds(subinds),1),1,nBank).*(repmat(eps,length(subinds),1)-m).*repmat(Fcorr(inds(subinds),1),1,nBank)).^2);
         minned(k,2)=fminunc(andmetoo,5,optimset('display','off'));
         plot(t(inds(subinds)),Fcorr(inds(subinds),1),'.','color',[.5 .5 .5])
-        plot(t(inds(subinds)),bank(inds(subinds),1)-minned(inds(subinds),1).*(Ke(1)-minned(k,2)).*Fcorr(inds(subinds),1),'c.')
+        plot(t(inds(subinds)),bank(inds(subinds),1)-minned(inds(subinds),1).*(eps(1)-minned(k,2)).*Fcorr(inds(subinds),1),'c.')
         drawnow
     end
 end
@@ -238,20 +234,20 @@ plot(t(f),minned(f,2)/10,'.')
 return
 
 for k=1:nBank
-    plot(t,bank(:,k)-minned(:,1).*(Ke(k)-minned(:,2)).*Fcorr(:,1),'r')
-    %plot(t,bank(:,k)-minned(:,1).*(Ke(k)-minned(:,2)).*Fcorr(:,1),'r')
+    plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
+    %plot(t,bank(:,k)-minned(:,1).*(eps(k)-minned(:,2)).*Fcorr(:,1),'r')
 end
 plot(t,10*Fcorr(:,1)+1,'b')
 plot(t,Y(:,1),'g')
 
 return
 
-Keilon1=2;
-Keilon2=2.1;
-Ye1=reverse(t,Xh,F,Keilon1+K);
+epsilon1=2;
+epsilon2=2.1;
+Ye1=reverse(t,Xh,F,epsilon1+K);
 
-Keilon2=2.1;
-Ye2=reverse(t,Xh,F,Keilon2+K);
+epsilon2=2.1;
+Ye2=reverse(t,Xh,F,epsilon2+K);
 
 figure(1)
 clf
