@@ -5,6 +5,10 @@ Makefile
 moc*
 *.o
 *.mat
+.dvi
+.log
+.aux
+.ps
 manipulandumDisplay
 fJ*.m
 dynamicSimFile*.m
@@ -14,15 +18,12 @@ getAlpha*.m
 *.dat
 Pictures/*
 SfN Poster/*
-BasicCompensator-Reset2v2/*
 matlab/sensitivityPaper/*
 matlab/posterprep/*
 matlab/figures/*
 Paper1
-Paper2
-!Paper2/toyExtract
-!updatedExtract
 
+!*.m
 !*.bib
 !*.tex
 *raw.tex
@@ -30,3 +31,5 @@ Paper2
 *.eps
 *.odp
 .asv
+
+BasicCompensator-Reset2v2/*
