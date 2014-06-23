@@ -21,7 +21,7 @@ matlab/figures/*
 Paper1
 Paper2
 !Paper2/toyExtract
-!Paper2/updatedExtract
+!updatedExtract
 
 !*.bib
 !*.tex

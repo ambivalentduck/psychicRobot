@@ -74,6 +74,7 @@ end
 subplot(6,2,2)
 plot(t,R2,'b.')
 ylabel('R^2')
+title('Quality and Values of Regression of K estimate onto Extraction')
 subplot(6,2,4)
 plot(t,m1d,'b.')
 ylabel('Time-varying Slope')
