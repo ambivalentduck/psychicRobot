@@ -28,13 +28,13 @@ measuredTime=t;
 %% Verify that we're still time-locally linear in each of the K parameters
 
 %Params from Shad&Muss
-K1nom=15;
-K2nom=16;
-Koffdiagnom=6;
+% K1nom=15;
+% K2nom=16;
+% Koffdiagnom=6;
 
-% K1nom=8;
-% K2nom=11;
-% Koffdiagnom=3;
+K1nom=4;
+K2nom=5;
+Koffdiagnom=2;
 
 K1diag=K1nom;
 K2diag=K2nom;
@@ -164,6 +164,29 @@ plot(t,mod1,'b.',t,mod2,'k.')
 ylabel('Time-varying Slope')
 xlabel('Time, s')
 
+%% Quick detour
+figure(8)
+clf
+subplot(2,1,1)
+hold on
+K1diag=K1nom;
+K2diag=K2nom;
+Koffdiag=Koffdiagnom;
+
+inds=find((t<.3)&(t>0));
+[T,Q]=ode45(@armdynamics_inverted,t,qt(1,1:4));
+x=q2x(Q);
+plot(xvaf(:,1),xvaf(:,2),'k')
+plot(x(:,1),x(:,2),'r')
+
+subplot(2,1,2)
+hold on
+plot(trials(N).t-trials(N).t(start),vecmag(xvaf(:,3:4)),'k')
+plot(T,vecmag(x(:,3:4)),'r')
+
+
+return
+
 %% We have some time-varying m times Ffilt. Now for K
 
 figure(2)
@@ -172,7 +195,7 @@ K1diag=K1nom;
 K2diag=K2nom;
 Koffdiag=Koffdiagnom;
 
-inds=find((t<.6)&(t>0));
+inds=find((t<.3)&(t>0));
 [T,Q]=ode45(@armdynamics_inverted,t,qt(1,1:4));
 
 %K1
@@ -184,11 +207,11 @@ x=q2x([Q(:,1)-K1nom*mFfilt(:,1) Q(:,2)]);
 plot(x(:,1),x(:,2),'c')
 plot(xvaf(:,1),xvaf(:,2),'k')
 
-ycalc=Q(inds,1)+K1nom*mFfilt(inds,1);
+ycalc=Q(inds,1)-K1nom*mFfilt(inds,1);
 mF=mFfilt(inds,1);
 mF=mF-mean(mF);
 K1=dot(ycalc-mean(ycalc),mF)/dot(mF,mF)
-x=q2x([Q(:,1)+(K1nom-K1)*mFfilt(:,1) Q(:,2)]);
+x=q2x([Q(:,1)-(K1nom-K1)*mFfilt(:,1) Q(:,2)]);
 plot(x(:,1),x(:,2),'b')
 axis equal
 
@@ -208,11 +231,11 @@ plot(x(:,1),x(:,2),'r')
 x=q2x([Q(:,1) Q(:,2)-K2nom*mFfilt(:,2)]);
 plot(x(:,1),x(:,2),'c')
 
-ycalc=Q(inds,2)+K2nom*mFfilt(inds,2);
+ycalc=Q(inds,2)-K2nom*mFfilt(inds,2);
 mF=mFfilt(inds,2);
 mF=mF-mean(mF);
 K2=dot(ycalc-mean(ycalc),mF)/dot(mF,mF)
-x=q2x([Q(:,1) Q(:,2)+(K2nom-K2)*mFfilt(:,2)]);
+x=q2x([Q(:,1) Q(:,2)-(K2nom-K2)*mFfilt(:,2)]);
 plot(x(:,1),x(:,2),'b')
 axis equal
 
@@ -221,7 +244,7 @@ hold on
 plot(t,qt(:,1),'k')
 plot(t,Q(:,1),'r')
 plot(t,mFfilt(:,2)*10,'b')
-title(['K1 calc = ',num2str(K2)])
+title(['K2 calc = ',num2str(K2)])
 
 %KOD
 subplot(6,2,[9 11])
@@ -232,20 +255,20 @@ plot(x(:,1),x(:,2),'r')
 x=q2x([Q(:,1)-Koffdiagnom*mFfilt(:,3) Q(:,2)-Koffdiagnom*mFfilt(:,4)]);
 plot(x(:,1),x(:,2),'c')
 
-ycalc=[Q(inds,1)+Koffdiagnom*mFfilt(:,3); Q(inds,2)+Koffdiagnom*mFfilt(:,4)];
+ycalc=[Q(inds,1)-Koffdiagnom*mFfilt(inds,3); Q(inds,2)-Koffdiagnom*mFfilt(inds,4)];
 mF=[mFfilt(inds,3); mFfilt(inds,4)];
 mF=mF-mean(mF);
 KOD=dot(ycalc-mean(ycalc),mF)/dot(mF,mF)
-x=q2x([Q(:,1) Q(:,2)+(K2nom-K2)*mFfilt(:,2)]);
+x=q2x([Q(:,1)-(Koffdiagnom-KOD)*mFfilt(:,3) Q(:,2)-(Koffdiagnom-KOD)*mFfilt(:,4)]);
 plot(x(:,1),x(:,2),'b')
 axis equal
 
-subplot(6,2,6)
+subplot(6,2,10)
 hold on
 plot(t,qt(:,1),'k')
 plot(t,Q(:,1),'r')
 plot(t,mFfilt(:,2)*10,'b')
-title(['K1 calc = ',num2str(K2)])
+title(['KOD calc = ',num2str(KOD)])
 
 %% Use all of that craziness
 
@@ -253,7 +276,7 @@ title(['K1 calc = ',num2str(K2)])
 K1diag=K1;
 K2diag=K2;
 Koffdiag=KOD;
-[T,Q]=ode45(@armdynamics_inverted,t(inds),qt(1,1:4));
+[T,Q]=ode45(@armdynamics_inverted,t(t<.1),qt(1,1:4));
 figure(3)
 clf
 hold on
