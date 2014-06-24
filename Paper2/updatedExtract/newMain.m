@@ -165,29 +165,44 @@ ylabel('Time-varying Slope')
 xlabel('Time, s')
 
 %% Quick detour
-figure(8)
-clf
-subplot(2,1,1)
-hold on
-K1diag=K1nom;
-K2diag=K2nom;
-Koffdiag=Koffdiagnom;
-
-inds=find((t<.3)&(t>0));
-[T,Q]=ode45(@armdynamics_inverted,t,qt(1,1:4));
-x=q2x(Q);
-plot(xvaf(:,1),xvaf(:,2),'k')
-plot(x(:,1),x(:,2),'r')
-
-subplot(2,1,2)
-hold on
-plot(trials(N).t-trials(N).t(start),vecmag(xvaf(:,3:4)),'k')
-plot(T,vecmag(x(:,3:4)),'r')
-
-
-return
+% figure(8)
+% clf
+% subplot(2,1,1)
+% hold on
+% 
+% K1nom=1;
+% K2nom=1;
+% Koffdiagnom=0;
+% 
+% % K1nom=4;
+% % K2nom=5;
+% % Koffdiagnom=2;
+% 
+% K1diag=K1nom;
+% K2diag=K2nom;
+% Koffdiag=Koffdiagnom;
+% 
+% [T,Q]=ode45(@armdynamics_inverted,t(1:150),qt(1,1:4));
+% x=q2x(Q);
+% plot(xvaf(:,1),xvaf(:,2),'k')
+% plot(x(:,1),x(:,2),'r')
+% 
+% subplot(2,1,2)
+% hold on
+% plot(trials(N).t-trials(N).t(start),vecmag(xvaf(:,3:4)),'k')
+% plot(T,vecmag(x(:,3:4)),'r')
+% plot(trials(N).t-trials(N).t(start),vecmag(xvaf(:,7:8)),'b')
+% 
+% lumps=findLumps(T,x,110,0,5,1)
+% 
+% N2=14;
+% findLumps(trials(N2).t-trials(N2).t(start),[trials(N2).x trials(N2).v],length(trials(N2).t),0,5,1)
 
 %% We have some time-varying m times Ffilt. Now for K
+
+K1nom=4;
+K2nom=5;
+Koffdiagnom=2;
 
 figure(2)
 clf

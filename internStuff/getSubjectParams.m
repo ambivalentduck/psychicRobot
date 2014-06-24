@@ -41,7 +41,11 @@ switch num
         l2=.3175;
         mass=128;
         shoulder=[.0508 1];
-        
+    case 'christine'
+        l1=.33;
+        l2=.34;
+        mass=120;
+        shoulder=[.1 .96]; 
         
 end
 

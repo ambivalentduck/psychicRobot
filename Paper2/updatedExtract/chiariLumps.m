@@ -38,7 +38,7 @@ first=sum(vecmag(y(:,3:4)));
 resid=y;
 
 cycles=0;
-while cycles<5
+while cycles<10
     cycles=cycles+1
     [lump,resid]=rulesFindLumps(t,resid,next);
     if length(lump.t)==1
