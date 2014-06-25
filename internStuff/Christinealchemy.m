@@ -24,6 +24,8 @@ if ~exist('error.mat','file')
         for N=1:length(trials)
             x=trials(N).x;
             y=trials(N).y;
+%           trials with yfix
+            yf = trials(N).yfix;
             f=trials(N).f;
             x0=trials(N).orig;
             x1=trials(N).targ;
@@ -41,10 +43,14 @@ if ~exist('error.mat','file')
 
             [xmp, xrms]=maxperpendicular(x(1:lastind,:),x0,x1);
             [ymp, yrms]=maxperpendicular(y(1:lastind,:),x0,x1);
+%           maxperpen for yfix
+            [ymp, yrms]=maxperpendicular(yf(1:lastind,:),x0,x1);
             [fmp, frms]=maxperpendicular(f(1:lastind,:),x0,x1);
 
             error.x(N,:,S)=[xmp,xrms];
             error.y(N,:,S)=[ymp,yrms];
+%           error for yfix
+            error.yf(N,:,S)=[ymp,yrms];
             error.f(N,:,S)=[fmp,frms];
             error.t(N,1,S)=trials(N).t(end)-trials(N).t(1);
         end
@@ -62,9 +68,14 @@ nV=1:lT;
 
 mX=mean(error.x,3);
 mY=mean(error.y,3);
+% mean for yfix
+myf=mean(error.yf,3);
 mT=mean(error.t,3);
 
 mXF=mean(error.f./error.x,3);
+mYF=mean(error.f./error.y,3);
+% error divide for yfix
+myfF=mean(error.f./error.yf,3);
 mYF=mean(error.f./error.y,3);
 
 figure(1)
@@ -72,8 +83,12 @@ clf
 hold on
 plot(nV,mX(:,1),'k')
 plot(nV,mY(:,1),'r')
+% nv vs myf plot
+plot(nV,myf(:,1),'blue')
 plot(nV,mXF(:,2),'ko')
 plot(nV,mYF(:,2),'r.')
+% nv vs myfF
+plot(nV,myfF(:,2),'blue')
 uLim=.1;
 plot(2*96+[0 0],[0 uLim],'m')
 plot(3*96+[0 0],[0 uLim],'m')
@@ -89,7 +104,8 @@ plot(2*96+[0 0],[lLim uLim],'m')
 plot(3*96+[0 0],[lLim uLim],'m')
 ylim([lLim uLim])
 
-[h,p]=ttest(mXF(96+1:2*96,2)-mYF(96+1:2*96,2),mXF(2*96+1:3*96,2)-mYF(2*96+1:3*96,2))
+%modified ttest with myfF for third phase 
+[h,p]=ttest(mXF(96+1:2*96,2)-mYF(96+1:2*96,2),mXF(2*96+1:3*96,2)-mYF(2*96+1:3*96,2),myfF(2*96+1:3*96,2)-myfF(2*96+1:3*96,2))
 
 
 [p,blah,stats]=anova1([mX(:,1); mY(phases==3,1)],[phases; 0*phases(phases==3)+3.5]);
@@ -98,6 +114,9 @@ multcompare(stats)
 [p,blah,stats]=anova1([mXF(:,2); mYF(phases==3,2)],[phases; 0*phases(phases==3)+3.5]);
 multcompare(stats)
 
+%stats for myf?
+[p,blah,stats]=anova1([mXF(:,2); mYF(phases==3,2)],[phases; 0*phases(phases==3)+3.6]);
+multcompare(stats)
 
 return
 
