@@ -32,7 +32,7 @@ lT=length(t);
 y=[trials(N).x trials(N).v];
 plot(1:lT,vecmag(y(:,3:4)));
 
-%next=168; % 210 Pretty fractal breakdown
+next=168; % 210 Pretty fractal breakdown
 [blah,next]=max(vecmag(y(:,3:4)))
 first=sum(vecmag(y(:,3:4)));
 resid=y;

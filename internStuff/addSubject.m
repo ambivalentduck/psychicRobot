@@ -1,9 +1,13 @@
 function addSubject(k)
 
-name=num2str(k);
+if isa(k,'char')
+    name=k;
+else
+    name=['output',num2str(k)];
+end
 
 input=load('./Data/input.dat');
-output=load(['./Data/output',name,'.dat']);
+output=load(['./Data/',name,'.dat']);
 params=getSubjectParams(name);
 
 %outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
@@ -50,4 +54,10 @@ for c=1:length(trials)
     trials(c).y=y(trial==c,:);
 end
 
-save(['./intern',num2str(k),'.mat'],'trials','params')
+if isa(k,'char')
+    name=k;
+else
+    name=['intern',num2str(k)];
+end
+
+save(['./Data/',name,'.mat'],'trials','params')

@@ -6,7 +6,7 @@ for k=1:5
     phases(96*(k-1)+1:96*k)=k;
 end
 
-load './Data/christine.mat'
+load './Data/christine2.mat'
 
 global K
 
@@ -70,3 +70,5 @@ plot(q(:,2),t(:,2),'.','markersize',1e-6)
 %axis equal
 
 cleanup
+
+save('./Data/christine_stiffness.mat','trials','params','K')
