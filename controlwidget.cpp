@@ -330,7 +330,10 @@ void ControlWidget::readPending()
 	//Cursor
 	bool cursorDodgy;
 	while(armsolver->pull(desposition, cursorDodgy, 0)) pulls++;
-	cursor=desposition*(1l-eaGain)+position*eaGain;
+	//cursor=desposition*(1l-eaGain)+position*eaGain;
+	double effectiveEA=1l+(eaGain-1l)*(1l/(1l+exp(-294.4439*(cursor.dist(target)-.02l))));
+	cursor=desposition*(1l-effectiveEA)+position*effectiveEA;
+	
 	if((eaGain!=1)&&(cursorDodgy)) sphere.color=point(.5,.5,1); //Dark blue
 	else sphere.color=point(0,0,1); //Blue
 	sphere.position=cursor;
