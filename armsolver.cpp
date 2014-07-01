@@ -90,7 +90,8 @@ int ArmSolver::func(double t, const double y[], double f[])
 	switch(model)
 	{
 	case CONSTIMP:
-		torqueFB=mat2(15,6,6,16)*e+mat2(2.3, .09, .09, 2.4)*edot;
+		//torqueFB=mat2(15,6,6,16)*e+mat2(2.3, .09, .09, 2.4)*edot;
+		torqueFB=mat2(6,1.1,1,1.2)*e+mat2(2.3, .09, .09, 2.4)*edot;
 		break;
 	case TORQUESCALEDANDREFLEX:
 		torqueReflex=(eri+erdoti*2l)/50l;
