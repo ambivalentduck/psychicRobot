@@ -1,0 +1,195 @@
+% Template for PLoS
+% Version 1.0 January 2009
+%
+% To compile to pdf, run:
+% latex plos.template
+% bibtex plos.template
+% latex plos.template
+% latex plos.template
+% dvipdf plos.template
+
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+\usepackage{graphicx}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+\usepackage{color} 
+
+% Use doublespacing - comment out for single spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+% Use the PLoS provided bibtex style
+\bibliographystyle{plos2009}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+
+% Leave date blank
+\date{}
+
+\pagestyle{myheadings}
+%% ** EDIT HERE **
+
+
+%% ** EDIT HERE **
+%% PLEASE INCLUDE ALL MACROS BELOW
+
+%% END MACROS SECTION
+
+\begin{document}
+
+% Title must be 150 characters or less
+\begin{flushleft}
+{\Large
+\textbf{The Grammar and Vocabulary of Human Reaching Intent}
+}
+% Insert Author names, affiliations and corresponding author email.
+\\
+Justin Horowitz$^{1}$, 
+James Patton$^{1,2\ast}$
+\\
+\bf{1} Bioengineering, University of Illinois at Chicago, Chicago, Illinois, United States
+\\
+\bf{2} Sensory Motor Performance Program, Rehabilitation Institute of Chicago, Chicago, Illinois, United States
+\\
+$\ast$ E-mail: pattonj@uic.edu
+\end{flushleft}
+
+% Please keep the abstract between 250 and 300 words
+\section*{Abstract}
+
+% Please keep the Author Summary between 150 and 200 words
+% Use first person. PLoS ONE authors please skip this step. 
+% Author Summary not valid for PLoS ONE submissions.   
+\section*{Author Summary}
+
+\section*{Introduction}
+blah blah blah
+
+We hypothesize that human reaching intention is built from submovements that constitute a fixed vocabulary and grammar. Were this hypothesis true, we should find it everywhere we look and without exception. We test this hypothesis by comparing the composition of movement in stroke survivors and force-disturbed control subjects whose reaching intent has been recovered by a novel computational technique. In particular, we presume a grammar based on the work of Flash and Henis \cite{flash1991arm} and a vocabulary to be recovered from the stroke survivors whose submovements can be easily recovered given the presumed vocabulary \cite{rohrer2004submovements}. If this grammar and vocabulary are accurate and complete, they should fully explain force-disturbed reaching intent in control subjects.
+
+% Results and Discussion can be combined.
+\section*{Results}
+
+\subsection*{Subsection 1}
+
+\subsection*{Subsection 2}
+
+\section*{Discussion}
+We set out to test the hypothesis that both stroke survivors and neurologically intact subjects exposed to force disturbance share a compact grammar and vocabulary for constructing movement intent. The grammar, or rules for combination, was that submovements were combined by superposition (vector addition) and no more than two were present at any point in time. The vocabulary was the minimum-jerk, $5^{th}$ order polynomial starting and ending at at zero speed and acceleration. This grammar and vocabulary recovered from stroke survivors was able to completely explain reaching intent in neurologically intact subjects despite imposing significant restrictions. While some might argue that these submovements are an artifact of stroke or an artifact of intent extraction, it is extremely unlikely that both situations should share these features unless they're fundamental to human movement. Moreover, we were able to detect predictable changes in arm stiffness that were well-correlated with the onset of submovements. This suggests that reaching intent may have an additional volitional impedance component not detectable in undisturbed reaching.
+
+% You may title this section "Methods" or "Models". 
+% "Models" is not a valid title for PLoS ONE authors. However, PLoS ONE
+% authors may use "Analysis" 
+\section*{Materials and Methods}
+When performing intent extraction, we're faced with many significant unknowns. Certain arm parameters might change volitionally while others might diverge from cadaver anatomy as studied in the 1950s. We derive a relationship between extracted intent and parameter misestimation in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With the ``signature'' of these errors in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
+
+We begin by noting that the arm is described by four sets of parameters at any point in time: two in our model ($M_e, B_e, K_e$ and $M_d, B_d, K_d$), one in reality ($M, B, K$), and one estimated by the brain ($\hat{M}, \hat{B}, \hat{K}$). These are related through a pair of force balances where $f$ is measured force, $x$ is measured arm position, $y$ is intent, and $y_e$ is estimated intent:
+\begin{equation}
+M\ddot{x}+B\dot{x}+Kx+f=\hat{M}\ddot{y}+\hat{B}\dot{y}+\hat{K}y
+\end{equation}
+\begin{equation}
+M_e\ddot{x}+B_e\dot{x}+K_ex+f=M_d\ddot{y}_e+B_d\dot{y}_e+K_dy_e
+\end{equation}
+We move to the Laplace domain for ease of representation and solve each equation for F.
+\begin{equation}
+F=(\hat{M}s^2+\hat{B}s+\hat{K})Y-(Ms^2+Bs+K)X
+\end{equation}
+\begin{equation}
+F=(M_ds^2+B_ds+K_d)Y_e-(M_es^2+B_es+K_e)X
+\end{equation}
+Set those equal:
+\begin{equation}
+(\hat{M}s^2+\hat{B}s+\hat{K})Y-(Ms^2+Bs+K)X=(M_ds^2+B_ds+K_d)Y_e-(M_es^2+B_es+K_e)X
+\end{equation}
+Define a pair of error terms two terms whose sole purpose is to make our notation more convenient for addressing the question at hand. First we define the difference in arm inverse models:
+\begin{equation}
+\epsilon_i=(\hat{M}s^2+\hat{B}s+\hat{K})-(M_ds^2+B_ds+K_d)
+\end{equation}
+Next we define the difference in arm forward models:
+\begin{equation}
+\epsilon_f=(Ms^2+Bs+K)-(M_es^2+B_es+K_e)
+\end{equation}
+Collect terms:
+\begin{equation}
+(\hat{M}s^2+\hat{B}s+\hat{K})(Y-Y_e)+\epsilon_i Y_e=\epsilon_f X
+\end{equation}
+And rearrange:
+\begin{equation}
+Y_e=Y+\frac{\epsilon_i Y_e-\epsilon_f X}{\hat{M}s^2+\hat{B}s+\hat{K}}
+\end{equation}
+While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system. This requires that some assumptions be made about $y$, however. In particular, the problem is trivial if $y$ is stationary and more-or-less orthogonal to each parameter error's time trajectory.
+
+While we can perfectly know change in each component of estimation error, we cannot yet know which ground truth parameter value it has been varied with respect to. ($\epsilon_i=\hat{K}-K_d$ but $\Delta \epsilon_i=-\Delta K_d$) It is therefore desirable to take this one step further. After performing the linear regression suggested above at a given point in time across a variety of parameter estimates, we find a set of linear weights $e$ and an offset term which contains the sum of $y$ and each weight multiplying its respective ground-truth parameter value. Each of these weights represents a scaled version of the error due to misestimation in its respective parameter. Because we know each weight as a time series and we know $y_e$, we can use QRD-LSL (a Kalman workalike with superior numerical properties on floating point hardware) to recover the time-varying contribution of each to $y_e(t)$ in addition to a component, $y(t)$, not explained by parameter estimation error.
+
+This suggests a process with several stages:
+\begin{enumerate}
+  \item Create many candidate estimations of intent with parameter values based on a Bayesian prior.
+  \item Decompose the \textit{a priori} maximum likelihood intent into submovements using the vocubulary and grammar found in stroke.
+  \item Use linear regression as suggested by eq. 9 to determine the time-varying error signature that would be caused by misestimation in each parameter.
+  \item Use Kalman-like filtering (QRD-LSL) to find the time-varying contribution of each error and submovement to the maximum likelihood intent and recover a more accurate estimate of the intent.
+  \item Correct each parameter using the schedule determined above to produce a superior estimation of reaching intent.
+\end{enumerate}
+
+
+% Do NOT remove this, even if you are not including acknowledgments
+\section*{Acknowledgments}
+
+
+%\section*{References}
+% The bibtex filename
+\bibliography{paper2.bib}
+
+\section*{Figure Legends}
+%\begin{figure}[!ht]
+%\begin{center}
+%%\includegraphics[width=4in]{figure_name.2.eps}
+%\end{center}
+%\caption{
+%{\bf Bold the first sentence.}  Rest of figure 2  caption.  Caption 
+%should be left justified, as specified by the options to the caption 
+%package.
+%}
+%\label{Figure_label}
+%\end{figure}
+
+
+\section*{Tables}
+%\begin{table}[!ht]
+%\caption{
+%\bf{Table title}}
+%\begin{tabular}{|c|c|c|}
+%table information
+%\end{tabular}
+%\begin{flushleft}Table caption
+%\end{flushleft}
+%\label{tab:label}
+% \end{table}
+
+\end{document}
+
