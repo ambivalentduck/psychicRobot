@@ -55,7 +55,7 @@ ControlWidget::ControlWidget(QDesktopWidget * qdw) : QWidget(qdw->screen(qdw->pr
 	layout->addRow("EA Gain:",eaGainBox=new QDoubleSpinBox(this));
 	eaGainBox->setValue(1);
 	eaGainBox->setMaximum(5);
-	eaGainBox->setMinimum(0);
+	eaGainBox->setMinimum(-5);
 	eaGainBox->setDecimals(3);
 	eaGain=1;
 	connect(eaGainBox, SIGNAL(valueChanged(double)), this, SLOT(setEAGain(double)));

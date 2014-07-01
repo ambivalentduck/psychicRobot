@@ -11,7 +11,7 @@ targets=[center;center;center]+dist*[cos(angles) sin(angles)];
 % #Each direction, force mag, EA gain
 phases=[16 0 1;
     16 1.2 1;
-    16 1.2 0;
+    16 1.2 -.2;
     16 1.2 1;
     16 0 1];
 
