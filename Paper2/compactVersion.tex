@@ -1,0 +1,79 @@
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+\usepackage{graphicx}
+\usepackage{color} 
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+\pagestyle{myheadings}
+
+\begin{document}
+
+When performing intent extraction, we're faced with many significant unknowns. Certain arm parameters can be changed volitionally (humans can co-contract their muscles, raising the arm's stiffness) while others might diverge from cadaver anatomy as studied in the 1950s. We derive the relationship between extractions with different parameters in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With such ``signature'' in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
+
+We begin by noting that the arm has four sets of parameters at any point in time: two in our model ($M_e, B_e, K_e$ and $M_d, B_d, K_d$), one in reality ($M, B, K$), and one estimated by the brain ($\hat{M}, \hat{B}, \hat{K}$). These are related through a pair of force balances where $f$ is measured force, $x$ is measured arm position, $y$ is intent, and $y_e$ is estimated intent:
+\begin{equation}
+M\ddot{x}+B\dot{x}+Kx+f=\hat{M}\ddot{y}+\hat{B}\dot{y}+\hat{K}y
+\end{equation}
+\begin{equation}
+M_e\ddot{x}+B_e\dot{x}+K_ex+f=M_d\ddot{y}_e+B_d\dot{y}_e+K_dy_e
+\end{equation}
+We move to the LaPlace domain for ease of representation and solve each equation for F.
+\begin{equation}
+F=(\hat{M}s^2+\hat{B}s+\hat{K})Y-(Ms^2+Bs+K)X
+\end{equation}
+\begin{equation}
+F=(M_ds^2+B_ds+K_d)Y_e-(M_es^2+B_es+K_e)X
+\end{equation}
+Set these equal:
+\begin{equation}
+(\hat{M}s^2+\hat{B}s+\hat{K})Y-(Ms^2+Bs+K)X=(M_ds^2+B_ds+K_d)Y_e-(M_es^2+B_es+K_e)X
+\end{equation}
+Since we desire to find the difference of $y$ and $y_e$, we collect terms and define two terms whose sole purpose is to make our notation more convenient for addressing the question at hand. First we define the difference in estimated arm models:
+\begin{equation}
+\epsilon_i=(\hat{M}s^2+\hat{B}s+\hat{K})-(M_ds^2+B_ds+K_d)
+\end{equation}
+Next we define the difference in arm models:
+\begin{equation}
+\epsilon_f=(Ms^2+Bs+K)-(M_es^2+B_es+K_e)
+\end{equation}
+Collect terms:
+\begin{equation}
+(\hat{M}s^2+\hat{B}s+\hat{K})(Y-Y_e)+\epsilon_i Y_e=\epsilon_f X
+\end{equation}
+And rearrange:
+\begin{equation}
+Y_e=Y+\frac{\epsilon_i Y_e-\epsilon_f X}{\hat{M}s^2+\hat{B}s+\hat{K}}
+\end{equation}
+While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system. This requires that some assumptions be made about $y$, however. In particular, the problem is trivial if $y$ is stationary and more-or-less orthogonal to each parameter error's time trajectory.
+
+While you can perfectly know how you've varied each component of each $\epsilon$, this does not reveal which ground truth parameter value it has been varied with respect to. For example: $\epsilon_K=\hat{K}-K_d$ but $\Delta \epsilon_K=-\Delta K_d$. It is therefore desirable to take this one step further and ask what structure might be inherent in $y$. In particular, we have reason to suspect that $y$ might be composed of a sum of minimum submovements. Since these are defined by an initial and final position along with a span in time, we can fully both intent and parameter values by linear regression so long as we can determine the extent in time of each submovement.
+
+This suggests a process with several stages:
+\begin{enumerate}
+  \item Extract an estimate of the intent with parameter values based on some \textbf{prior}.
+  \item Decompose the intent into submovements by using prior knowledge of their form and combination rules.
+  \item Create many candidate estimations of the intent using the Sobol set to carefully span a reasonable parameter space.
+    \item Use linear regression on the outcome of steps 2 and 3 to determine the parameter values as they vary in time.
+      \item Perform a "final" best-estimate extraction and decomposition based on the steps above.
+\end{enumerate}
+
+
+
+\end{document}
