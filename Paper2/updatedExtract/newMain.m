@@ -6,7 +6,7 @@ clear all
 load('pulse1.mat');
 global measuredVals measuredTime K1diag K2diag Koffdiag
 
-set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass);
+set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,.02*params.mass);
 
 %% Snag an early pulse and convert xvaf to q and torque
 
