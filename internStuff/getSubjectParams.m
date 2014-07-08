@@ -45,13 +45,17 @@ switch num
         l2=.38;
         mass=187;
         shoulder=[.01 .97];  
-    
-    %Only case 6 for this subject    
+       
     case {'6'} 
         l1=.317;
         l2=.3048;
         mass=135;
         shoulder=[.0762 .95];
+    case {'28'} 
+        l1=.317;
+        l2=.3048;
+        mass=135;
+        shoulder=[.03 .91];    
         
     case {'7'} 
         l1=.3175;
