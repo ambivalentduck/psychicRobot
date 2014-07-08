@@ -26,6 +26,7 @@ end
 trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
 
 y=output(:,11:12);
+cursor=output(:,13:14);
 y=y(inds,:);
 trial=trial(inds);
 
@@ -52,6 +53,7 @@ for c=1:length(trials)
     trials(c).targ=targlocs(targs(c),:);
     trials(c).targcat=remap(targs(c));
     trials(c).y=y(trial==c,:);
+    trials(c).cursor=cursor(trial==c,:);
 end
 
 if isa(k,'char')
