@@ -19,7 +19,8 @@ end
 
 if ~exist('error.mat','file')
     for S=1:8
-        load(['./Data/intern',num2str(S+1),'.mat']);
+%         load(['./Data/intern',num2str(S+1),'.mat']);
+          load(['./Data/output22.mat']);
 
         for N=1:length(trials)
             x=trials(N).x;

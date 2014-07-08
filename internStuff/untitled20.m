@@ -20,7 +20,8 @@ end
 S=1
 
 if ~exist('Cerror.mat','file')|1
-    load(['./Data/christine_stiffness.mat']);
+%     load(['./Data/christine21.mat']);
+      load(['./Data/output22.mat']);
 
     for N=1:length(trials)
         x=trials(N).x;

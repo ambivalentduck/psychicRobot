@@ -6,7 +6,7 @@ else
     name=['output',num2str(k)];
 end
 
-input=load('./Data/input.dat');
+input=load('./Data/old_input.dat');
 output=load(['./Data/',name,'.dat']);
 params=getSubjectParams(name);
 
