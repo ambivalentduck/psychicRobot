@@ -1,16 +1,13 @@
-function addSubject(k)
+function addSubject(k,num)
 
-% if k is in a character form then that's what the name will be
-% if isa(k,'char')
-%     name=k;
-%     if k is in an integer form then that's what the name will be
-if isa(k,'int')
-    name=num2str(k);
-else
+if isa(k,'char')
+    name=k;
+elseif
+    isa(k,'int')
+    name=num2str
     name=['output',num2str(k)];
 end
 
-% % % % % THE INPUT FILE IS WORKING WITH THE OLD INPUT!!!!
 input=load('./Data/old_input.dat');
 output=load(['./Data/',name,'.dat']);
 params=getSubjectParams(name);
