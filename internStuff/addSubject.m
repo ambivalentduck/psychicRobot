@@ -1,19 +1,31 @@
 function addSubject(k)
 
 % if k is in a character form then that's what the name will be
-% if isa(k,'char')
-%     name=k;
-%     if k is in an integer form then that's what the name will be
-if isa(k,'int')
-    name=num2str(k);
+if isa(k,'char')
+    name=k;
+    c=1;
 else
     name=['output',num2str(k)];
+    c=2;
 end
 
 % % % % % THE INPUT FILE IS WORKING WITH THE OLD INPUT!!!!
 input=load('./Data/old_input.dat');
 output=load(['./Data/',name,'.dat']);
-params=getSubjectParams(name);
+
+% if - elseif statement that tells what getSubjectParams to look for
+% if c==1 (the first case) the user has put in a string. Therefore the
+% parameters for that particular subject must be under that specific
+% name
+% if c==2 (the second case) the user has put in a number. Therefore the
+% parameters must be under a name that is an integer (which is then converted
+% into a string)
+if c==1
+    params=getSubjectParams(name);
+elseif c==2
+    params=getSubjectParams(num2str(k));
+end
+
 
 %outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
 
@@ -61,10 +73,13 @@ for c=1:length(trials)
     trials(c).cursor=cursor(trial==c,:);
 end
 
-if isa(k,'char')
-    name=k;
-else
-    name=['intern',num2str(k)];
-end
+% % % Why is the following code that is commented here?
+
+% if isa(k,'char')
+%     name=k;
+% else
+%     name=['intern',num2str(k)];
+% end
 
 save(['./Data/',name,'.mat'],'trials','params')
+disp(name)
