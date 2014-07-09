@@ -3,12 +3,14 @@ clear all
 
 %% Just like with paper 1, we need to prepare a "ground" truth.
 
-%Step 1: we need to presume some submovements and a production rule. Blindly.
-
+%Step 0: gross reach parameters
 ri=[0 .5];
 rf=[.15 .5];
 rt=.7;
 t=[0:.005:2];
+
+%Step 1: we need to presume some submovements and a production rule. Blindly.
+
 
 %If you presume you know the time onsets (ie 1 and 3 touch in the middle)
 %and that the initial is position at time of onset

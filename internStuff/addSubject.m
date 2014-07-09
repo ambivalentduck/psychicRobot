@@ -10,7 +10,7 @@ else
 end
 
 % % % % % THE INPUT FILE IS WORKING WITH THE OLD INPUT!!!!
-input=load('./Data/old_input.dat');
+input=load('./Data/input.dat');
 output=load(['./Data/',name,'.dat']);
 
 % if - elseif statement that tells what getSubjectParams to look for
@@ -25,7 +25,6 @@ if c==1
 elseif c==2
     params=getSubjectParams(num2str(k));
 end
-
 
 %outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
 
@@ -45,6 +44,7 @@ trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
 y=output(:,11:12);
 cursor=output(:,13:14);
 y=y(inds,:);
+cursor=cursor(inds,:);
 trial=trial(inds);
 
 %Because trial 1 starts from an unknown location/where the robot is
