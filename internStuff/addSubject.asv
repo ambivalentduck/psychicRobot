@@ -14,19 +14,12 @@ input=load('./Data/old_input.dat');
 output=load(['./Data/',name,'.dat']);
 
 % if - elseif statement that tells what getSubjectParams to look for
-% if c==1 (the first case) the user has put in a string. Therefore the
-% parameters for that particular subject must be under that specific
-% name
-% if c==2 (the second case) the user has put in a number. Therefore the
-% parameters must be under a name that is an integer (which is then converted
-% into a string)
+% if c==1 
 if c==1
     params=getSubjectParams(name);
 elseif c==2
     params=getSubjectParams(num2str(k));
 end
-
-
 %outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
 
 traw=output(:,2);
