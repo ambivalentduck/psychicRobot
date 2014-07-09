@@ -465,7 +465,7 @@ void ControlWidget::readPending()
 	
 	if (resetTG>0) resetTG=0;
 		
-	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB xpcTime << endl;
+	outStream << trial TAB now-zero TAB position.X() TAB position.Y() TAB velocity.X() TAB velocity.Y() TAB accel.X() TAB accel.Y() TAB force.X() TAB force.Y() TAB desposition.X() TAB desposition.Y() TAB cursor.X() TAB cursor.Y() TAB xpcTime << endl;
 }
 
 void ControlWidget::startClicked()
