@@ -86,7 +86,7 @@ switch num
         mass=128;
         shoulder=[.0508 1];
     
-    %Only case 29 for this subject    
+    %Only case 30 for this subject    
     case {'30'} 
         l1=.31;
         l2=.325;
