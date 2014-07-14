@@ -85,6 +85,13 @@ switch num
         l2=.3175;
         mass=128;
         shoulder=[.0508 1];
+    
+    %Only case 30 for this subject    
+    case {'30'} 
+        l1=.31;
+        l2=.325;
+        mass=155;
+        shoulder=[.02 .92];
         
         
     case {'christine','christine2','christine21'}
