@@ -39,8 +39,8 @@ subplot(2,1,2)
 hold on
 plot(1:lT,vecmag(y(:,3:4)));
 
-next=371; % 210 Pretty fractal breakdown
-%[blah,next]=max(vecmag(y(:,3:4)))
+%next=371; % 210 Pretty fractal breakdown
+[blah,next]=max(vecmag(y(:,3:4)))
 first=sum(vecmag(y(:,3:4)));
 resid=y;
 
@@ -62,5 +62,34 @@ while cycles<10
     [blah,next]=max(vm);
 end
 toc
+xlabel('Time, Samples (rate=200 Hz)')
+ylabel('Speed, meters/sec')
+
+%% Step 2: Try "interactive" leading edge decomposition
+
+figure(2)
+clf
+hold on
+
+t=trials(N).t;
+lT=length(t);
+y=trials(N).v;
+resid=y;
+
+inds=[143 213 273];
+
+plot(1:lT,vecmag(y));
+
+for k=1:length(inds)-1
+    z=zeros(size(resid));
+    z(inds(k):inds(k+1),:)=resid(inds(k):inds(k+1),:);
+    z(inds(k+1)+1:2*inds(k+1)-inds(k),:)=resid(inds(k+1)-1:-1:inds(k),:);
+    vm=vecmag(resid);
+    c=rand(3,1);
+    resid=resid-z;
+    plot(1:lT,vecmag(resid),'-','color',c);
+    plot(1:lT,vecmag(z),'.','color',c);
+end
+
 xlabel('Time, Samples (rate=200 Hz)')
 ylabel('Speed, meters/sec')
