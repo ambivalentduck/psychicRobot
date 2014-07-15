@@ -36,10 +36,10 @@ for N=1:3
         col=[rand(1,2) 0];
         dcol=[col(1:2) 1];
 
-        plot(allT,cursor(:,N)+S*spacer(N),'.','color',col)
-        plot([2*96+1,3*96],summaryMet(cursor(phases(:,3),N))+[0 0]+S*spacer(N),'-','color','b')
-        plot(allT(phases(:,3)),hand(phases(:,3),N)+S*spacer(N),'x','color',dcol)
-        plot([2*96+1,3*96],summaryMet(hand(phases(:,3),N))+[0 0]+S*spacer(N),'-','color','k')
+        %plot(allT,cursor(:,N)+S*spacer(N),'.','color',col)
+        plot([2*96+1,3*96],summaryMet(cursor(phases(:,3),N))+[0 0]+S*spacer(N),'-','color',col)
+        %plot(allT(phases(:,3)),hand(phases(:,3),N)+S*spacer(N),'x','color',dcol)
+        plot([2*96+1,3*96],summaryMet(hand(phases(:,3),N))+[0 0]+S*spacer(N),'-','color',dcol)
         plot([97 4*96],summaryMet(cursor(phases(:,2)|phases(:,4),N))+[0 0]+S*spacer(N),'-.','color','r')
 
         %    errave = (mean(errors(phase2(curs0),1))+mean(errors(phase4(curs0),1)))/2;
