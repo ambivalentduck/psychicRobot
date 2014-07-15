@@ -11,7 +11,7 @@ x=randn(M,N);
 xt=x;
 %xt(2,:)=sin(xt(2,:));
 Y=wReal*xt;
-intent=cos(12.7*(1:N))+5;
+intent=rand(1,N); %cos(12.7*(1:N))+5;
 y=Y+S2N*std(Y)*randn(1,N)+intent;
 linRegress=(x'\y')' %#ok<*NOPTS>
 
