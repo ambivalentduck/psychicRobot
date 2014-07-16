@@ -17,7 +17,7 @@ phases=phases==1;
 % builds one display for all of the folloing data
 
 titles={'Max Perp','RMS','Straightness'};
-spacer=[.2*.5 450*.5 .14*.5];
+spacer=[.2 450 .14];
 
 SHIFT=.3;
 
