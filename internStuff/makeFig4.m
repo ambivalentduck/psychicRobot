@@ -39,14 +39,14 @@ exportme=zeros(5*96,6);
 
 for S=1:SUBS
     inds=5*96*(S-1)+1:5*96*S;
-    %     exportme(inds,1)=log10(cursor(:,S,1));
-    %     exportme(inds,2)=log10(cursor(:,S,3));
-    %     exportme(inds,3)=log10(reachT(:,S));
-    %     exportme(inds,4)=log10(hand(:,S,2));
-    exportme(inds,1)=cursor(:,S,1);
-    exportme(inds,2)=cursor(:,S,3);
-    exportme(inds,3)=reachT(:,S);
-    exportme(inds,4)=hand(:,S,2);
+%     exportme(inds,1)=cursor(:,S,1);
+%     exportme(inds,2)=cursor(:,S,3);
+%     exportme(inds,3)=reachT(:,S);
+%     exportme(inds,4)=hand(:,S,2);
+    exportme(inds,1)=log10(cursor(:,S,1));
+    exportme(inds,2)=log10(cursor(:,S,3));
+    exportme(inds,3)=log10(reachT(:,S));
+    exportme(inds,4)=log10(hand(:,S,2));
     exportme(inds,5)=phases*(1:6)';
     exportme(inds,6)=S+inds*0;
 end
@@ -121,6 +121,7 @@ for N=1:4
                 case 4
                     y=log10(reachT(:,S));
     end
+    y=y(~isnan(y));
     xlim([quantile(y(:),.01) quantile(y(:),.99)])
     xlabel(units{N})
     if N~=1
