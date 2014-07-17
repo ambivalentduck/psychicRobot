@@ -17,12 +17,14 @@ Mp=[M(2) -M(1)];
 Mp=Mp/norm(Mp);
 
 dists=zeros(size(x,1),1);
+perp=zeros(size(x,1),1);
+
 for k=1:length(dists)
     V=x(k,:)-(dot(x(k,:),M)/MdM)*M;
     dists(k)=norm(V);
     perp(k)=dot(V,Mp);
 end
 
-[maxpd,ind]=max(dists);
+maxpd=max(dists);
 rms=sqrt(mean(dists.^2));
 straightness=max(perp)-min(perp);

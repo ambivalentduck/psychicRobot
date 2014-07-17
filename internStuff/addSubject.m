@@ -42,9 +42,16 @@ end
 trials=generalAddSubject(name,traw(inds),xvafraw(inds,:),trial(inds),params);
 
 y=output(:,11:12);
-cursor=output(:,13:14);
 y=y(inds,:);
-cursor=cursor(inds,:);
+
+if size(output,2)>=14
+    cursor=output(:,13:14);
+    cursor=cursor(inds,:);
+else
+    cursor=y;
+end
+
+
 trial=trial(inds);
 
 %Because trial 1 starts from an unknown location/where the robot is

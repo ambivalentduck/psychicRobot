@@ -46,11 +46,11 @@ for N=1:3
         
 %         Plot what you need
         hold on
-        plot(allT,cursor(:,N)+S*spacer(N),'.','color',col,'MarkerSize',.01)
-        plot([2*96+1,3*96],summaryMet(cursor(phases(:,3),N))+[0 0]+S*spacer(N),'-','color','b','linewidth',2)
-        plot(allT(phases(:,3)),hand(phases(:,3),N)+S*spacer(N),'x','color',dcol)
-        plot([2*96+1,3*96],summaryMet(hand(phases(:,3),N))+[0 0]+S*spacer(N),'-','color','k', 'linewidth',2)
-        plot([97 4*96],summaryMet(cursor(phases(:,2)|phases(:,4),N))+[0 0]+S*spacer(N),'-.','color','r','linewidth',2)
+        plot(allT,cursor(:,S,N)+S*spacer(N),'.','color',col,'MarkerSize',.01)
+        plot([2*96+1,3*96],summaryMet(cursor(phases(:,3),S,N))+[0 0]+S*spacer(N),'-','color','b','linewidth',2)
+        plot(allT(phases(:,3)),hand(phases(:,3),S,N)+S*spacer(N),'x','color',dcol)
+        plot([2*96+1,3*96],summaryMet(hand(phases(:,3),S,N))+[0 0]+S*spacer(N),'-','color','k', 'linewidth',2)
+        plot([97 4*96],summaryMet(cursor(phases(:,2)|phases(:,4),S,N))+[0 0]+S*spacer(N),'-.','color','r','linewidth',2)
         
 %         sets the appropriate labels depending on the current graph
         if N == 1
