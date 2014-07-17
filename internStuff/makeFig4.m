@@ -121,13 +121,15 @@ for N=1:4
                 case 4
                     y=log10(reachT(:,S));
     end
-    [prctile(y(:),.01) prctile(y(:),.99)]
-    %xlim([prctile(y(:),.01) prctile(y(:),.99)])
+    xlim([quantile(y(:),.01) quantile(y(:),.99)])
     xlabel(units{N})
-    set(gca,'ytick',[])
+    if N~=1
+        set(gca,'ytick',[])
+    end
 end
 drawnow
 %set(gcf,'position',[1821,33,360,859])
 subplot(1,4,1)
 set(gca,'ytick',1:6)
 set(gca,'yticklabel',{'Baseline','Forces','Forces + Intent','Forces + Intent','Forces','Washout'})
+set(gcf,'renderer','opengl')

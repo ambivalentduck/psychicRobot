@@ -21,7 +21,10 @@ for S=1:8
         [cursor(k,S,1), cursor(k,S,2), cursor(k,S,3)]=maxperpendicular(trials(k).cursor,x0,x1);
         [intent(k,S,1), intent(k,S,2), intent(k,S,3)]=maxperpendicular(trials(k).y,x0,x1);
         [force(k,S,1), force(k,S,2), force(k,S,3)]=maxperpendicular(trials(k).f,x0,x1);
-        reachT(k,S)=trials(k).t(end)-trials(k).t(1);
+        
+        onset=find(vecmag(trials(k).v)>.05,1,'first');
+        term=find(vecmag(trials(k).cursor-ones(length(trials(k).t),1)*trials(k).targ)<.02,1,'first');
+        reachT(k,S)=trials(k).t(term)-trials(k).t(onset);
     end
     toc
 end
