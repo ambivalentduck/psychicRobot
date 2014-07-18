@@ -20,7 +20,7 @@ phases=phases==1;
 
 % builds one display for all of the folloing data
 
-units={'Max Error, cm','Stiffness, N/m','Error Span, cm','Time to complete reach, s'};
+units={'Max Error, log10(cm)','Stiffness, log10(N/m)','Error Span, log10(cm)','Time to complete reach, log10(s)'};
 spacer=[.2 450 .14];
 
 SUBS=8;
@@ -62,6 +62,7 @@ for k=1:4
     figure(k)
     [p,table,stats]=anovan(exportme(:,k),exportme(:,[5 6]),'display','off')
     multcompare(stats)
+    title(units{k})
 end
 
 figure(10)
@@ -86,7 +87,7 @@ for N=1:4
     st=std(y)/sqrt(length(y));
     
     ALPHA=.3;
-    fill([m-st m m+st m], [P P+colSpan/2 P P-colSpan/2],'k','edgealpha',ALPHA,'facealpha',ALPHA)
+    fill([m-st m m+st m], 7-[P P+colSpan/2 P P-colSpan/2],'k','edgealpha',ALPHA,'facealpha',ALPHA)
     
     end
     
@@ -107,7 +108,7 @@ for N=1:4
                     y=log10(reachT(phases(:,P),S));
             end
             sz=sum(phases(:,P));
-            plot(y,ones(sz,1)*P+xoff+subWidth*(rand(sz,1)-.5),'.','markersize',.00001,'color',col)
+            plot(y,7-ones(sz,1)*P+xoff+subWidth*(rand(sz,1)-.5),'.','markersize',.00001,'color',col)
         end
     end
     if N == 2
@@ -127,10 +128,12 @@ for N=1:4
     if N~=1
         set(gca,'ytick',[])
     end
+    ylim([.5 6.25])
 end
 drawnow
 %set(gcf,'position',[1821,33,360,859])
 subplot(1,4,1)
 set(gca,'ytick',1:6)
-set(gca,'yticklabel',{'Baseline','Forces','Forces + Intent','Forces + Intent','Forces','Washout'})
+labs={'Baseline','Forces','Forces + Intent (Early)','Forces + Intent (Late)','Forces','Washout'};
+set(gca,'yticklabel',labs(end:-1:1))
 set(gcf,'renderer','opengl')
