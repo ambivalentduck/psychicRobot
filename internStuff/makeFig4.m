@@ -1,11 +1,19 @@
 % This is a function that takes in an output file and plots error(on the y axis) against
 % trial(on the x axis) for baseline, extraction, and the secondary
 % baseline(washout) all next to each other for all 8 patients
+function makeFig4()
 clc
 clear all
 close all
 
-load('./Data/errors.mat')
+c = input('For old data enter 1. For new data enter 2\n');
+if c == 1
+    load('./Data/olderrors.mat')
+elseif c == 2
+    load('./Data/errors.mat')
+else 
+    fprintf('Invalid choice. Please try again :D')
+end
 
 allT=1:5*96;
 phases=zeros(5*96,6);
