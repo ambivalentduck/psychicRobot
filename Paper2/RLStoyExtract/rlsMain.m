@@ -5,7 +5,8 @@ global M B
 
 %% Constant K, prove tautology and other housekeeping
 tspan=.5;
-ta=(0:.001:tspan)/tspan;
+tinc=.005;
+ta=(0:tinc:tspan)/tspan;
 
 xi=[1; 0];
 xf=[0; 0];
@@ -18,11 +19,11 @@ ad=((xf-xi)*(60*ta-180*ta.^2+120*ta.^3)/(tspan^2))';
 % vd=([1; 0]*cos(tshort))';
 % ad=([1; 0]*-sin(tshort))';
 
-t=0:.001:1.5;
+t=0:tinc:1.5;
 Xd=[[xd vd ad];zeros(length(t)-length(ta),6)];
 Xd(:,1)=Xd(:,1)+1;
 F=zeros(length(t),2);
-F((t>.1)&(t<.2),:)=-10;
+F((t>.1)&(t<.2),1)=-10;
 K=15*ones(length(t),2);
 
 figure(1)
@@ -50,7 +51,7 @@ legend('Ground Truth Intention','Hand (Stiffness=15)','Intention (Stiffness=15)'
 
 sParams=1;
 nCandidates=5;
-Kml=15;
+Kml=16;
 Kspan=.2;
 
 p=sobolset(sParams,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
@@ -78,20 +79,25 @@ for k=1:nCandidates
     plot(t,Xs(:,k),'b')
 end
 
-regressX=[candidateK 1+0*candidateK]\Xs';
-regressY=[candidateK 1+0*candidateK]\Ys';
+eX=t;
+eY=t;
+for k=1:length(t)
+    temp=[candidateK 1+0*candidateK]\Xs(k,:)';
+    eX(k)=temp(1);
+    temp=[candidateK 1+0*candidateK]\Ys(k,:)';
+    eY(k)=temp(1);
+end
 
-P=eye(3);
-w=zeros(3,2,length(t));
-w(3,:,1)=Xh(1,1:2);
+P=zeros(2);
+w=zeros(2,1,length(t)+1);
+w(2,1,1)=Xh(1,1);
 
 subplot(2,1,2)
 hold on
 for k=1:length(t)
-    [w(:,:,k+1),P]=RLS([regressX(1,k);regressY(1,k);1],Xml(k,1:2)',w(:,:,k),P,.99);
-    if ~mod(k,10)
+    [w(:,:,k+1),P]=RLS([eX(k);1],Xml(k,1)',w(:,:,k),P,.05);
+    if ~mod(k,100)
     plot(t(k),w(1,1,k),'r.')
-    plot(t(k),w(2,2,k),'b.')
     drawnow
     end
 end
@@ -99,8 +105,10 @@ end
 figure(3)
 clf
 hold on
-plot(Xd(:,1),Xd(:,2),'g-')
-plot(squeeze(w(3,1,:)),squeeze(w(3,2,:)),'b.')
+plot(t,Xd(:,1),'g-')
+plot(t,Xml(:,1)-eX','c.')
+plot(t,squeeze(w(2,1,2:end)),'b.')
+plot(t,squeeze(w(1,1,2:end)).*eX','r')
 axis equal
 
 %% Break there
