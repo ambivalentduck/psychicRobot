@@ -65,10 +65,10 @@ figure(2)
 clf
 subplot(2,1,1)
 hold on
-plot(t,Xd(:,1),'g')
+plot(t,Xd(:,1),'g','linewidth',2)
 
 Xml=reverse(t,Xh,F,Kml+K*0);
-plot(t,Xml(:,1),'r')
+plot(t,Xml(:,1),'r.')
 
 Xs=zeros(length(t),nCandidates);
 Ys=zeros(length(t),nCandidates);
@@ -88,28 +88,36 @@ for k=1:length(t)
     eY(k)=temp(1);
 end
 
-P=zeros(2);
+dim=1;
+P=zeros(dim);
+P(dim+1,dim+1)=1;
 w=zeros(2,1,length(t)+1);
 w(2,1,1)=Xh(1,1);
+w=[0;0];
 
 subplot(2,1,2)
 hold on
 for k=1:length(t)
-    [w(:,:,k+1),P]=RLS([eX(k);1],Xml(k,1)',w(:,:,k),P,.05);
-    if ~mod(k,100)
-    plot(t(k),w(1,1,k),'r.')
+    %[w(:,:,k+1),P]=RLS([eX(k);1],Xml(k,1)',w(:,:,k),P,.5);
+    [w,P]=RLS([eX(k);1],Xml(k,1)',w,P,.9);
+    ws(:,k+1)=w;
+    if ~mod(k,20)
+    %plot(t(k),w(1,1,k),'r.')
+    plot(t(k),w,'r.')
     drawnow
     end
 end
 
 figure(3)
 clf
+subplot(2,1,1)
 hold on
 plot(t,Xd(:,1),'g-')
 plot(t,Xml(:,1)-eX','c.')
-plot(t,squeeze(w(2,1,2:end)),'b.')
-plot(t,squeeze(w(1,1,2:end)).*eX','r')
-axis equal
+%plot(t,squeeze(w(2,1,2:end)),'b.')
+subplot(2,1,2)
+%plot(t,squeeze(w(1,1,2:end)).*eX','r')
+
 
 %% Break there
 

@@ -43,6 +43,8 @@ cursor(:,:,2)=force(:,:,2)./cursor(:,:,2);
 
 map=[1 4 2 3];
 
+exportmap=[1 3 4 2];
+
 exportme=zeros(5*96,6);
 
 for S=1:SUBS
@@ -70,7 +72,7 @@ for k=1:4
     figure(k)
     [p,table,stats]=anovan(exportme(:,k),exportme(:,[5 6]),'display','off')
     multcompare(stats)
-    title(units{k})
+    title(units{exportmap(k)})
 end
 
 figure(10)
