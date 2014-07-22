@@ -24,7 +24,7 @@ g2 = plot(y(:,1)+xoff,y(:,2)+yoff,'r');
 
    
 if P==3
-g3 = plot(y(:,1)+xoff,y(:,2)+yoff,'g');
+g3 = plot(y(:,1)+xoff,y(:,2)+yoff);
 plot(x(:,1)+xoff,x(:,2)+yoff,'k')
 end
 

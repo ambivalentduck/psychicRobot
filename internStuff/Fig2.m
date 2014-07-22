@@ -21,7 +21,7 @@ yoff=1-.3*P;
 
 plot(x(:,1)+xoff,x(:,2)+yoff,'k')
 plot(y(:,1)+xoff,y(:,2)+yoff,'r')
-plot(c(:,1)+xoff,c(:,2)+yoff,'g','linewidth',1.5)
+plot(c(:,1)+xoff,c(:,2)+yoff,'linewidth',1.5)
     end
 end
 
