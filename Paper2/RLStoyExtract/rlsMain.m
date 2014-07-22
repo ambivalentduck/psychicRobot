@@ -50,7 +50,7 @@ legend('Ground Truth Intention','Hand (Stiffness=15)','Intention (Stiffness=15)'
 
 sParams=1;
 nCandidates=5;
-Kml=16;
+Kml=15;
 Kspan=.2;
 
 p=sobolset(sParams,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
@@ -78,16 +78,17 @@ for k=1:nCandidates
     plot(t,Xs(:,k),'b')
 end
 
-regressX=candidateK\Xs';
-regressY=candidateK\Ys';
+regressX=[candidateK 1+0*candidateK]\Xs';
+regressY=[candidateK 1+0*candidateK]\Ys';
 
 P=eye(3);
 w=zeros(3,2,length(t));
+w(3,:,1)=Xh(1,1:2);
 
 subplot(2,1,2)
 hold on
 for k=1:length(t)
-    [w(:,:,k+1),P]=RLS([regressX(k);regressY(k);1],Xml(k,1:2)',w(:,:,k),P,.99);
+    [w(:,:,k+1),P]=RLS([regressX(1,k);regressY(1,k);1],Xml(k,1:2)',w(:,:,k),P,.99);
     if ~mod(k,10)
     plot(t(k),w(1,1,k),'r.')
     plot(t(k),w(2,2,k),'b.')
@@ -98,9 +99,9 @@ end
 figure(3)
 clf
 hold on
-plot(Xd(:,1),Xd(:,2),'g.')
-plot(squeeze(w(3,1,:)),squeeze(w(3,2,:)),'b')
-
+plot(Xd(:,1),Xd(:,2),'g-')
+plot(squeeze(w(3,1,:)),squeeze(w(3,2,:)),'b.')
+axis equal
 
 %% Break there
 
