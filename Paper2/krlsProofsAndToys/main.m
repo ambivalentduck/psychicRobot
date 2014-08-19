@@ -63,7 +63,6 @@ plot(t,sqrt(sum(yg(:,3:4).^2,2)),'g-','linewidth',5)
 %manage without ever breaking the fundamental rule: no more than
 %2-coverage.
 ks=.25; %So at any given time, we're carrying around ks/.005=30 kernels. Wide span risks overfitting, but probably gets the direction right
-lambda=4; %No reason to think we should punish large velocities, but let's preempt spikes to infinity.
 
 %H in time is weird because you already perfectly know FUTURE input samples, but not output samples.
 %Oddly this implies that H never changes because of symmetry.
@@ -93,20 +92,10 @@ d=yg(:,3:4)+.05*randn(length(t),2);
 e_mag=zeros(length(t),1);
 
 for iter=1:length(t)
-    if 0
-        Q=Q(2:end,2:end); %Discard the stalest data point in preparation for a new one
-        z=Q*H_old;
-        r=lambda+H0-z'*H_old;
-        Q=(1/r)*[Q*r+z*z' -z;-z' 1];
-        e=d(iter,:)-H_old'*W(iter:iter+lH-2,:);
-        e_mag(iter)=norm(e);
-        W(iter:iter+lH-1,:)=[W(iter:iter+lH-2,:)-(z*(e/r));e/r];
-    else %Essentially lms
-        e=d(iter,:)-H'*W(iter:iter+lH-1,:);
-        e_mag(iter)=norm(e);
-        %2/sum(H) is...bizarre but very clearly optimal.
-        W(iter:iter+lH-1,:)=W(iter:iter+lH-1,:)+sH2*H_reg.*H*e;
-    end
+    e=d(iter,:)-H'*W(iter:iter+lH-1,:);
+    e_mag(iter)=norm(e);
+    %2/sum(H) is...bizarre but very clearly optimal.
+    W(iter:iter+lH-1,:)=W(iter:iter+lH-1,:)+sH2*H_reg.*H*e;
 end
 
 %% Step 3: In theory we just learned something.
@@ -150,7 +139,7 @@ subset=(lH-1)/2+(1:length(t));
 % xlabel('Time, s')
 % subplot(2,1,2)
 % plot(t,atan2(W(subset,2),W(subset,1)))
-% 
+%
 % figure(3)
 % plot(t,gradient(atan2(W(subset,2),W(subset,1))))
 
@@ -163,7 +152,7 @@ B=2.3;
 F=([0; 6]*((t>.1)&(t<.150)))';
 K=([15; 15]*ones(size(t)))';
 
-xva=forward(t,yg,F,K);
+xva=forward(t,yg,F,K+2);
 figure(5)
 clf
 subplot(2,1,1)
@@ -183,7 +172,7 @@ for k=1:3
 end
 
 ks=.25;
-lambda=1000;
+lambda=1.1;
 
 bound=floor(ks/(2*t_step))*t_step;
 H=slmj5op(0,-bound:t_step:bound,ks);
@@ -203,16 +192,28 @@ W=zeros(lH-1+length(t),2);
 
 e_mag=zeros(length(t),1);
 
-dX=-(out{3}(:,3:4)-out{2}(:,3:4));
+dX=(out{3}(:,3:4)-out{2}(:,3:4));
 d=out{1}(:,3:4)+16*dX;
-Ke=15+zeros(length(t),2);
+Ke=10+zeros(length(t),2);
+
+P=1E3*eye(2);
 
 for iter=2:length(t)
-        e=d(iter,:)-H'*W(iter:iter+lH-1,:)-Ke(iter-1,:).*dX(iter,1:2);
-        e_mag(iter)=norm(e);
-        %2/sum(H) is...bizarre but very clearly optimal.
-        W(iter:iter+lH-1,:)=W(iter:iter+lH-1,:)+sH2*H_reg.*H*e;
-        Ke(iter,:)=Ke(iter-1,:)+e_mag(iter)*100*lambda*dX(iter,:).*e;
+    %Calculate error
+    e=d(iter,:)-(H'*W(iter:iter+lH-1,:)+Ke(iter-1,:).*dX(iter,1:2));
+    e_mag(iter)=norm(e);
+
+    %Update the kernels
+    W(iter:iter+lH-1,:)=W(iter:iter+lH-1,:)+sH2*H_reg.*H*e;
+
+    %Update the parameters
+    x=dX(iter,1:2)';
+    k=(lambda*P*x)/(1+lambda*x'*P*x);
+    Ke(iter,:)=Ke(iter-1,:)+k'.*e; %Diag-only lets us .*, usually a matrix.
+    P=lambda*P-lambda*k*x'*P;
+
+    %LMS-style update fails, but leave the code here to show examples if need be
+    %Ke(iter,:)=Ke(iter-1,:)+e_mag(iter)*100*lambda*dX(iter,:).*e;
 end
 
 [summed,kerns2]=supMJP([1 1 0 0 0 0],W,t_expanded-ks/2,t_expanded+ks/2,t);
@@ -223,6 +224,9 @@ hold on
 plot(t,yg(:,4),'g','linewidth',5)
 plot(t,xva(:,4),'k')
 %plot(t,out{1}(:,4),'m')
-plot(t,100*dX(:,2),'color',[.5 .5 .5])
-plot(t,d(:,2)-14*dX(:,2),'m')
-plot(t,summed(:,4),'r')
+plot(t,10*dX(:,2),'color',[.5 .5 .5])
+%plot(t,d(:,2)+14*dX(:,2),'m')
+plot(t,summed(:,4),'r.')
+%plot(t,summed(:,4)+Ke(:,2).*dX(:,2),'r--')
+xlabel('Time,s')
+ylabel('Velocity in Cartesian Y direction, m/s')
