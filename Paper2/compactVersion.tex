@@ -24,8 +24,35 @@
 \pagestyle{myheadings}
 
 \begin{document}
+\section*{Why Endure the Math?}
+Humanity's search for meaning is well-evidenced in the archaeological record. By using the mathematics of advanced control theory to relate experience, intent, and action, we derive from first principles the structure of learning and planning. The early derivations contain few interesting insights, but produce a scaffold from which we can develop the more interesting frameworks later on. These frameworks produce an overwhelming number of explanations and predictions. Full exploration of their implications is beyond the scope of this work. Even limiting ourselves to the bare essentials, we are forced to confront explanations to very old questions: What is meaning? Is there an objective morality? What do we know and how do we know it? What is the best way of knowing? Following the math enables a reader to tackle these questions from the standpoint of a formal language, a language in which statements are clearly true or false. While we provide interpretation along the way in markedly less formal language, many implications are counter-intuitive and disappointing. It is our sobering duty to remind our readers that unless an error in the math itself can be found, the answers to these questions are fundamental and inherent to be accepted as laws that cannot be fought or changed.
 
-When performing intent extraction, we're faced with many significant unknowns. Certain arm parameters can be changed volitionally (humans can co-contract their muscles, raising the arm's stiffness) while others might diverge from cadaver anatomy as studied in the 1950s. We derive the relationship between extractions with different parameters in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With such ``signature'' in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
+\subsection*{TL;DR}
+Math is hard, but the outcomes are numerous and generally useful well outside the original question.
+
+\section*{Time-varying Linear Processes Governed by Intent}
+It is important to distinguish our intended trajectory, $q_d$, from another variable often considered, the equilibrium point of the muscle actuators. Importantly, this has been claimed to be the intended movement. To consider this, we also generalize our approach to any system with a moving intention that governs the control law. This introduces two additional layers of complexity by separating the plant (arm) into its process (dynamics) and actuator components (muscles) and considering the actuator's equilibrium, $q_e$ (sometimes represented as $\lambda$). The feedforward component must use and share this actuator and hence use the actuator's equilibrium. Without loss of generality, we represent the process $P$ and actuator $A$ as linear (or linearizable) operations in some space, $x$:
+\begin{equation} \label{eq:generalPlant}
+\underbrace{\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+\overbrace{\sum_{m=1}^M A_m(x-x_e)^{(m)}}^\text{Actuator}}_\text{Plant}+E=0
+\end{equation}
+The internal model of the process ($\hat{P}$ and $\hat{E}$) predicts system actions, external disturbances, and impedance responses in order to determine $x_e$ such that $x$ will track a desired path $x_d$.    
+\begin{equation}
+\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{m=1}^M A_m(x_d-x_e)^{(m)}}^\text{Actuator}=0
+\end{equation}
+We solve this for $x_e$ and substituting into \eqref{eq:generalPlant} gives:
+\begin{equation}
+\overbrace{\sum_{n=1}^N P_nx^{(n)}}^\text{Process}+E=\overbrace{\sum_{n=1}^N \hat{P}_n x^{(n)}_d+\hat{E}}^\text{Internal Model}+\overbrace{\sum_{m=1}^M A_m (x_d-x)^{(m)}}^\text{Feedback (Actuator)}
+\end{equation}
+
+Note $x_e$ vanishes, recovering our familiar model. While a proper choice of $x_e$ is perhaps essential for control, our approach does not require a model relating equilibrium and intended trajectory. Note also that the actuator's equilibrium $x_e$ is not the process's equilibrium unless all derivatives of $x_d$ are zero. In summary, if the highest order coefficient of the dynamic model of the process $\hat{P}_N$ can be inverted and the impedances can be modeled, it is possible to solve for $x_d^{(N)}$ and integrate for $x_d$ revealing the intended trajectory.
+
+While we treat both the process and actuator as dynamic models in our derivation, it is important to note that both the derivation and the technique are agnostic to the process model. Instead of a dynamic model, it could be a lookup table. For instance, a switch is well-modeled as a lookup table or threshold without any consideration of its underlying mechanism. In this case, our technique could be used to determine a person's intention to flip the switch and how it changes in the face of disturbance. As long as some bidirectional relationship (even statistical) exists between state and outcome, intended outcome can be determined. This allows determination of intent in many situations of interest, even where the process is irreducibly complex.
+
+\subsection*{TL;DR}
+So long as we can use a series representation (you almost always can) and intent matches action when disturbance isn't present (ie. the control system is competent), we can back out intent from action by knowing that series representation.
+
+\section*{Linear Independence of Intent and Process Uncertainty}
+Whether turning intent into action or determining it from action, we're faced with many significant unknowns. Certain arm parameters can be changed volitionally (humans can co-contract their muscles, raising the arm's stiffness) while others might diverge from cadaver anatomy as studied in the 1950s. We derive the relationship between extractions with different parameters in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With such a ``signature'' in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
 
 We begin by noting that the arm has four sets of parameters at any point in time: two in our model ($M_e, B_e, K_e$ and $M_d, B_d, K_d$), one in reality ($M, B, K$), and one estimated by the brain ($\hat{M}, \hat{B}, \hat{K}$). These are related through a pair of force balances where $f$ is measured force, $x$ is measured arm position, $y$ is intent, and $y_e$ is estimated intent:
 \begin{equation}
@@ -61,19 +88,86 @@ And rearrange:
 \begin{equation}
 Y_e=Y+\frac{\epsilon_i Y_e-\epsilon_f X}{\hat{M}s^2+\hat{B}s+\hat{K}}
 \end{equation}
-While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system. This requires that some assumptions be made about $y$, however. In particular, the problem is trivial if $y$ is stationary and more-or-less orthogonal to each parameter error's time trajectory.
-
-While you can perfectly know how you've varied each component of each $\epsilon$, this does not reveal which ground truth parameter value it has been varied with respect to. For example: $\epsilon_K=\hat{K}-K_d$ but $\Delta \epsilon_K=-\Delta K_d$. It is therefore desirable to take this one step further and ask what structure might be inherent in $y$. In particular, we have reason to suspect that $y$ might be composed of a sum of minimum submovements. Since these are defined by an initial and final position along with a span in time, we can fully both intent and parameter values by linear regression so long as we can determine the extent in time of each submovement.
-
-This suggests a process with several stages:
+Finally, simplify by assuming uniform misestimation: $\epsilon_i=\epsilon_f=\epsilon$
+\begin{equation}
+Y_e=Y+\epsilon\frac{Y_e-X}{\hat{M}s^2+\hat{B}s+\hat{K}}
+\end{equation}
+While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system designed to drive a process along a reference trajectory.
+\\\\
+This suggests a process with two stages:
 \begin{enumerate}
-  \item Extract an estimate of the intent with parameter values based on some \textbf{prior}.
-  \item Decompose the intent into submovements by using prior knowledge of their form and combination rules.
-  \item Create many candidate estimations of the intent using the Sobol set to carefully span a reasonable parameter space.
-    \item Use linear regression on the outcome of steps 2 and 3 to determine the parameter values as they vary in time.
-      \item Perform a "final" best-estimate extraction and decomposition based on the steps above.
+\item Create many candidate estimations of the intent using the Sobol set to carefully span a reasonable parameter space.
+\item Use adaptive filtering to recover intent and parameter values as they vary in time.
 \end{enumerate}
 
+\subsection*{TL;DR}
+So long as we can use a time-varying series representation for the process (you almost always can) and intent matches action when disturbance isn't present (ie. the control system is competent), we can back out intent from action even without knowing that series representation.
 
+\section*{Intent as a Sum of Kernels}
+Based on the results of Flash and Hogan and Flash and Henis, one might reasonably set out to model intent as the sum of minimum-jerk, $5^{th}$-order polynomial submovements. For the sake of a simple narrative, we make our first assumption:
+\begin{quote}
+\textbf{Hypothesis: Intent is composed of vector-summed subunits that evolve in time as minimum-jerk, $5^{th}$ order polynomials with no more than two contributing at any point in time.}
+\end{quote}
+Putting the hypothesis into mathematics is straight-forward: the kernel's magnitude at some point in time is related to the kernel's center and width like so:
+\begin{equation}
+t_n=\frac{t-t_c+\frac{t_s}{2}}{t_s}
+\end{equation}
+\begin{equation}
+\kappa(t,t_c,t_s)=
+  \begin{cases}
+  0 & : t-t_c \leq -\frac{t_s}{2}\\
+  10t_n^3-15t_n^4+6t_n^5 & : -\frac{t_s}{2} < t-t_c < \frac{t_s}{2}\\
+  0 & : t-t_c \geq \frac{t_s}{2}
+  \end{cases}
+\end{equation}
+And with this expression in hand, we express some intent y(t) like so:
+\begin{equation}
+\boldsymbol{y}(t)=\sum_n \boldsymbol{\omega}_n \kappa(t,t_c[n],t_s[n])
+\end{equation}
+While the dimensionality of our signal did not previously matter, we note here that $\boldsymbol{y}$, the intent, and $\boldsymbol{\omega}$, the direction and magnitude of a submovement, are of some dimensionality while $\kappa$ is a scalar inner product.
+
+
+This has some immediate implications: minimum-jerk, $5^{th}$-order polynomial submovements form a reproducing kernel Hilbert space (RKHS) in the velocity domain. While we've made this assumption to simplify the narrative and the coming derivations, we could safely immediately retract it and instead claim that intent is well-modeled in some sparse RKHS without any loss of generality or any assumptions at all. General approximations generally approximate.
+
+While general approximations generally approximate, this becomes a testable hypothesis so long as the total number of submovements present at any point in time is very low as we claim. Past examination by our group and others generally stopped here: while this is a testable hypothesis, it is a question of "fossil rabbits in the pre-Cambrian." No single compelling test is available.
+
+While the composition of movement and planning has no known compelling test, so long as we claim that we know this form for $\dot{\boldsymbol{y}}(t)$ something wonderful emerges:
+\begin{equation}
+\dot{\kappa}(t,t_c,t_s)=
+  \begin{cases}
+  0 & : t-t_c \leq -\frac{t_s}{2}\\
+  \frac{30t_n^2-60t_n^3+30t_n^4}{t_s} & : -\frac{t_s}{2} < t-t_c < \frac{t_s}{2}\\
+  0 & : t-t_c \geq \frac{t_s}{2}
+  \end{cases}
+\end{equation}
+\begin{equation}
+\dot{\boldsymbol{y}}(t)=\sum_n \boldsymbol{\omega}_n \dot{\kappa}(t,t_c[n],t_s[n])
+\end{equation}
+\begin{equation}
+M\dot{\boldsymbol{y}}^2(t)=M \sum_n \boldsymbol{\omega}^2_n \dot{\kappa}^2(t,t_c[n],t_s[n])
+\end{equation}
+In plainer language: kinetic energy is also represented in a RKHS because the square of a symmetric, positive definite function is also symmetric and positive definite. This immediately implies a mechanism for learning and planning in an energy or action domain. Since total energy will be conserved, the change in potential energy is the negative of the change in kinetic energy. In other words, if the world is represented as a virtual potential field in an RKHS, the intended trajectory is nothing more than a direct traversal of the Lagrangian action. Lagrangian optimization falls out automatically. Moreover, learning is also trivial since one need only know their kinetic energy history to map out a potential energy field relative to some notion of state.
+
+Even stranger, because this is encoded in an RKHS, we can actually describe equivalent maps from (perceived) external state, $x$ to internal representation of virtual potential, $v$ in terms of some interpretation $I$. This relies on the dual representation of the RKHS both in time and state (which are equally valid) and its finite support in both domains. Telling the story backwards to make it more computable and then proving it...
+	If potential energy is defined as a function of state can you consider the present potential energy as the sum of the kernel inner product of all known potential energy/state pairs and the current state? If so, this is implies that experience forms a \textit{dictionary} and because of the kernel trick and its symmetry, it implies that that dictionary can actually be computed in reverse. Instead of considering the current state with respect to a dictionary of centers, you can instead consider those centers with respect to the current state.
+
+
+\begin{equation}
+v=\kappa(\langle I,x \rangle)
+\end{equation}
+\begin{equation}
+v=\langle\varphi(I),\varphi(x)\rangle
+\end{equation}
+
+
+
+ 
+
+
+
+
+
+\section*{T}
+Stuff
 
 \end{document}

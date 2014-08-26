@@ -72,7 +72,7 @@ H_new=H(end);
 H0=slmj5op(0,0,ks);
 lH=length(H);
 
-sH2=3.5/sum(H);
+sH2=3.75/sum(H);
 H_reg=H;
 H_reg(1:(lH-1)/2)=0; %The trailing edge should not cause learning
 H_reg=H_reg/sum(H_reg);
@@ -148,3 +148,18 @@ plot(t,atan2(W(subset,2),W(subset,1)))
 
 figure(3)
 plot(t,gradient(atan2(W(subset,2),W(subset,1))))
+
+%% Step 4: Paper 3 in theory comes down to whether or not gradient descent recovers the original submovements.
+
+figure(4)
+Wg=W;
+
+c=0;
+while c<10
+    c=c+1;
+end
+%gradient of kern with respect to ts
+(45*(t - tc)^2)/ts^4 - (150*(t - tc)^4)/ts^6 - 15/(8*ts^2)
+
+    %You can no longer use the same tricks as above because
+
