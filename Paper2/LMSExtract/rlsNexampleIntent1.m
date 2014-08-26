@@ -11,12 +11,12 @@ x=randn(M,N);
 xt=x;
 %xt(2,:)=sin(xt(2,:));
 Y=wReal*xt;
-intent=sin(1:N); %cos(12.7*(1:N))+5;
+intent=sin(.5*(1:N)); %cos(12.7*(1:N))+5;
 y=Y+S2N*std(Y)*randn(1,N)+intent;
 linRegress=(x'\y')' %#ok<*NOPTS>
 
 w=zeros(M+1,N);
-lambda=diag([1.1*ones(1,3) 1.5]);
+lambda=1;
 P=zeros(M+1,M+1,N);
 P(:,:,1)=eye(M+1);
 
