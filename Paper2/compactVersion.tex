@@ -24,8 +24,11 @@
 \pagestyle{myheadings}
 
 \begin{document}
+\section*{Why Endure the Math?}
+By making two assumptions, we're able to derive human learning and planning from first principles. Moreover, we develop the tools needed to verifying our predictions incidentally along the way.
 
-When performing intent extraction, we're faced with many significant unknowns. Certain arm parameters can be changed volitionally (humans can co-contract their muscles, raising the arm's stiffness) while others might diverge from cadaver anatomy as studied in the 1950s. We derive the relationship between extractions with different parameters in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With such ``signature'' in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
+\section*{Linear Independence of Intent and Process Uncertainty}
+When performing intent extraction, we're faced with many significant unknowns. Certain arm parameters can be changed volitionally (humans can co-contract their muscles, raising the arm's stiffness) while others might diverge from cadaver anatomy as studied in the 1950s. We derive the relationship between extractions with different parameters in the hope of finding components of the extraction that relate primarily to estimation error in some parameter value. With such a ``signature'' in hand, we can subtract a scaled version of this signature off our estimated intent to recover a better estimate of the true intent.
 
 We begin by noting that the arm has four sets of parameters at any point in time: two in our model ($M_e, B_e, K_e$ and $M_d, B_d, K_d$), one in reality ($M, B, K$), and one estimated by the brain ($\hat{M}, \hat{B}, \hat{K}$). These are related through a pair of force balances where $f$ is measured force, $x$ is measured arm position, $y$ is intent, and $y_e$ is estimated intent:
 \begin{equation}
@@ -61,19 +64,24 @@ And rearrange:
 \begin{equation}
 Y_e=Y+\frac{\epsilon_i Y_e-\epsilon_f X}{\hat{M}s^2+\hat{B}s+\hat{K}}
 \end{equation}
-While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system. This requires that some assumptions be made about $y$, however. In particular, the problem is trivial if $y$ is stationary and more-or-less orthogonal to each parameter error's time trajectory.
+While on first glance this appears to contain a tremendous number of unknowns, $y_e$ is locally-in-time linear in each unknown. Therefore, the problem simplifies to a linear regression where the term that varies with no parameters represents the true intent, $y(t)$. We can therefore learn the true intent and parameter values simultaneously by extracting the intent many times with a carefully chosen variety of parameters. Moreover, it appears that this should be true of any system designed to drive a process along a reference trajectory.
 
-While you can perfectly know how you've varied each component of each $\epsilon$, this does not reveal which ground truth parameter value it has been varied with respect to. For example: $\epsilon_K=\hat{K}-K_d$ but $\Delta \epsilon_K=-\Delta K_d$. It is therefore desirable to take this one step further and ask what structure might be inherent in $y$. In particular, we have reason to suspect that $y$ might be composed of a sum of minimum submovements. Since these are defined by an initial and final position along with a span in time, we can fully both intent and parameter values by linear regression so long as we can determine the extent in time of each submovement.
-
-This suggests a process with several stages:
+This suggests a process with two stages:
 \begin{enumerate}
-  \item Extract an estimate of the intent with parameter values based on some \textbf{prior}.
-  \item Decompose the intent into submovements by using prior knowledge of their form and combination rules.
-  \item Create many candidate estimations of the intent using the Sobol set to carefully span a reasonable parameter space.
-    \item Use linear regression on the outcome of steps 2 and 3 to determine the parameter values as they vary in time.
-      \item Perform a "final" best-estimate extraction and decomposition based on the steps above.
+\item Create many candidate estimations of the intent using the Sobol set to carefully span a reasonable parameter space.
+\item Use adaptive filtering to recover intent and parameter values as they vary in time.
 \end{enumerate}
 
+\section*{Intent as a Sum of Kernels}
+Based on the results of Flash and Hogan and Flash and Henis, one might reasonably set out to model intent as the sum of $5^{th}$-order polynomial submovements. We make our first assumption:
+\begin{quote}
+\textbf{Intent is well-modeled as vector-summed subunits that evolve in time as minimum-jerk, $5^{th}$ order polynomials.}
+\end{quote}
+This has some immediate implications.
 
+
+
+\section*{T}
+Stuff
 
 \end{document}
