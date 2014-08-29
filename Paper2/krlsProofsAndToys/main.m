@@ -1,6 +1,8 @@
 clc
 clear all
 
+global t dt yfit x0
+
 %% Step 0: Prove this is a RKHS
 
 if 0 %If you've run this once, there's no compelling reason to do it again.
@@ -152,14 +154,10 @@ plot(t,gradient(atan2(W(subset,2),W(subset,1))))
 %% Step 4: Paper 3 in theory comes down to whether or not gradient descent recovers the original submovements.
 
 figure(4)
-Wg=W;
+Wm=W(26:226,:);
 
-c=0;
-while c<10
-    c=c+1;
-end
-%gradient of kern with respect to ts
-(45*(t - tc)^2)/ts^4 - (150*(t - tc)^4)/ts^6 - 15/(8*ts^2)
+dt=t_step;
+yfit=summed(:,3:4);
 
-    %You can no longer use the same tricks as above because
+P=fminunc(@supMJPfit,[Wm(:);ks*ones(length(t),1)],optimoptions(@fminunc,'GradObj','on'));
 
