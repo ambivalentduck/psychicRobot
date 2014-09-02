@@ -67,7 +67,7 @@ inds=1:length(t);
 
 for k=1:length(t)-50
     i=k:k+50;
-    W(k+25,:)=[dot(Hdiv,yg(i,3)) dot(Hdiv,yg(i,4))]*.0286;
+    W(k+25,:)=[dot(Hdiv,yg(i,3)) dot(Hdiv,yg(i,4))]/5.7;
 end
 
 [rg,kerns]=supMJP(x0,W,t-ks/2,t+ks/2,t);

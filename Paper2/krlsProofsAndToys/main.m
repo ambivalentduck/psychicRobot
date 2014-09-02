@@ -72,7 +72,7 @@ H_new=H(end);
 H0=slmj5op(0,0,ks);
 lH=length(H);
 
-sH2=3.75/sum(H);
+sH2=3.5/sum(H);
 H_reg=H;
 H_reg(1:(lH-1)/2)=0; %The trailing edge should not cause learning
 H_reg=H_reg/sum(H_reg);
@@ -87,7 +87,8 @@ Q=zeros(lH); %(lambda+H0)*eye(lH);
 W=zeros(lH-1+length(t),2);
 %a is a subset of W.
 
-d=yg(:,3:4)+.05*randn(length(t),2);
+NOISE=0.05;
+d=yg(:,3:4)+NOISE*randn(length(t),2);
 e_mag=zeros(length(t),1);
 
 if 0 %Canonical krls which seems to have massive convergence issues...math error?
@@ -114,7 +115,7 @@ t_expanded=t(1)-t_step*(lH-1)/2:t_step:t(end)+t_step*(lH-1)/2;
 
 recon=zeros(length(t),2);
 figure(1)
-[summed,kerns2]=supMJP([1 1 0 0 0 0],W,t_expanded-ks/2,t_expanded+ks/2,t);
+[summed,kerns2]=supMJP([1 1 0 0 0 0],W,t_expanded-ks/2,t_expanded+ks/2,t_expanded);
 subplot(2,1,1)
 hold on
 plot(summed(:,1),summed(:,2),'r.')
@@ -125,7 +126,7 @@ axis equal
 subplot(2,1,2)
 hold on
 plot(t,sqrt(sum(d.^2,2)),'k')
-plot(t,sqrt(sum(summed(:,3:4).^2,2)),'r.')
+plot(t_expanded,sqrt(sum(summed(:,3:4).^2,2)),'r.')
 xlabel('Time, s')
 ylabel('Speed, m/s')
 title('Speed')
@@ -159,7 +160,8 @@ while c<10
     c=c+1;
 end
 %gradient of kern with respect to ts
-(45*(t - tc)^2)/ts^4 - (150*(t - tc)^4)/ts^6 - 15/(8*ts^2)
+
+%(45*(t - tc)^2)/ts^4 - (150*(t - tc)^4)/ts^6 - 15/(8*ts^2)
 
     %You can no longer use the same tricks as above because
 
