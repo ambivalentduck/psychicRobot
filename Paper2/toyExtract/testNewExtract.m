@@ -33,6 +33,17 @@ K=16*ones(length(t),2);
 Xh=forward(t,Y,F,K);
 
 %For shits and giggles, make a bank
+p=sobolset(40,'Skip',1e3,'Leap',1e2); %double wide is necessary, rest are generic values to deal with idealty
+p=scramble(p,'MatousekAffineOwen'); %Same. Cleans up some issues quickly and quietly
+
+varied=p(1:1000,:); %Generate a sobol-distributed [0-1] set that theoretically spans the space very very well.
+%The number after p controls the number of points. Remember, this N*20 is the number of individual sims done.
+
+%Clamp to +/- 3 stdevs to avoid support issues like negative segment masses
+varied(varied>.999)=.999;
+varied(varied<.001)=.011;
+
+
 nBank=8;
 maxRatio=.4;
 minK=16;

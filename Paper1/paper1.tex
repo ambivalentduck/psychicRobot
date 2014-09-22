@@ -39,7 +39,7 @@
 % Bold the 'Figure #' in the caption and separate it with a period
 % Captions will be left justified
 \usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
-
+\usepackage[noperiod]{jabbrv}
 % Use the PLoS provided bibtex style
 \bibliographystyle{plos2009}
 
@@ -63,13 +63,15 @@
 
 \begin{document}
 
-% Title must be 150 characters or less
-\begin{flushleft}
+\begin{titlepage}
+\begin{center}
 {\Large
-\textbf{I meant to do that: Extracting the intentions of action in the face of disturbances}
-}
+\textbf{I meant to do that: determining the intentions of action in the face of disturbances}
+}\\[1cm]
+\end{center}
+
+\begin{flushleft}
 % Insert Author names, affiliations and corresponding author email.
-\\
 Justin Horowitz$^{1}$, 
 James Patton$^{1,2\ast}$
 \\
@@ -77,14 +79,19 @@ James Patton$^{1,2\ast}$
 \\
 \bf{2} Sensory Motor Performance Program, Rehabilitation Institute of Chicago, Chicago, Illinois, United States
 \\
-$\ast$ E-mail: pattonj@uic.edu
+$\ast$ Bioengineering, University of Illinois at Chicago, Chicago, Illinois, United States. E-mail: pattonj@uic.edu
+\\[1cm]
+Running Head: \\
+Determining the intention of action despite disturbances
 \end{flushleft}
-
-
+\end{titlepage}
 
 % Please keep the abstract between 250 and 300 words
 \section*{Abstract}
-We derive a novel modeling approach for determining movement intent from a force-disturbed planar arm trajectory, examine its parameter sensitivity, and test the approach using human reaching data. We first show how to mathematically invert typical feedforward control approaches, and then examine how this reveals the strengths, limitations, and underlying assumptions. We found that sensitivity to parameter inaccuracies was on the order of square microns and hence much lower than the inaccuracies seen when humans reach to visual targets. Further, most of the sensitivity resulted from uncertainty with regard to the joint stiffness. We also tested the robustness of this approach on human point-to-point reaching movements disturbed by force pulses. As expected, the intended trajectory showed no change from undisturbed reaching for 300 ms after the disturbance onset. Beyond this point, we detected change in intent even when the intention was near the target.  Unlike well-known lambda ($\lambda$) models, this intent was determined by considering both feedforward (predictive) and feedback controls. Knowing intent alongside action allows real-time determination and manipulation of error, even without a specified task, which makes it possible to directly inspect a neurally-impaired patient's intent for deficits. This approach may also be scaled for determining intent during human-machine interaction and in complex systems like team sports, crowds, or swarms.
+Our actions often do not match our intentions when there are external disturbances. We derive a novel modeling approach for determining motor intent from a reaching motion that is disturbed by an unexpected force. We first show how to mathematically invert both feedforward (predictive) and feedback controls to obtain intent. We next examine the model’s sensitivity to parameter uncertainty, and test the approach using human reaching data. We found that sensitivity to parameter inaccuracies was on the order of square microns, and hence much lower than the inaccuracies seen in actual human motions. Further, the largest sensitivity arose mainly from uncertainty in our assumptions of joint stiffness. We also tested the hypothesis that this would predict straight-line intent in human targeted reaching movements, even when disturbed by various pulses of force. As expected, the intended trajectory showed no change from undisturbed reaching for 300 ms after the disturbance onset. Beyond this point, however, we detected a change in intent, even when the intention was near the target.  Knowing such an intent signal is broadly applicable in areas such as in enhanced human-machine interaction, the study of impaired intent in neural disorders, the real-time determination (and manipulation) of error in training, and in any complex system that embodies planning, such as brain machine interfaces, team sports, crowds, or swarms. In addition, observing intent as it changes might act as a window into the mechanisms of planning, correction, and learning.
+
+\section*{Keywords}
+Intention; Motor Control; Visually Guided Reaching; On-line Control
 
 % Please keep the Author Summary between 150 and 200 words
 % Use first person. PLoS ONE authors please skip this step. 
@@ -97,7 +104,9 @@ There are many situations, such as disturbances, distractions, and pathologies, 
 
 It is important to distinguish our use of the term intent from other groups that consider \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, or \textit{goal selection decisions}\cite{ziebart2010modeling}. In typical motor control studies, subjects are motivated to complete the experiment in a timely fashion and are usually explicitly provided targets to be reached. Classification of intent is prevalent in both lower \cite{strausser2011development, hargrove2013robotic} and upper limb\cite{englehart2003robust, young2012improving} prosthetics where hybrid control algorithms select from among a set of actions (walking/standing/flexion/extension/etc). While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of the arm) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action (i.e, the intended trajectory), even when the actual movement is disturbed and hence no longer matches the intent.
 
-Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised method --- \textit{intent extraction} --- that deduces intended trajectory, even in the face of disturbances. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured. 
+Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised method --- \textit{intent extraction} --- that deduces intended trajectory, even in the face of disturbances. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured.
+
+If intent could be known during disturbance, we would be able to determine its composition through hypothesis testing. Shadmehr and Mussa-Ivaldi demonstrated that an unchanging intent passed through a simple arm model was sufficient to recreate human-like reaching movements in the presence of force disturbances\cite{shadmehr1994adaptive}. To determine whether or how intent changes following disturbance requires an infinite number of \textit{candidate} intents vying to best reproduce human motion over an infinite number of statistical tests. Optimal feedback control is presently the best and changes intent over the course of a reach\cite{todorov2002optimal}. This approach has many free parameters that need to be tuned to reproduce a reach. By fitting the parameters directly to a library of known intent and state trajectories, a single, maximum-likelihood model could be found. This also represents a means of potentially falsifying optimal feedback control by showing that the maximum likelihood model explains little variance or requires a number of free parameters that grows with the library. Knowing intent would therefore represents a significant advance because it eliminates the need to compare many candidate models.
 
 Here we develop and analyze the mathematics underlying intent extraction, a method to determine one's intent. We focused, for simplicity in this initial study, on planar targeted arm reaching actions. First, we produce synthetic reaching data using a forward model so that we can examine the quality and uncertainty of intent extraction. We then explore sensitivity and failure modes, demonstrating the accuracy and utility of this method. We show efficacy on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. Finally, we demonstrate the viability of this method for providing a better understanding of what a person means to do when they move and are disturbed, showing how one's intent may change following a disturbance. 
 
@@ -219,6 +228,9 @@ The general intent extraction approach presented here reveals the conditions nee
 \section*{Acknowledgments}
 Research supported by NIH NS053606.  We thank Felix Huang, Jagan Jimmy, Christine Massie, Tejas Madhavan, and Mohi Ahmed for their review of preliminary manuscript. We also thank the community  of the Robotics Lab at the Rehabilitation Institute of Chicago for critical commentary during the genesis of this paper and the work leading up to it.
  
+\section*{Grants} 
+Supported by US NIH NINDS1 R01 NS053606
+
 %\section*{References}
 % The bibtex filename
 \bibliography{paper1}
