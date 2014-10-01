@@ -21,7 +21,7 @@ lw=1.5;
 
 SKIP=4;
 qscale=.002;
-fade=0 %.7;
+fade=.7;
 
 gray=.5*[1 1 1];
 green=[.1 .7 .3];
@@ -47,11 +47,11 @@ for A=1:length(anecdote)
     m=means(anecdote(A).SE(1));
     cosa=cos(anecdote(A).rot);
     sina=sin(anecdote(A).rot);
-    rotmat=[cosa sina;-sina cosa]
+    rotmat=[cosa sina;-sina cosa];
     for c=1:length(f)
         k=f(c);
         X=[trials(k).x(:,1)-m,trials(k).x(:,2)-.5]*rotmat;
-        %plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',green,'linewidth',.1)
+        plot(X(:,1),X(:,2)+anecdote(A).yoff,'color',green,'linewidth',.1)
         %plot(undisturbed(k).y(:,1),undisturbed(k).y(:,2),'-','linewidth',.0000001,'color',[1 fade fade])
     end
 
@@ -77,23 +77,23 @@ set(gcf,'color',[1 1 1])
 axis equal
 
 %annotate(h);
-% p=[.17 -.105;.17 .006;.15 -.152;.123 .025];
-% d=[1 -1; -1 -1;1 1;-1 -1];
-% colors=[gray; green; red; 0 0 0];
-% labs{1}='Force Disturbance';
-% labs{2}='Undisturbed Hand Trajectory';
-% labs{3}='Extracted Desired Hand Trajectory';
-% labs{4}='Hand Trajectory';
-% 
-% h=annotate(p,d,labs,colors,.015);
-% 
-% 
-% plot([.01 .04],-.01*[1 1],'k','linewidth',3)
-% text(.025,-.011,'3 cm','horizontalalignment','center','verticalalignment','top')
-% 
-% A=.008*[1 1];
-% arrow(A,A+[0 qscale*10],gray,.3,2)
-% text(.006,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
+p=[.17 -.105;.17 .006;.15 -.152;.123 .025];
+d=[1 -1; -1 -1;1 1;-1 -1];
+colors=[gray; green; red; 0 0 0];
+labs{1}='Force Disturbance';
+labs{2}='Undisturbed Hand Trajectory';
+labs{3}='Extracted Desired Hand Trajectory';
+labs{4}='Hand Trajectory';
+
+h=annotate(p,d,labs,colors,.015);
+
+
+plot([.01 .04],-.01*[1 1],'k','linewidth',3)
+text(.025,-.011,'3 cm','horizontalalignment','center','verticalalignment','top')
+
+A=.008*[1 1];
+arrow(A,A+[0 qscale*10],gray,.3,2)
+text(.006,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
 axis off
 

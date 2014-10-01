@@ -159,5 +159,5 @@ Wm=W(26:226,:);
 dt=t_step;
 yfit=summed(:,3:4);
 
-P=fminunc(@supMJPfit,[Wm(:);ks*ones(length(t),1)],optimoptions(@fminunc,'GradObj','on'));
+P=fminunc(@supMJPfit,[Wm(:);ks*ones(length(t),1)],optimoptions('GradObj','on'));
 

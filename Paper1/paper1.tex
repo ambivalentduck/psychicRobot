@@ -21,6 +21,7 @@
 
 % cite package, to clean up citations in the main text. Do not remove.
 \usepackage{cite}
+\usepackage[section]{placeins}
 
 \usepackage{color} 
 
@@ -39,7 +40,7 @@
 % Bold the 'Figure #' in the caption and separate it with a period
 % Captions will be left justified
 \usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
-\usepackage[noperiod]{jabbrv}
+%\usepackage[noperiod]{jabbrv}
 % Use the PLoS provided bibtex style
 \bibliographystyle{plos2009}
 
@@ -104,9 +105,7 @@ There are many situations, such as disturbances, distractions, and pathologies, 
 
 It is important to distinguish our use of the term intent from other groups that consider \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, or \textit{goal selection decisions}\cite{ziebart2010modeling}. In typical motor control studies, subjects are motivated to complete the experiment in a timely fashion and are usually explicitly provided targets to be reached. Classification of intent is prevalent in both lower \cite{strausser2011development, hargrove2013robotic} and upper limb\cite{englehart2003robust, young2012improving} prosthetics where hybrid control algorithms select from among a set of actions (walking/standing/flexion/extension/etc). While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of the arm) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action (i.e, the intended trajectory), even when the actual movement is disturbed and hence no longer matches the intent.
 
-Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised method --- \textit{intent extraction} --- that deduces intended trajectory, even in the face of disturbances. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured.
-
-If intent could be known during disturbance, we would be able to determine its composition through hypothesis testing. Shadmehr and Mussa-Ivaldi demonstrated that an unchanging intent passed through a simple arm model was sufficient to recreate human-like reaching movements in the presence of force disturbances\cite{shadmehr1994adaptive}. To determine whether or how intent changes following disturbance requires an infinite number of \textit{candidate} intents vying to best reproduce human motion over an infinite number of statistical tests. Optimal feedback control is presently the best and changes intent over the course of a reach\cite{todorov2002optimal}. This approach has many free parameters that need to be tuned to reproduce a reach. By fitting the parameters directly to a library of known intent and state trajectories, a single, maximum-likelihood model could be found. This also represents a means of potentially falsifying optimal feedback control by showing that the maximum likelihood model explains little variance or requires a number of free parameters that grows with the library. Knowing intent would therefore represents a significant advance because it eliminates the need to compare many candidate models.
+Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised and more general method, \textit{intent extraction}, which calculates the intended trajectory even in the face of disturbances by relating environmental interaction and state to intent. This method affords new ways to 1) test and falsify candidate models of motor control, 2) study the timing and composition of alterations to intent during movement, and 3) understand how intent might be altered by pathology after neural insult. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured.
 
 Here we develop and analyze the mathematics underlying intent extraction, a method to determine one's intent. We focused, for simplicity in this initial study, on planar targeted arm reaching actions. First, we produce synthetic reaching data using a forward model so that we can examine the quality and uncertainty of intent extraction. We then explore sensitivity and failure modes, demonstrating the accuracy and utility of this method. We show efficacy on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. Finally, we demonstrate the viability of this method for providing a better understanding of what a person means to do when they move and are disturbed, showing how one's intent may change following a disturbance. 
 
@@ -235,7 +234,8 @@ Supported by US NIH NINDS1 R01 NS053606
 % The bibtex filename
 \bibliography{paper1}
 
-\section*{Figure Legends}
+\pagebreak
+\section*{Figures and Figure Legends}
 %\begin{figure}[!ht]
 %\begin{center}
 %%\includegraphics[width=4in]{figure_name.2.eps}
@@ -247,10 +247,9 @@ Supported by US NIH NINDS1 R01 NS053606
 %}
 %\label{Figure_label}
 %\end{figure}
-
 \begin{figure}[!ht]
 \begin{center}
-%\includegraphics[width=4in]{fig1.eps}
+\includegraphics[width=6in]{fig1.png}
 \end{center}
 \caption{
 {\bf Simulated data illustrating tautology of extraction absent parameter error across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows.
@@ -260,7 +259,7 @@ Supported by US NIH NINDS1 R01 NS053606
 
 \begin{figure}[!ht]
 \begin{center}
-%\includegraphics[width=4in]{fig2.eps}
+\includegraphics[width=6in]{fig2.png}
 \end{center}
 \caption{
 {\bf Model sensitivity testing (from the variance-based method of Saltelli et al.\cite{saltelli2010variance}) reveals that the model is mostly sensitive to stiffness.} Parameter values are varied in a Sobol-distributed fashion according to Table 1. First order sensitivity, in purple, is the error that would be removed if the parameter was fixed at its nominal value. Total sensitivity, in teal, shows error that would remain if all other parameters were fixed at their nominal values.
@@ -270,7 +269,7 @@ Supported by US NIH NINDS1 R01 NS053606
 
 \begin{figure}[!ht]
 \begin{center}
-%\includegraphics[width=4in]{fig3.eps}
+\includegraphics[width=6in]{fig3.png}
 \end{center}
 \caption{
 {\bf Subjects' disturbed hand trajectories and extraction of intended trajectories from them reveal that both variance and invariance of the motor plan can occur even in response to very large disturbances.} The hand path, in black, deviates from the green baseline, as a force pulse, gray arrows, are applied. This subject's extracted desired trajectories, in red (baseline in faded red), do not significantly differ from baseline during force application, but show some reaction afterwards.
@@ -280,7 +279,7 @@ Supported by US NIH NINDS1 R01 NS053606
 
 \begin{figure}[!ht]
 \begin{center}
-%\includegraphics[width=4in]{fig4.eps}
+\includegraphics[width=4in]{fig4.png}
 \end{center}
 \caption{
 {\bf Comparison of subjects' perpendicular deviations across disturbed and undisturbed conditions reveals that intention is statistically indistinguishable from undisturbed reaching for at least 300 ms.} At most 135 milliseconds after the onset of disturbance, hand deviation in the presence of disturbance (black dots, black band is mean $\pm$ half of the critical value for simultaneous comparisons at 95\% confidence interval) can no longer be explained by undisturbed hand deviation (green band is mean maximum deviation). Movement intention (red dots, band is mean deviation) does not significantly deviate until at least 300 ms after the onset of disturbance.
