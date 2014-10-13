@@ -47,18 +47,23 @@ plot(t,v(:,1),t,v(:,2),t,v(:,3),t,vm,'k',t,K,'k.',t,K.*vm,'r.')
 
 %In theory, you can make this episodic via optimization 3-deep w,tc,ts and
 %cost for making things more than 2-deep. Few free parameters.
+
+%Set global
 xdot=v;
+
+%find a point with high speed and low curvature (pray that means it's
+%pretty pure)
 [val,ind]=max(K.*vm);
 
+%Initialize a "center" lump at that point and zero on either side a decent
+%guess at lump width away
 ini=[v(ind,:)'*.7/1.875;t(ind);.7;0;0;0;t(ind)-.35;.7;0;0;0;t(ind)+.35;.7];
+
+%Perform the center optimization and plot it
 P=fminunc(@sparseupMJPfit,ini,optimoptions(@fminunc,'GradObj','on','TolX',1E-9));
 
-% Pbf=ini;
-% for count=1:30
-%     [cost,gPbf]=sparseupMJPfit(Pbf);
-%     Pbf=Pbf-1E-3*gPbf;
-% end
-
+%In each direction, do 2 unknown, 1 known until the magnitude comes back
+%tiny.
 
 
 r=reshape(P,5,length(P)/5);

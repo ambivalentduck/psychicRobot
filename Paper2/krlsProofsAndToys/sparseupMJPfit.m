@@ -63,7 +63,7 @@ for k=1:lP5
 %     end
 end
 
-cost=sum(sum(fit_error.^2))/2; %+1*(overlap>0);
+cost=sum(sum(fit_error.^2))/2+1*(overlap>0);
 
 grad=zeros(5,lP5);
 for k=1:lP5

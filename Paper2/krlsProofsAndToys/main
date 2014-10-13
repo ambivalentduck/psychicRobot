@@ -1,0 +1,14 @@
+clc
+clear all
+
+%% Step 1: Make a sum of mj polynomial submovements.
+
+ti=[0 .1 .4];
+tf=[.35 .5 .75];
+
+x0=[1 1 zeros(1,4)];
+dx=[.2 0;.6 0;.4 0];
+
+t=0:.001:1;
+
+yg=supMJP(x0,dx,ti,tf,t)

@@ -38,7 +38,7 @@ for k=2
     p=polyfit(X,P,k);
     plot(X,polyval(p,X),'k.')
 end
-legend('Exact','4th Order Polynomial Fit')
+legend('Exact','2nd Order Polynomial Fit')
 title('Virtual Potential vs State')
 ylabel('Virtual Potential, Energy Units')
 xlabel('Position, Distance Units')
