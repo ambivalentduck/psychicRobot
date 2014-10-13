@@ -1,4 +1,4 @@
-function [R2b,R2mb,kT]=boltzmannsubjectplots(t,x,v,a,fnumber)
+function [R2b,R2p,kT,wattage]=boltzmannsubjectplots(t,x,v,a,fnumber)
 
 %% Set constants
 numbins=40;
@@ -30,12 +30,17 @@ hold on
 bar(Utbins,Utcounts)
 plot(Utbins,exp((-Utbins-kTUt(2))/kTUt(1)),'r','linewidth',3)
 
-subUt=Ut((Ut<uUt)&(Ut>lUt));
-[pmboltz,mba]=mboltz(subUt);
-pmb=mboltz(Utbins,mba);
-R2Utmb=cov(pmb,Utcounts)/(std(pmb)*std(Utcounts));
-R2mb=R2Utmb(1,2)^2;
-plot(subUt,pmboltz,'g.')
+power=abs(gradient(Ut,t));
+lpower=prctile(power,lpctile);
+upower=prctile(power,upctile);
+[powercounts,powerbins]=hist(power,linspace(lpower,upower,numbins));
+powercounts=powercounts/sum(powercounts);
+logpowercounts=log(powercounts)';
+recoeff=[logpowercounts ones(numbins,1)]\-powerbins';
+wattage=recoeff(1);
+R2Utmb=cov(logpowercounts,powerbins)/(std(logpowercounts)*std(powerbins));
+R2p=R2Utmb(1,2)^2;
+%plot(subUt,pmboltz,'g.')
 
 title(['Boltzmann Distribution Fit R^2 = ',num2str(R2Ut(1,2)^2)])
 xlabel('Potential Energy/Constant mass, (m/s)^2')
