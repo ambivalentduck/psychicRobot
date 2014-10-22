@@ -45,7 +45,7 @@ set(gca,'xtick',[0 1])
 set(gca,'xticklabel',{'Healthy','Stroke'})
 
 [yn,p]=ttest2(h(:,2),s(:,2))
-title(['R^2 Boltzmann Distribution, T-test P=',num2str(p)])
+title(['R^2 Boltzmann Distribution for Power (dot(a,v)), T-test P=',num2str(p)])
 
 subplot(1,2,2)
 hold on
@@ -56,7 +56,7 @@ set(gca,'xtick',[0 1])
 set(gca,'xticklabel',{'Healthy','Stroke'})
 
 [yn,p]=ttest2(h(:,4),s(:,4))
-title(['Boltzmann Temperature, T-test P=',num2str(p)])
+title(['Characteristic Power (essentially Wattage), T-test P=',num2str(p)])
 
 set(gcf,'position',[76 11 1195 925])
 print('-dtiff','-r300','summaryAllpower.tiff')

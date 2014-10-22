@@ -1,4 +1,4 @@
-function out=slmj5op(t,tc,ts)
+function out=slfop(t,tc,ts)
 
 lower=tc-ts/2;
 upper=tc+ts/2;
