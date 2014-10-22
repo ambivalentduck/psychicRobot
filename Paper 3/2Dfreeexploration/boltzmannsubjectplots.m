@@ -2,8 +2,8 @@ function [R2b,R2p,kT,wattage]=boltzmannsubjectplots(t,x,v,a,fnumber)
 
 %% Set constants
 numbins=40;
-lpctile=.1; %Throw away the craziest outliers
-upctile=99.9;
+lpctile=0; 
+upctile=99.5; %Throw away the craziest outliers to help hist not find zeros
 
 %% Compute Ut, Tt
 Ut=cumtrapz(t,dot(v',a')');
