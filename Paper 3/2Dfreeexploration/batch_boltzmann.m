@@ -37,9 +37,9 @@ for k=1:length(sublets)
     else
         load(fname)
     end
-    [outs(k,1), outs(k,2), outs(k,3)]=boltzmannsubjectplots(t,x,v,a,k)
+    [outs(k,1), outs(k,2), outs(k,3), outs(k,4)]=boltzmannsubjectplots(t,x,v,a,k)
     suplabel(['Healthy Subject ',sublets{k}],'t')
-    set(findall(gcf,'type','text'),'fontSize',24)
+    %set(findall(gcf,'type','text'),'fontSize',12)
     set(gcf,'position',[76 11 1195 925])
     print('-dtiff','-r300',['summary',sublets{k},'.tiff'])
     print('-dpng','-r300',['summary',sublets{k},'.png'])

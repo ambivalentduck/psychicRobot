@@ -24,7 +24,7 @@ if ~exist('justMUE4fig2.mat','file')
             mueA(c)=getMUE(bins,ref,simA(c).y);
             mueB(c)=getMUE(bins,ref,simB(c).y);
             for cc=1:20
-                mueAB(c,cc)=getMUE(bins,ref,simAB(cc,c).y);
+                mueAB(c,cc)=1000*getMUE(bins,ref,simAB(cc,c).y);
             end
         end
         justMUE(k).mueA=mueA;
@@ -42,8 +42,8 @@ for k=1:8
     justMUE(k).rawST=zeros(20,1000);
     justMUE(k).total=std(justMUE(k).mueAB(:));
     for kk=1:20
-        justMUE(k).rawS(kk,:)=(1000*abs(justMUE(k).mueA-justMUE(k).mueAB(:,kk))/2)';
-        justMUE(k).rawST(kk,:)=1000*sqrt(abs(justMUE(k).mueB.*(justMUE(k).mueAB(:,kk)-justMUE(k).mueA)))';
+        justMUE(k).rawS(kk,:)=(abs(justMUE(k).mueA-justMUE(k).mueAB(:,kk))/2)';
+        justMUE(k).rawST(kk,:)=sqrt(abs(justMUE(k).mueB.*(justMUE(k).mueAB(:,kk)-justMUE(k).mueA)))';
     end
 end
 

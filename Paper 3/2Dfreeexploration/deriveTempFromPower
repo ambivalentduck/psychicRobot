@@ -1,0 +1,14 @@
+clc
+clear all
+
+syms P W x y z dt real
+
+pdf=(1/W)*exp(-P/W)
+
+cdf=int(pdf,P,0,x)
+%Answer is W*s, therefore s=1/W
+solve(cdf-y,x)
+
+mean=int(P*pdf,P,0,inf)
+
+int((1/2W)*exp(-dt*abs(P)/W)*(1/2W)*exp(-dt*abs(z-P)/W),P,0,y)
