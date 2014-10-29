@@ -50,11 +50,11 @@ Usubcounts=Usubcounts/sum(Usubcounts);
 fitmecounts=Usubcounts;
 fitmebins=Usubbins;
 
-xfit=fminunc(@bruteforce,[.5 T])
+xfit=fminunc(@bruteforce,[2.3 .2])
 
 gam=gampdf(Ubins,xfit(1),xfit(2));
 gam=gam/sum(gam);
-plot(Ubins,gam,'m','linewidth',2)
+plot(Ubins,gam,'g','linewidth',3)
 1-var(Ucounts-gam)/var(Ucounts)
 ylim([0 1.2*max(Ucounts)])
 title(['Boltzmann Distribution Fit R^2 = ',num2str(R2U,3)])
@@ -91,10 +91,10 @@ bar(speedbins,speedcounts)
 
 fitmecounts=speedcounts;
 fitmebins=.5*speedbins.^2;
-xfit=fminunc(@bruteforce,[.5 .2])
+xfit=fminunc(@bruteforce,[2.5 .2])
 gam=gampdf(.5*speedbins.^2,xfit(1),xfit(2));
 gam=gam/sum(gam);
-plot(speedbins,gam,'r','linewidth',3)
+plot(speedbins,gam,'g','linewidth',3)
 
 xlabel('Speed, m/s')
 ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
@@ -133,6 +133,34 @@ ylabel('Speed')
 xlabel('Direction, radians')
 title('Discrepancy in distribution of speed in direction')
 colorbar
+
+subplot(sWidth,sHeight,7)
+mins=min(x);
+spans=max(x)-mins;
+nbins=64;
+xhist=zeros(nbins);
+ahist=zeros(nbins);
+
+for k=1:length(t)
+    inds=floor(nbins*(x(k,:)-mins)./spans);
+    inds=min(inds+1,[nbins nbins]);
+    xhist(inds(1),inds(2))=xhist(inds(1),inds(2))+1;
+end
+xhist=xhist/length(t);
+U=-T*log(T*xhist);
+U(U==inf)=-pi;
+U(U==-pi)=max(U(:));
+
+[x1grid,x2grid]=meshgrid(linspace(mins(1),mins(1)+spans(1),nbins),linspace(mins(2),mins(2)+spans(2),nbins));
+contourf(x1grid,x2grid,U)
+axis equal
+colorbar
+
+figure(7)
+smoothxhist=filter2(ones(5)/25,xhist);
+surf(x1grid,x2grid,smoothxhist)
+
+
 
 function cost=bruteforce(x)
 global fitmecounts fitmebins
