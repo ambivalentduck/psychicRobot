@@ -1,98 +1,104 @@
-function [R2b,R2p,kT,wattage]=boltzmannsubjectplots(t,x,v,a,fnumber)
+function [R2U,R2P,T,W]=boltzmannsubjectplots(t,x,v,a,fnumber)
+
+global fitmecounts fitmebins
 
 %% Set constants
 numbins=40;
-lpctile=0; 
-upctile=99.5; %Throw away the craziest outliers to help hist not find zeros
+lpctile=10;
+upctile=99.9; %Throw away the craziest outliers to help hist not find zeros
+
+sWidth=2;
+sHeight=4;
 
 %% Compute Ut, Tt
-Ut=cumtrapz(t,dot(v',a')');
-Ut=Ut-min(Ut); %Start as zero just for ease of reference
-
+Pt=dot(v',a')';
+Ut=cumtrapz(t,Pt);
+Ut=Ut-min(Ut); %Flush to zero just for ease of reference
 Tt=.5*(v(:,1).^2+v(:,2).^2);
 
 %% Bin and count Ut levels, plot this as a Boltzmann distribution
 
-lUt=prctile(Ut,lpctile);
-uUt=prctile(Ut,upctile);
-[Utcounts,Utbins]=hist(Ut,linspace(lUt,uUt,numbins));
-Utcounts=Utcounts/length(t);
-logUtcounts=log(Utcounts)';
-kTUt=[logUtcounts ones(size(logUtcounts))]\-Utbins';
-kT=kTUt(1);
-R2Ut=cov(logUtcounts,-Utbins)/(std(logUtcounts)*std(Utbins));
-R2b=R2Ut(1,2)^2;
-
 figure(fnumber)
 clf
-subplot(2,3,1)
-hold on
-bar(Utbins,Utcounts)
-plot(Utbins,exp((-Utbins-kTUt(2))/kTUt(1)),'r','linewidth',3)
-
-power=abs(gradient(Ut,t));
-lpower=prctile(power,lpctile);
-upower=prctile(power,upctile);
-[powercounts,powerbins]=hist(power,linspace(lpower,upower,numbins));
-powercounts=powercounts/sum(powercounts);
-logpowercounts=log(powercounts)';
-recoeff=[logpowercounts ones(numbins,1)]\-powerbins';
-wattage=recoeff(1);
-R2Utmb=cov(logpowercounts,powerbins)/(std(logpowercounts)*std(powerbins));
-R2p=R2Utmb(1,2)^2;
-%plot(subUt,pmboltz,'g.')
-
-title(['Boltzmann Distribution Fit R^2 = ',num2str(R2Ut(1,2)^2)])
-xlabel('Potential Energy/Constant mass, (m/s)^2')
+subplot(sWidth,sHeight,1)
+[R2P,W,aPbins,aPcounts,Pfitcounts]=histBoltzmann(abs(Pt),lpctile,upctile,1);
+title(['Boltzmann Distribution Fit R^2 = ',num2str(R2P,3)])
+xlabel('|Work|/Mass, (m/s)^2')
 ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
-legend('Data','Boltzmann Fit','Maxwell-Boltzmann Fit')
+legend('Data',['Boltzmann Fit, W=',num2str(W,2)])
+
+subplot(sWidth,sHeight,2)
+hold on
+[Pcounts,Pbins]=hist(Pt,64);
+Pcounts=Pcounts/length(t);
+bar(Pbins,Pcounts)
+plot(Pbins,1/(2*W)*exp(-abs(Pbins)/W),'r','linewidth',2)
+
+title(['Boltzmann Distribution Fit R^2 = ',num2str(R2P,3)])
+xlabel('Work/Mass, (m/s)^2')
+ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
+legend('Data',['Boltzmann Fit, W=',num2str(W,2)])
+
+subplot(sWidth,sHeight,3)
+hold on
+[R2U,T,Ubins,Ucounts,Ufitcounts]=histBoltzmann(Ut,lpctile,upctile,1);
+nmin=find(Ubins>0,1,'first');
+Usubbins=Ubins(nmin:end);
+Usub=Ut((Ut>=Usubbins(1))&(Ut<=Usubbins(end)));
+Usubcounts=hist(Usub,Usubbins);
+Usubcounts=Usubcounts/sum(Usubcounts);
+fitmecounts=Usubcounts;
+fitmebins=Usubbins;
+
+xfit=fminunc(@bruteforce,[.5 T])
+
+gam=gampdf(Ubins,xfit(1),xfit(2));
+gam=gam/sum(gam);
+plot(Ubins,gam,'m','linewidth',2)
+1-var(Ucounts-gam)/var(Ucounts)
+ylim([0 1.2*max(Ucounts)])
+title(['Boltzmann Distribution Fit R^2 = ',num2str(R2U,3)])
+xlabel('Potential Energy/Mass, (m/s)^2')
+ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
+legend('Data',['Boltzmann Fit, T=',num2str(T,2)],['Gamma Dist, n=',num2str(xfit(1),3),', T=',num2str(xfit(2),2)])
+
 
 %% Plot T vs U
-subplot(2,3,2)
+subplot(sWidth,sHeight,5)
 R2Lagrange=cov(Ut,Tt)/(std(Ut)*std(Tt));
 plot(Ut,Tt,'k.','Markersize',.001)
 mUt=max(Ut);
-xlabel('Potential Energy/Constant mass, (m/s)^2')
-ylabel('Kinetic Energy/Constant mass, (m/s)^2')
+xlabel('Potential Energy/Mass, (m/s)^2')
+ylabel('Kinetic Energy/Mass, (m/s)^2')
 title(['Lagrangian Fit R^2 = ',num2str(R2Lagrange(1,2)^2)])
 axis equal
 xlim([0 mUt])
 ylim([0 mUt])
 
-
-%% This implies the relationship between v and P(v)
+%% Fit the relationship between v and P(v)
 
 [theta,speed]=cart2pol(v(:,1),v(:,2));
 
-[Ttcounts,Ttbins]=hist(Tt,linspace(prctile(Tt,lpctile),prctile(Tt,upctile),numbins));
-Ttcounts=Ttcounts/length(t);
-logTtcounts=log(Ttcounts)';
-kTTt=[logTtcounts ones(size(logTtcounts))]\-Ttbins';
-R2Tt=cov(logTtcounts,-Ttbins)/(std(logTtcounts)*std(Ttbins));
+upper=prctile(speed,upctile);
+lower=prctile(speed,lpctile);
 
-subplot(2,3,4)
-hold on
-bar(sqrt(2*Ttbins),Ttcounts)
-plot(sqrt(2*Ttbins),exp((-Ttbins-kTTt(2))/kTTt(1)),'r','linewidth',3)
-title(['Boltzmann Distribution Fit R^2 = ',num2str(R2Tt(1,2)^2)])
-xlabel('Speed, m/s')
-ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
-legend('Data','Fit')
+[speedcounts,speedbins]=hist(speed((speed<=upper)&(speed>=lower)),linspace(lower,upper,64));
+speedcounts=speedcounts/sum(speedcounts);
 
-[speedcounts,speedbins]=hist(speed,linspace(prctile(speed,lpctile),prctile(speed,upctile),numbins));
-speedcounts=speedcounts/length(t);
-logspeedcounts=log(speedcounts)';
-kTspeed=[logspeedcounts ones(size(logspeedcounts))]\-(.5*speedbins.^2)';
-R2speed=cov(logspeedcounts,-(.5*speedbins.^2))/(std(logspeedcounts)*std(-(.5*speedbins.^2)));
-
-subplot(2,3,5)
+subplot(sWidth,sHeight,6)
 hold on
 bar(speedbins,speedcounts)
-plot(speedbins,exp((-(.5*speedbins.^2)-kTspeed(2))/kTspeed(1)),'r','linewidth',3)
-title(['Boltzmann Distribution Fit R^2 = ',num2str(R2speed(1,2)^2)])
+
+fitmecounts=speedcounts;
+fitmebins=.5*speedbins.^2;
+xfit=fminunc(@bruteforce,[.5 .2])
+gam=gampdf(.5*speedbins.^2,xfit(1),xfit(2));
+gam=gam/sum(gam);
+plot(speedbins,gam,'r','linewidth',3)
+
 xlabel('Speed, m/s')
 ylabel(['Fraction of Time Points (N=',num2str(length(t)),')'])
-legend('Data','Fit')
+legend('Data',['Gamma Dist, n=',num2str(xfit(1),3),', T=',num2str(xfit(2),2)])
 
 %% Speed and direction are actually orthogonal in polar coordinates
 
@@ -111,17 +117,26 @@ flatcounts=flatcounts/length(t);
 speeds=linspace(lower(2),upper(2),numbins+1);
 thetas=linspace(lower(1),upper(1),numbins+1);
 
-subplot(2,3,3)
+subplot(sWidth,sHeight,4)
 contourf(thetas,speeds,flatcounts')
 ylabel('Speed')
 xlabel('Direction, radians')
 title('Distribution of speed in direction')
 colorbar
 
-subplot(2,3,6)
+subplot(sWidth,sHeight,8)
 [tgrid,sgrid]=meshgrid(thetas,speeds);
-contourf(thetas,speeds,flatcounts'-exp((-(.5*sgrid.^2)-kTTt(2))/kTTt(1))/(numbins+1))
+gam=gampdf(.5*sgrid.^2,xfit(1),xfit(2));
+gam=gam/sum(gam(:));
+contourf(thetas,speeds,flatcounts'-gam)
 ylabel('Speed')
 xlabel('Direction, radians')
 title('Discrepancy in distribution of speed in direction')
 colorbar
+
+function cost=bruteforce(x)
+global fitmecounts fitmebins
+
+gam=gampdf(fitmebins,x(1),x(2));
+gam=gam/sum(gam);
+cost=sum((fitmecounts-gam).^2);
