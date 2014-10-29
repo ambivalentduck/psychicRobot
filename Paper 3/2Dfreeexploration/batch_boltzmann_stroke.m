@@ -4,7 +4,7 @@ close all
 
 outs=zeros(10,4);
 
-for k=1:10
+for k=2 %1:10
     subname=num2str(k,'%2.2d');
     fname=['free_exp_',subname,'stroke.mat'];
     
