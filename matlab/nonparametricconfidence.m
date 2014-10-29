@@ -29,11 +29,15 @@ for k=4 %1:4
     means=sort(means);
 
     nclean=2;
+    dcats=[trials.disturbcat];
+    starts=[trialInfo.startcat];
+    ends=[trialInfo.endcat];
+    
     clean=0*dcats;
     for kk=1:nclean
         clean=clean+[zeros(1,kk-1) dcats(1:end-(kk-1))];
     end
-    clean=(clean==0)';
+    clean=(clean==0);
 
     figure(k)
     clf
@@ -136,12 +140,15 @@ for k=4 %1:4
                 set(h,'Facecolor',.5*[1 1 1]);
             end
 
-            f=find((starts==ST)&(ends==EN)&dcats');
+            f=find((starts==ST)&(ends==EN)&dcats);
             for kf=1:length(f)
                 %for each trial need 2x2 things: N-point moving nout, sum
                 %nout, BUT both start with bool in/outside the boundaries.
                 x=trials(f(kf)).x;
                 y=trials(f(kf)).y;
+                if isempty(y)
+                        continue
+                    end
                 trials(f(kf)).xoutB=zeros(length(bins)-1,1);
                 trials(f(kf)).youtB=zeros(length(bins)-1,1);
 
