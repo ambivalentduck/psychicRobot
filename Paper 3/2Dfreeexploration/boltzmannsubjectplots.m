@@ -64,16 +64,16 @@ legend('Data',['Boltzmann Fit, T=',num2str(T,2)],['Gamma Dist, n=',num2str(xfit(
 
 
 %% Plot T vs U
-subplot(sWidth,sHeight,5)
-R2Lagrange=cov(Ut,Tt)/(std(Ut)*std(Tt));
-plot(Ut,Tt,'k.','Markersize',.001)
-mUt=max(Ut);
-xlabel('Potential Energy/Mass, (m/s)^2')
-ylabel('Kinetic Energy/Mass, (m/s)^2')
-title(['Lagrangian Fit R^2 = ',num2str(R2Lagrange(1,2)^2)])
-axis equal
-xlim([0 mUt])
-ylim([0 mUt])
+% subplot(sWidth,sHeight,5)
+% R2Lagrange=cov(Ut,Tt)/(std(Ut)*std(Tt));
+% plot(Ut,Tt,'k.','Markersize',.001)
+% mUt=max(Ut);
+% xlabel('Potential Energy/Mass, (m/s)^2')
+% ylabel('Kinetic Energy/Mass, (m/s)^2')
+% title(['Lagrangian Fit R^2 = ',num2str(R2Lagrange(1,2)^2)])
+% axis equal
+% xlim([0 mUt])
+% ylim([0 mUt])
 
 %% Fit the relationship between v and P(v)
 
@@ -85,13 +85,14 @@ lower=prctile(speed,lpctile);
 [speedcounts,speedbins]=hist(speed((speed<=upper)&(speed>=lower)),linspace(lower,upper,64));
 speedcounts=speedcounts/sum(speedcounts);
 
-subplot(sWidth,sHeight,6)
+subplot(sWidth,sHeight,5)
 hold on
 bar(speedbins,speedcounts)
 
 fitmecounts=speedcounts;
 fitmebins=.5*speedbins.^2;
 xfit=fminunc(@bruteforce,[2.5 .2])
+xfitspeed=xfit;
 gam=gampdf(.5*speedbins.^2,xfit(1),xfit(2));
 gam=gam/sum(gam);
 plot(speedbins,gam,'g','linewidth',3)
@@ -134,31 +135,97 @@ xlabel('Direction, radians')
 title('Discrepancy in distribution of speed in direction')
 colorbar
 
-subplot(sWidth,sHeight,7)
+subplot(sWidth,sHeight,6:7)
 mins=min(x);
 spans=max(x)-mins;
 nbins=64;
 xhist=zeros(nbins);
-ahist=zeros(nbins);
+a1hist=zeros(nbins);
+a2hist=zeros(nbins);
 
 for k=1:length(t)
     inds=floor(nbins*(x(k,:)-mins)./spans);
     inds=min(inds+1,[nbins nbins]);
     xhist(inds(1),inds(2))=xhist(inds(1),inds(2))+1;
+    a1hist(inds(1),inds(2))=a1hist(inds(1),inds(2))+a(k,1);
+    a2hist(inds(1),inds(2))=a2hist(inds(1),inds(2))+a(k,2);
 end
+a1hist=a1hist./xhist;
+a2hist=a2hist./xhist;
 xhist=xhist/length(t);
-U=-T*log(T*xhist);
+
+smoothxhist=filter2(ones(6)/36,xhist);
+
+U=-T*log(T*smoothxhist);
 U(U==inf)=-pi;
 U(U==-pi)=max(U(:));
+%[a1hist,a2hist]=gradient(U);
 
+
+[gradx1,gradx2]=gradient(smoothxhist);
+maggradx=sqrt(gradx1.^2+gradx2.^2);
+maggradU=sqrt(a1hist.^2+a2hist.^2);
+riseorfall=(a1hist.*gradx1+a2hist.*gradx2)./(maggradx.*maggradU);
+riseorfall(isnan(riseorfall))=-1;
+
+gamU=linspace(0,max(Ut),nbins);
+gam=gampdf(gamU,xfitspeed(1),xfitspeed(2));
+[maxgam,imax]=max(gam)
+xhist=maxgam*xhist/max(xhist(:));
+max(xhist(:))
+
+risingP=gam(1:imax);
+risingU=gamU(1:imax);
+
+fallingP=gam(imax:end);
+fallingU=gamU(imax:end);
+
+risingVirtualU=interp1(risingP,risingU,xhist);
+fallingVirtualU=interp1([fallingP 0],[fallingU fallingU(end)*.9],xhist);
+
+figure(fnumber+20)
 [x1grid,x2grid]=meshgrid(linspace(mins(1),mins(1)+spans(1),nbins),linspace(mins(2),mins(2)+spans(2),nbins));
 contourf(x1grid,x2grid,U)
+xlabel('Robot X-axis, m')
+ylabel('Robot Y-axis, m')
+title('Virtual Potential via Boltzmann')
 axis equal
 colorbar
 
-figure(7)
-smoothxhist=filter2(ones(5)/25,xhist);
-surf(x1grid,x2grid,smoothxhist)
+figure(fnumber+21)
+surf(x1grid,x2grid,gradient(smoothxhist))
+
+figure(fnumber+22)
+contourf(x1grid,x2grid,riseorfall)
+colorbar
+
+figure(fnumber+23)
+contourf(x1grid,x2grid,risingVirtualU)
+axis equal
+colorbar
+caxis([0 gamU(end)])
+
+figure(fnumber+24)
+contourf(x1grid,x2grid,fallingVirtualU)
+axis equal
+colorbar
+caxis([0 gamU(end)])
+
+figure(fnumber+25)
+combined=(riseorfall>0).*risingVirtualU+(riseorfall<=0).*fallingVirtualU;
+contourf(x1grid,x2grid,combined)
+axis equal
+colorbar
+caxis([0 gamU(end)])
+
+figure(fnumber+26)
+contourf(x1grid,x2grid,U)
+axis equal
+colorbar
+%caxis([0 gamU(end)])
+
+error
+
 
 
 
