@@ -6,7 +6,7 @@ sublets={'JL','JT','LP','MF','YM'};
 
 outs=zeros(length(sublets),3);
 
-for k=5 %1:length(sublets)
+for k=4 %1:length(sublets)
     fname=['free_exp_',sublets{k},'.mat'];
     
     if ~exist(fname,'file')
