@@ -4,7 +4,7 @@ close all
 
 outs=zeros(10,4);
 
-for k=2 %1:10
+for k=1:10
     subname=num2str(k,'%2.2d');
     fname=['free_exp_',subname,'stroke.mat'];
     
@@ -23,7 +23,7 @@ for k=2 %1:10
     else
         load(fname)
     end
-   boltzmannsubjectplots(t,x,v,a,k)
+    [outs(k,1), outs(k,2), outs(k,3), outs(k,4)]=boltzmannsubjectplots(t,x,v,a,k)
     suplabel(['Stroke Subject ',subname],'t')
     %set(findall(gcf,'type','text'),'fontSize',24)
     set(gcf,'position',[76 11 1195 925])
