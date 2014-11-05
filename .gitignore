@@ -5,6 +5,7 @@ Makefile
 moc*
 *.o
 *.mat
+*.tiff
 .dvi
 .log
 .aux
@@ -22,6 +23,9 @@ matlab/sensitivityPaper/*
 matlab/posterprep/*
 matlab/figures/*
 Paper1
+VREA2*
+Targets_real
+Day*/
 
 !*.m
 !*.bib

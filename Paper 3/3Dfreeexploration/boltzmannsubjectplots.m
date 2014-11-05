@@ -154,7 +154,7 @@ colorbar
 subplot(sWidth,sHeight,6:7)
 mins=min(x);
 spans=max(x)-mins;
-nbins=100;
+nbins=64;
 xhist=zeros(nbins);
 a1hist=zeros(nbins);
 a2hist=zeros(nbins);

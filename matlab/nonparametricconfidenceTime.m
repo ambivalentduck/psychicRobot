@@ -14,11 +14,15 @@ for k=1 %:4
     [cats,means]=kmeans([clustermeE; clustermeE],3,'emptyaction','singleton','start',[-0.175;-0.026;0.125]);
     means=sort(means);
 
+    starts=[trialInfo.startcat];
+    ends=[trialInfo.endcat];
+
     %For each direction/length/disturbance (2*2*5), plot an example from subject S
     %UNDER that example, plot the t-statistic: (Y-mean)/(sd(baseline)*sqrt(1+1/Nbaseline)
     % 95% confidence t<=.2
 
     nclean=2;
+    dcats=[trials.disturbcat];
     clean=0*dcats;
     for kk=1:nclean
         clean=clean+[zeros(1,kk-1) dcats(1:end-(kk-1))];
@@ -36,7 +40,7 @@ for k=1 %:4
             if ST==EN
                 continue
             end
-            f=find((starts==ST)&(ends==EN)&clean);
+            f=find((starts==ST)&(ends==EN));
             [ST EN length(f)]
             
             figure(ST*10+EN)
