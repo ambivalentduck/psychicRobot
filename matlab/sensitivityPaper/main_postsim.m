@@ -1,7 +1,7 @@
 load baselines.mat
-load OAT_KICK.mat
+%load OAT_KICK.mat
 load KICK.mat
-load KICKsm.mat
+%load KICKsm.mat
 
 %% fig 1
 t=0:.005:2;
