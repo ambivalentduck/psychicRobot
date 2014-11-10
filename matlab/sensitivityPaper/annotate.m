@@ -10,7 +10,7 @@ if nargin==1
     return
 end
 
-latexscale=1.2;
+latexscale=1.1;
 if length(alength)==1
     alength=ones(size(colors,1),1)*alength;
 end

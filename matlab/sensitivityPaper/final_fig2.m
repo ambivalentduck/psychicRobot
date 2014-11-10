@@ -1,7 +1,7 @@
 clc
 clear all
 
-if ~exist('justMUE4fig2.mat','file')|1
+if ~exist('justMUE4fig2.mat','file')
     loadme=1:8;
 
     bins=0:.005:.15;

@@ -9,9 +9,12 @@ gray=.5*[1 1 1];
 green=[.1 .15 .7];
 red=[1 .5 .1];
 pink=[1 .8 .8];
+darkpink=[1 .4 .4];
 blue=[.8 .8 1];
 black=[0 0 0];
-offset=[0 -.06 -.1];
+tda=-.01;
+tla=-.01;
+offset=[0 -.06+tda -.1+tda+tla];
 
 setGlobals(paramsPopulator('burdet'))
 
@@ -47,7 +50,7 @@ for k=1:3
 end
 
 margin=.02;
-set(gcf,'position',[250 300 625 305])
+set(gcf,'position',[250 300 625 350])
 set(gca,'position',[margin margin 1-margin 1-margin],'units','normalized')
 set(gcf,'color',[1 1 1])
 
@@ -57,14 +60,14 @@ axis off
 latexscale=1.2;
 
 text(0,.54,'Early Pulse','horizontalalignment','left','Verticalalignment','top','color','k')
-text(0,.48,'Late Pulse','horizontalalignment','left','Verticalalignment','top','color','k')
-text(0,.4325,'Filtered Gaussian','horizontalalignment','left','Verticalalignment','top','color','k')
+text(0,.48+tda,'Late Pulse','horizontalalignment','left','Verticalalignment','top','color','k')
+text(0,.4325+tda+tla,'Filtered Gaussian','horizontalalignment','left','Verticalalignment','top','color','k')
 
 %annotate(h)
-colors=[gray;black;green;red;red];
-labs={'Force Disturbance','Hand Trajectory','Desired Hand Trajectory','Extracted Desired Hand Trajectory','Extracted with Parameter Error'};
-p=[.078,.4455;.1263,.5312;.1301,.4003;.145,.40;.12,.4932];
-d=[1,-1;1,1;1,-1;1,-1;1,0];
+colors=[gray;black;green;red;darkpink];
+labs={'Force Disturbance','Hand Trajectory','Desired Hand Trajectory','Extracted Desired Hand Trajectory','Extracted with Parameter Uncertainty'};
+p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.12,.489];
+d=[1,-1;1,1;1,-1;1,-1;1,1];
 al=.012;
 alength=[al;al;.8*al;1.7*al;.5*al];
 
@@ -73,7 +76,7 @@ h=annotate(p,d,labs,colors,alength);
 plot([0 .01],.496*[1 1],'k','linewidth',3)
 text(0.005,.4955,'1 cm','Horizontalalignment','center','Verticalalignment','top')
 arrow([.005 .505],[.005 .505]+[0 qscale*10],gray,.3)
-text(.00555,.5055,'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
+text(.003,.505+5*qscale,'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
 set(0,'defaulttextinterpreter','none')
 
