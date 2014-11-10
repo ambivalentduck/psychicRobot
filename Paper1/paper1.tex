@@ -21,6 +21,8 @@
 
 % cite package, to clean up citations in the main text. Do not remove.
 \usepackage{cite}
+
+% PLoS doesn't support/use the next package, but we get issues if we don't use this to generate the PDF. Comment this line out when submitting.
 \usepackage[section]{placeins}
 
 \usepackage{color} 
@@ -318,8 +320,8 @@ m &
 \cite{dempster1955space} &
 0.017 &
 \cite{dempster1955space} &
-0 &
-0.10 \\
+0.03 &
+0.17 \\
 Forearm Length ($L_2$) &
 m &
 0.363 &
@@ -342,8 +344,8 @@ Forearm Center of Mass Ratio ($\frac{L_{m2}}{L_2}$) &
 \cite{winter2009biomechanics} &
 0.0431 &
 15\% &
-0 &
-0.02 \\
+0.01 &
+0.07 \\
 Gross Body Mass ($m_g$) &
 kg &
 88.4 &
@@ -374,8 +376,8 @@ Upper Arm Radius of Gyration Ratio &
 \cite{winter2009biomechanics} &
 0.0161 &
 15\% &
-0 &
-0.01 \\
+0.01 &
+0.06 \\
 Forearm Radius of Gyration Ratio &
 1 &
 0.468 &
@@ -383,31 +385,31 @@ Forearm Radius of Gyration Ratio &
 0.0234 &
 15\% &
 0 &
-0.01 \\
+0.04 \\
 Shoulder Parallel Coordinate &
 m &
 -0.057 &
 RM &
 0.02 &
 RM &
-0.02 &
-0.18 \\
+0.01 &
+0.14 \\
 Shoulder Perpendicular Coordinate &
 m &
 0.88 &
 RM &
 0.02 &
 RM &
-0 &
-0.08 \\
+0.02 &
+0.06 \\
 Force Sensor Miscalibration $x\text{-axis}$ &
 N &
 0 &
 RM &
 0.231 &
 RM &
-0 &
-0.08 \\
+0.01 &
+0.05 \\
 Force Sensor Miscalibration $y\text{-axis}$ &
 N &
 0 &
@@ -438,23 +440,23 @@ Torque-Invariant Impedance Misestimation Ratio &
 \cite{burdet2006stability} &
 0.15 &
 15\% &
-0.06 &
-0.31 \\
+0.05 &
+0.19 \\
 Torque-Varying Impedance Misestimation Ratio &
 1 &
 1 &
 \cite{burdet2006stability} &
 0.15 &
 15\% &
-0 &
-0.15 \\
+0.05 &
+0.19 \\
 Damping-to-Stiffness Ratio ($k_d$) &
 $\text{sec}^{-1}$ &
 0.0833 &
 \cite{burdet2006stability} &
 0.0125 &
 15\% &
-0 &
+0.01 &
 0.08 \\
 Reflex Impedance Scale Factor &
 1 &
@@ -462,7 +464,7 @@ Reflex Impedance Scale Factor &
 \cite{burdet2006stability} &
 0.003 &
 15\% &
-0 &
+0.01 &
 0.04 \\
 Reflex Damping to Stiffness Ratio ($g_d$) &
 $\text{sec}^{-1}$ &
@@ -473,7 +475,7 @@ $\text{sec}^{-1}$ &
 0 &
 0.04 \\ \hline
 \end{tabular}
-\begin{flushleft}Synthetic model parameters and their associated mean (nominal) values and standard deviations (SD) used to determine the sensitivity indices of Saltelli et al. \cite{saltelli2010variance}. Also shown are the resulting sensitivity indices. Sensitivity indices less than one-thousandth were reported as zero. Total variance was $1.3 \mu m^2$, showing very small average deviations when using this approach. First-order sensitivity, $S$, can be interpreted as fraction of variance removable by perfectly correcting a factor. Total sensitivity, $S_T$, can be interpreted as the fraction left after correcting all other factors. Most parameter values come from the literature, but instrument-specific parameters were determined empirically through repeated measurements (RM). Where parameter values were unavailable, 15\% of the mean was used as a conservative estimate
+\begin{flushleft}Synthetic model parameters and their associated mean (nominal) values and standard deviations (SD) used to determine the sensitivity indices of Saltelli et al. \cite{saltelli2010variance}. Also shown are the resulting sensitivity indices. Sensitivity indices less than one-thousandth were reported as zero. Total variance was $1.56 mm^2$, showing very small average deviations when using this approach. First-order sensitivity, $S$, can be interpreted as fraction of variance removable by perfectly correcting a factor. Total sensitivity, $S_T$, can be interpreted as the fraction left after correcting all other factors. Most parameter values come from the literature, but instrument-specific parameters were determined empirically through repeated measurements (RM). Where parameter values were unavailable, 15\% of the mean was used as a conservative estimate.
 \end{flushleft}
 \label{tab:parameters}
 \end{table}
