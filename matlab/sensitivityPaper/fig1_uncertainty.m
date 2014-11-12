@@ -9,7 +9,7 @@ gray=.5*[1 1 1];
 green=[.1 .15 .7];
 red=[1 .5 .1];
 pink=[1 .8 .8];
-darkpink=[1 .4 .4];
+darkpink=[.8 1 .8];
 blue=[.8 .8 1];
 black=[0 0 0];
 tda=-.01;
@@ -28,21 +28,30 @@ coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);
 for k=1:3
     load(['BATCH',num2str(batches(k)),'.mat'])
     
-    rp=randperm(1000);
+    Y=vertcat(simA.y);
+    nsdfit=50;
+    SD=zeros(50,1);
+    MN=SD;
+    xs=linspace(0,.15,51)';
     for kk=1:50
-        plot(simA(rp(kk)).y(:,1),simA(rp(kk)).y(:,2)+offset(k),'Color',pink,'linewidth',.5)
+        F=find((Y(:,1)>xs(kk))&(Y(:,1)>xs(kk+1)));
+        MN(kk)=mean(Y(F,2));
+        SD(kk)=std(Y(F,2));
     end
-    
+        
     y=extract(t,xvaf,'reflex');
     
     tcalc=t;
     tcalc(t>=.7)=.7;
     x=minjerk(coeff,tcalc)';
     
+    xs=linspace(0,.15,50)';
+    fill([xs; wrev(xs)],[MN+SD; wrev(MN-SD)]+offset(k),'w','facecolor',darkpink,'edgecolor','w')
+    
     plot(xvaf(:,1),xvaf(:,2)+offset(k),'-','Color',black,'Linewidth',2)
     X=[xvaf(1:SKIP:end,1) xvaf(1:SKIP:end,2)+offset(k)];
     Y=X+qscale*xvaf(1:SKIP:end,7:8);
-    arrow(X,Y,gray,.3)
+    arrow(X,Y,gray,.3);
     plot(x(1:SKIP:end,1),x(1:SKIP:end,2)+offset(k),'o-','Color',green,'markerfacecolor',green)
     plot(y(1:SKIP:end,1),y(1:SKIP:end,2)+offset(k),'.-','Color',red,'markersize',12)
     
@@ -65,8 +74,8 @@ text(0,.4325+tda+tla,'Filtered Gaussian','horizontalalignment','left','Verticala
 
 %annotate(h)
 colors=[gray;black;green;red;darkpink];
-labs={'Force Disturbance','Hand Trajectory','Desired Hand Trajectory','Extracted Desired Hand Trajectory','Extracted with Parameter Uncertainty'};
-p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.12,.489];
+labs={'Force Disturbance','Hand Trajectory','Desired Hand Trajectory','Extracted Desired Hand Trajectory','Uncertainty Due to Parameter Misestimation'};
+p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.12,.4986];
 d=[1,-1;1,1;1,-1;1,-1;1,1];
 al=.012;
 alength=[al;al;.8*al;1.7*al;.5*al];
