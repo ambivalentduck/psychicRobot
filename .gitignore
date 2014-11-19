@@ -22,7 +22,6 @@ SfN Poster/*
 matlab/sensitivityPaper/*
 matlab/posterprep/*
 matlab/figures/*
-Paper1
 VREA2*
 Targets_real
 Day*/
@@ -31,6 +30,7 @@ Day*/
 !*.bib
 !*.tex
 *raw.tex
+Paper1
 
 *.eps
 *.odp

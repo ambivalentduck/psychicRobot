@@ -67,6 +67,11 @@ for k=1:20
 end
 v=[S' ST']
 vall=var(allAB(:))
+sub_white=allAB(1:4000,:);
+v_white=var(sub_white(:))
+sub_pulse=allAB(4001:8000,:);
+v_pulse=var(sub_pulse(:))
+
 v=v/vall
 totalSensitivity=sum(sum(v))
 %v=v/totalSensitivity;
