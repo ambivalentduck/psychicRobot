@@ -1,5 +1,5 @@
 % Template for PLoS
-% Version 1.0 January 2009
+% Version 2.0 July 2014
 %
 % To compile to pdf, run:
 % latex plos.template
@@ -7,6 +7,71 @@
 % latex plos.template
 % latex plos.template
 % dvipdf plos.template
+%
+% % % % % % % % % % % % % % % % % % % % % %
+%
+% -- IMPORTANT NOTE
+%
+% Be advised that this is merely a template 
+% designed to facilitate accurate translation of manuscript content 
+% into our production files. 
+%
+% This template contains extensive comments intended 
+% to minimize problems and delays during our production 
+% process. Please follow the template 
+% whenever possible.
+%
+% % % % % % % % % % % % % % % % % % % % % % % 
+%
+% Once your paper is accepted for publication and enters production, 
+% PLEASE REMOVE ALL TRACKED CHANGES in this file and leave only
+% the final text of your manuscript.
+%
+% DO NOT ADD EXTRA PACKAGES TO THIS TEMPLATE unless absolutely necessary.
+% Packages included in this template are intentionally
+% limited and basic in order to reduce the possibility
+% of issues during our production process.
+%
+% % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- FIGURES AND TABLES
+%
+% DO NOT INCLUDE GRAPHICS IN YOUR MANUSCRIPT
+% - Figures should be uploaded separately from your manuscript file. 
+% - Figures generated using LaTeX should be extracted and removed from the PDF before submission. 
+% - Figures containing multiple panels/subfigures must be combined into one image file before submission.
+% See http://www.plosone.org/static/figureGuidelines for PLOS figure guidelines.
+%
+% Tables should be cell-based and may not contain:
+% - tabs/spacing/line breaks within cells to alter layout
+% - vertically-merged cells (no tabular environments within tabular environments, do not use \multirow)
+% - colors, shading, or graphic objects
+% See http://www.plosone.org/static/figureGuidelines#tables for table guidelines.
+%
+% For sideways tables, use the {rotating} package and use \begin{sidewaystable} instead of \begin{table} in the appropriate section. PLOS guidelines do not accomodate sideways figures.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- EQUATIONS, MATH SYMBOLS, SUBSCRIPTS, AND SUPERSCRIPTS
+%
+% IMPORTANT
+% Below are a few tips to help format your equations and other special characters according to our specifications. For more tips to help reduce the possibility of formatting errors during conversion, please see our LaTeX guidelines at http://www.plosone.org/static/latexGuidelines
+%
+% Please be sure to include all portions of an equation in the math environment, and for any superscripts or subscripts also include the base number/text. For example, use $mathrm{mm}^2$ instead of mm$^2$ (do not use \textsuperscript command).
+%
+% DO NOT USE the \rm command to render mathmode characters in roman font, instead use $\mathrm{}$
+% For bolding characters in mathmode, please use $\mathbf{}$ 
+%
+% Please add line breaks to long equations when possible in order to fit our 2-column layout. 
+%
+% For inline equations, please do not include punctuation within the math environment unless this is part of the equation.
+%
+% For spaces within the math environment please use the \; or \: commands, even within \text{} (do not use smaller spacing as this does not convert well).
+%
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+
+
 
 \documentclass[10pt]{article}
 
@@ -15,17 +80,24 @@
 % amssymb package, useful for mathematical symbols
 \usepackage{amssymb}
 
-% graphicx package, useful for including eps and pdf graphics
-% include graphics with the command \includegraphicsf
-\usepackage{graphicx}
-
 % cite package, to clean up citations in the main text. Do not remove.
 \usepackage{cite}
 
-% PLoS doesn't support/use the next package, but we get issues if we don't use this to generate the PDF. Comment this line out when submitting.
-\usepackage[section]{placeins}
+\usepackage{hyperref}
 
-\usepackage{color} 
+% line numbers
+\usepackage{lineno}
+
+% ligatures disabled
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+% rotating package for sideways tables
+%\usepackage{rotating}
+
+% If you wish to include algorithms, please use one of the packages below. Also, please see the algorithm section of our LaTeX guidelines (http://www.plosone.org/static/latexGuidelines) for important information about required formatting.
+%\usepackage{algorithmic}
+%\usepackage{algorithmicx}
 
 % Use doublespacing - comment out for single spacing
 %\usepackage{setspace} 
@@ -42,8 +114,8 @@
 % Bold the 'Figure #' in the caption and separate it with a period
 % Captions will be left justified
 \usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
-%\usepackage[noperiod]{jabbrv}
-% Use the PLoS provided bibtex style
+
+% Use the PLoS provided BiBTeX style
 \bibliographystyle{plos2009}
 
 % Remove brackets from numbering in List of References
@@ -56,25 +128,21 @@
 \date{}
 
 \pagestyle{myheadings}
-%% ** EDIT HERE **
 
-
-%% ** EDIT HERE **
-%% PLEASE INCLUDE ALL MACROS BELOW
+%% Include all macros below. Please limit the use of macros.
 
 %% END MACROS SECTION
 
 \begin{document}
 
-\begin{titlepage}
-\begin{center}
+
+% Title must be 150 characters or less
+\begin{flushleft}
 {\Large
 \textbf{I meant to do that: determining the intentions of action in the face of disturbances}
-}\\[1cm]
-\end{center}
-
-\begin{flushleft}
+}
 % Insert Author names, affiliations and corresponding author email.
+\\
 Justin Horowitz$^{1}$, 
 James Patton$^{1,2\ast}$
 \\
@@ -82,25 +150,19 @@ James Patton$^{1,2\ast}$
 \\
 \bf{2} Sensory Motor Performance Program, Rehabilitation Institute of Chicago, Chicago, Illinois, United States
 \\
-$\ast$ Bioengineering, University of Illinois at Chicago, Chicago, Illinois, United States. E-mail: pattonj@uic.edu
-\\[1cm]
-Running Head: \\
-Determining the intention of action despite disturbances
+$\ast$ E-mail: pattonj@uic.edu
 \end{flushleft}
-\end{titlepage}
 
 % Please keep the abstract between 250 and 300 words
 \section*{Abstract}
-Our actions often do not match our intentions when there are external disturbances. We derive a novel modeling approach for determining motor intent from a reaching motion that is disturbed by an unexpected force. We first show how to mathematically invert both feedforward (predictive) and feedback controls to obtain intent. We next examine the model’s sensitivity to parameter uncertainty, and test the approach using human reaching data. We found that sensitivity to parameter inaccuracies was below one square millimeter, and hence much lower than the inaccuracies seen in actual human motions. Further, the largest sensitivity arose mainly from uncertainty in our assumptions of joint stiffness. We also tested the hypothesis that this would predict straight-line intent in human targeted reaching movements, even when disturbed by various pulses of force. As expected, the intended trajectory showed no change from undisturbed reaching for 300 ms after the disturbance onset. Beyond this point, however, we detected a change in intent, even when the intention was near the target.  Knowing such an intent signal is broadly applicable in areas such as in enhanced human-machine interaction, the study of impaired intent in neural disorders, the real-time determination (and manipulation) of error in training, and in any complex system that embodies planning, such as brain machine interfaces, team sports, crowds, or swarms. In addition, observing intent as it changes might act as a window into the mechanisms of planning, correction, and learning.
-
-\section*{Keywords}
-Intention; Motor Control; Visually Guided Reaching; On-line Control
+Our actions often do not match our intentions when there are external disturbances. We derive a novel modeling approach for determining motor intent from a reaching motion that is disturbed by an unexpected force. We first show how to mathematically invert both feedforward (predictive) and feedback controls to obtain an intended trajectory. We next examine the model’s sensitivity to parameter uncertainty, and test the approach using human reaching data. We found that sensitivity to parameter inaccuracies was 1.6 $\mathrm{mm}^2$, and hence lower than the inaccuracies seen in actual human motions. Further, the largest sensitivity arose mainly from uncertainty in our assumptions of joint stiffness. We also tested the hypothesis that this would predict straight-line intent in human targeted reaching movements, even when disturbed by various pulses of force. As expected, the intended trajectory showed no change from undisturbed reaching for 300 ms after the disturbance onset. Beyond this point, however, we detected a change in intent, even when the intention was near the target.  Knowing such an intent signal is broadly applicable in areas such as in enhanced human-machine interaction, the study of impaired intent in neural disorders, the real-time determination (and manipulation) of error in training, and in any complex system that embodies planning, such as brain machine interfaces, team sports, crowds, or swarms. In addition, observing intent as it changes might act as a window into the mechanisms of planning, correction, and learning.
 
 % Please keep the Author Summary between 150 and 200 words
-% Use first person. PLoS ONE authors please skip this step. 
-% Author Summary not valid for PLoS ONE submissions.   
-\section*{Author Summary}
-In our everyday struggles with bumpy roads and bustling crowds we often make movements that do not match what we had planned. Here we identify a computational modeling method that measures actions and allows us to determine what the person meant to to do. We first demonstrate this method's good performance even when there is uncertainty in the parameters of the model. Next, we evaluate this on human reaching motions to targets, and show that while the arm is bumped by a disturbance, the intention remains straight. Approximately 300 milliseconds later, the intention changes in a corrective action that counteracts the disturbance. This type of computation can be broadly useful in canceling the effects of disturbances such as turbulence while typing or piloting, and can estimate intent in many other dynamic systems from small organisms to crowds of people. It is also a new tool for understanding and treating impaired movement plans following neural injury.
+% Use first person. PLOS ONE authors please skip this step. 
+% Author Summary not valid for PLOS ONE submissions.   
+%\section*{Author Summary}
+
+
 
 \section*{Introduction}
 There are many situations, such as disturbances, distractions, and pathologies, that interfere with execution of an intended movement. One can assume that a person who is familiar with a particular task will try to do the same thing each time, provided all other conditions are equal. This presumes that what people do is on average what they intended to do and that their goal remains unchanged. However, if there is a disturbance, it is unclear what happens to a person's intentions because action is decoupled from intention. Challenges arise in human-machine interactions because intention and changes in intention cannot be easily discerned. Hence a comprehensive method for understanding what someone means to do (rather than what they actually do or claim to have wanted to do) as they interact within uncertain environments will prove useful in any area where a person might be thwarted from their intent such as crowd control, operation of machinery, athletic and music performance, rehabilitation, human augmentation, and artificial intelligence.
@@ -112,7 +174,6 @@ Attempts to deduce motor intent in the past have focused on the assumed spring-l
 Here we develop and analyze the mathematics underlying intent extraction, a method to determine one's intended trajectory. We focused, for simplicity in this initial study, on planar targeted arm reaching actions. First, we produce synthetic reaching data using a forward model so that we can examine the quality and uncertainty of intent extraction. We then explore sensitivity and failure modes, demonstrating the accuracy and utility of this method. We show efficacy on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. Finally, we demonstrate the viability of this method for providing a better understanding of what a person means to do when they move and are disturbed, showing how one's intended trajectory may change following a disturbance.
 
 
-% M E T H O D S
 
 % You may title this section "Methods" or "Models". 
 % "Models" is not a valid title for PLoS ONE authors. However, PLoS ONE
@@ -155,17 +216,22 @@ Note $x_e$ vanishes, recovering our familiar model. While a proper choice of $x_
 While we treat both the process and actuator as dynamic models in our derivation, it is important to note that both the derivation and the technique are agnostic to the process model. Instead of a dynamic model, it could be a lookup table. For instance, a switch is well-modeled as a lookup table or threshold without any consideration of its underlying mechanism. In this case, our technique could be used to determine a person's intention to flip the switch and how it changes in the face of disturbance. As long as some bidirectional relationship (even statistical) exists between state and outcome, intended outcome can be determined. This allows determination of intent in many situations of interest, even where the process is irreducibly complex.
 
 \subsection*{Dynamic simulation of arm and intended trajectories}
-While the derivation above is general, testing its application to human reaching requires choosing plant and actuator models, which themselves require physical parameters. Appropriate plant modeling is well-understood: measured arm segment lengths and self-reported body mass are converted into the plant's inertial, centripetal, and Coriolis terms. Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} relate body mass to limb mass, limb length to limb center of mass, and limb mass and length to moment of inertia. For the actuator, we choose the model and parameters of Burdet et al. \cite{burdet2006stability}. A scalar multiple of their modeled feedback torque, determined by linear regression, was used to account for any task-dependent differences in impedance \cite{franklin2003adaptation} while leaving the shape and structure of the impedance unchanged. Desired trajectory in time was simulated as a minimum jerk, 5th order polynomial of duration 700 milliseconds starting and ending with zero velocity and acceleration \cite{flash1985coordination}.  In this  model, musculoskeletal stiffness was linearly related to torque. Like Burdet et al. \cite{burdet2006stability}, we approximated muscle torque by looking backward in time 500 microseconds. Note that this backward look led to negligible (sub-micrometer mean unsigned error) discrepancies in subsequent intent estimates. 
+While the derivation above is general, testing its application to human reaching requires choosing plant and actuator models, which themselves require physical parameters. Appropriate plant modeling is well-understood: measured arm segment lengths and self-reported body mass are converted into the plant's inertial, centripetal, and Coriolis terms. Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} relate body mass to limb mass, limb length to limb center of mass, and limb mass and length to moment of inertia. For the actuator, we choose the model and parameters of Burdet et al. \cite{burdet2006stability}. Impedance magnitude is known to be task-dependent \cite{gomi1998task}. We fit a subject-specific constant scale factor relative to the impedance model of Burdet et al. \cite{burdet2006stability} using linear regression, as in Fraon the task-perpendicular data from the first 150 ms of movement in their noise-disturbed trials.  
+
+This IS the linear regression from Franklin and Milner 2003. It's jut that we're using task-perpendicular since that's the only part we really care about and so we have to use a constant scale instead of a whole matrix because the subject is unambiguously in motion.
+
+Desired trajectory in time was simulated as a minimum jerk, 5th order polynomial of duration 700 ms starting and ending with zero velocity and acceleration \cite{flash1985coordination}.  In this  model, musculoskeletal stiffness was linearly related to torque. Like Burdet et al. \cite{burdet2006stability}, we approximated muscle torque by looking backward in time $500 \mathrm{\mu s}$. Note that this backward look led to negligible (sub-micrometer mean unsigned error) discrepancies in subsequent intent estimates. 
 
 \subsection*{Experimental Design}
 We chose 15 centimeters long simulated reaches of the right arm, beginning 38 centimeters out from and 5.7 centimeters left of the right shoulder then first proceeding to the right.  We used the following two types of perturbing forces for each combination of distance and direction: 
-(1) pulse forces applied in one of the the two directions perpendicular to the direction of movement began when the subject had moved either 10\% or 50\% of the distance to the target and lasted for 150ms.
-(2) Noise forces began once the subject moved 3 millimeters, and lasted for the duration of the motion. The forces were drawn from a white noise generator at 1000 Hz with flat power spectral density of 1N, and then passed through a 4th order low-pass Butterworth filter with cutoff $10 \pi$ rad/s.
-
+\begin{enumerate}
+\item Pulse forces applied in one of the the two directions perpendicular to the direction of movement began when the subject had moved either 10\% or 50\% of the distance to the target and lasted for 150ms.
+\item Noise forces began once the subject moved 3 millimeters, and lasted for the duration of the motion. The forces were drawn from a white noise generator at 1000 Hz with flat power spectral density of 1N, and then passed through a 4th order low-pass Butterworth filter with cutoff $10 \pi$ rad/s.
+\end{enumerate}
 Our error metric was deviation in position, where unsigned error was calculated as the mean magnitude of deviation from the straight-line nominal trajectory to the target. This was evaluated across each of 150 bins measuring 1 millimeter in width and spaced evenly throughout the 15 centimeter reach. Mean unsigned error (MUE) was also used to summarize the overall error in each movement for sensitivity analysis. Mean and maximum signed error relative to the direction of disturbance, also called perpendicular deviation, were used to measure reaching accuracy in order to elucidate direction of any corrections.
 
 \subsection*{Indices of variance-based sensitivity}
-To ensure a properly spaced and efficient evaluation of sensivity, we employed Sobol-distributed matrices, generated using MATLAB's \textit{sobolset()} function and converted to parameter distributions (see Table~\ref{tab:parameters}) using inverse cumulative probability density. Nominal parameters values were mostly taken from taken Dempster \cite{dempster1955space} and Burdet et al. \cite{burdet2006stability} with typical values where subject-specific parameters (height and weight) and direct where necessary (force sensor noise and drift). Standard deviations reflect expected variation in repeated measurement (ie. height and weight) or measured variance (ie. trial-to-trial variation in sensor noise or uncertainty in mass ratios reported by Dempster \cite{dempster1955space}). Distributions were clamped to the range of $\pm3$ standard deviations in order to limit parameters to a realistic range. Combinations and calculations were made as prescribed by Saltelli et al. \cite{saltelli2010variance} to arrive at direct and total sensitivity indices.
+To ensure a properly spaced and efficient evaluation of sensivity, we employed Sobol-distributed matrices, generated using MATLAB's \textit{sobolset()} function and converted to parameter distributions (see Table~\ref{tab:parameters}) using inverse cumulative probability density. Nominal parameters values were mostly taken from Dempster \cite{dempster1955space} and Burdet et al. \cite{burdet2006stability} with typical values where subject-specific parameters (height and weight) and direct measurements where necessary (force sensor noise and drift). Standard deviations reflect expected variation in repeated measurement (ie. height and weight) or measured variance (ie. trial-to-trial variation in sensor noise or uncertainty in mass ratios reported by Dempster \cite{dempster1955space}). Distributions were clamped to the range of $\pm3$ standard deviations in order to limit parameters to a realistic range. Combinations and calculations were made as prescribed by Saltelli et al. \cite{saltelli2010variance} to arrive at direct and total sensitivity indices.
 
 \subsection*{Human Subjects}
 The human data trajectories analyzed here are drawn from four subjects who gave informed consent in accordance with Northwestern University Institutional Review Board, which specifically approved this study and follows the principles expressed in the Declaration of Helsinki. Two male and two female right-handed subjects (ages 24 to 30) performed the reaches with their right arm and were not compensated. Subjects' arm segment lengths were directly measured \textit{in situ} while body mass was self-reported. 
@@ -177,31 +243,25 @@ A planar manipulandum (described in Patton and Mussa-Ivaldi \cite{patton2004robo
 Subjects made 730 reaches in total, along a line parallel to their coronal plane and approximately 45 centimeters from their shoulder. Reaches were either 15 or 30 centimeters long, starting and ending at one of three points spaced 15 centimeters apart on the line. To prevent any learning effect, forces were presented intermittently with random frequency, but never less than 5 reaches apart. Forces were chosen pseudorandomly such that each type, direction, and distance combination mentioned above was presented 5 times. We used these disturbed, intermittent trials for the analysis. 
 
 \subsection*{Statistical Analysis}
-The MATLAB statistics toolbox package \cite{MATLAB:2008} was used to perform comparisons of maximum deviation among subjects and trajectory sources (hand and deviation) using ANOVA with Tukey-Kramer post-\textit{hoc} test for group differences. We used an alpha level of 0.05 for declaring statistical significance.
+To determine when the intended trajectory's deviation exceeded the deviation that could be explained by undisturbed reaching, we compared the maximum deviation of the undisturbed reaches to the instantaneous deviation of the pulse-disturbed reaches at 5 ms intervals. The MATLAB statistics toolbox package \cite{MATLAB:2008} was used to perform ANOVA with Tukey-Kramer post-\textit{hoc} test for group differences. We used an alpha level of 0.05 for declaring statistical significance.
 
-
-% R E S U L T S
 
 % Results and Discussion can be combined.
 \section*{Results}
 As expected, the model was able to recover the original intended trajectory even when disturbed (Figure 1). However this idealized analysis cannot reveal any vulnerabilities to unexamined model parameters or to inaccuracy in the structure of the model itself as discussed in the next sections.
 
 \subsection*{Noise Robustness}
-While some inversion processes might be highly sensitive to noise, our process for recovering intent from action did not appear to be vulnerable. Our position sensors are very accurate (no detectable drift, RMS noise 1.1 micrometers), but the force sensors are less so. Even after correcting for drift in our force measurements, the force measurements reported during reaching can be expected to have noticeable bias and further noise on the order of that bias as reported in Table 1. Taken together, force measurement errors account for 21\% of all sensitivity. We also examined noise in sensor signals explicitly in the more comprehensive  sensitivity analysis, discussed below.
+While some inversion processes might be highly sensitive to noise, our process for recovering intent from action did not appear to be vulnerable. Our position sensors are very accurate (no detectable drift, RMS noise 1.1 micrometers), but the force sensors are less so. Even after correcting for drift in our force measurements, the force measurements reported during reaching can be expected to have noticeable bias and further noise on the order of that bias as reported in Table 1. Taken together, force measurement errors account for 12\% of all sensitivity. We also examined noise in sensor signals explicitly in the more comprehensive sensitivity analysis, discussed below.
 
 \subsection*{Parameter Sensitivity}
-Variance in intended trajectories due to estimated uncertainty in model parameters was lower than the natural variation in undisturbed motions. Simulated point-to-point reaches disturbed by either filtered white noise forces or a pulse force perpendicular to the direction of the reach (Figure 1) were extracted in the presence of 220,000 variations upon the parameters (Table 1) according to the methods of Saltelli et al. \cite{saltelli2010variance}. Expected variance due to parameter uncertainty was $0.86  mm^2$ for pulse forces and $1.5 mm^2$ for filtered white forces. Variance in recorded undisturbed point-to-point reaching under the same time and reach distance conditions was $2.93 mm^2$. These variances describe mean unsigned error, but do not address maximum error.
+Variance in intended trajectories due to estimated uncertainty in model parameters was lower than the natural variation in undisturbed motions. Simulated point-to-point reaches disturbed by either filtered white noise forces or a pulse force perpendicular to the direction of the reach (Figure 1) were extracted in the presence of 220,000 variations upon the parameters (Table 1) according to the methods of Saltelli et al. \cite{saltelli2010variance}. Expected variance due to parameter uncertainty was $2.24 \mathrm{mm}^2$ for pulse forces and $.3 \mathrm{mm}^2$ for filtered white forces. Variance in recorded undisturbed point-to-point reaching under the same time and reach distance conditions was $2.93 \mathrm{mm}^2$. These variances describe mean unsigned error, but do not address maximum error.
 
-Simulated error due to direct parameter uncertainty (Figure 2) reached the order of millimeters and revealed particular sensitivity to mis-estimation of stiffness and changes in shoulder position from trial to trial. Direct sensitivity, which reveals the proportion of error that could be removed by correcting inaccuracy of a parameter, was an order of magnitude lower than total sensitivity, which reveals how much error would remain if all other parameters were accurate,  and both implicated stiffness estimation inaccuracy as a primary cause of extraction uncertainty. Note that this sensitivity analysis does not provide information on whether models or parameter estimates are accurate, only how sensitive the model would be if they were inaccurate. 
+Simulated error due to direct parameter uncertainty (Figure 2) reached the order of millimeters and revealed particular sensitivity to mis-estimation of stiffness and changes in shoulder position from trial to trial. Direct sensitivity, which reveals the proportion of error that could be removed by correcting inaccuracy of a parameter, was an order of magnitude lower than total sensitivity, which reveals how much error would remain if all other parameters were accurate, and both implicated stiffness estimation inaccuracy as a primary cause of extraction uncertainty. Note that this sensitivity analysis does not provide information on whether models or parameter estimates are accurate, only how sensitive the model would be if they were inaccurate. 
 
 \subsection*{Human Intent Trajectories}
 Extraction of intent from human point-to-point reaching revealed straight-line movement that persisted for hundreds of milliseconds after the onset of disturbing forces (Figure 3). If intent can change following disturbance, it can only do so after some period of time due to processing and communication delays in the sensorimotor system that produces new motor commands. We hypothesized that intent should not diverge from the undisturbed intent path even if the actual hand was disturbed within this window of delay. In both pulse timing conditions, the intended trajectory remained straight towards the target, even though the actual hand was dramatically deflected, supporting our hypothesis and the approach. 
 
 These results suggested a reproducible approach for inspecting how individuals might alter their intent in response to disturbances. Actual hand paths could no longer be explained ($p=0.05$) by deviation in undisturbed movement beginning within at most 135 milliseconds after the onset of disturbance. We observed no significant change of intent during force disturbance until 300 milliseconds after the onset of disturbance (Table 2). When disturbances occurred early in reaching, intent showed some signs of correction mid-reach. When disturbances occurred later, the intent continued to the target, but interestingly, it then corrected (Figure 3 lower plots). Intention showed systematic deflections that counteracted the direction of disturbance about 200 milliseconds after the onset of the force disturbance. This counteraction did not depart from the range of undisturbed movements, however (Figure 4, green region). The movements completed with the hand returning to undisturbed levels of error within 600 milliseconds, intention differed from actual hand path for as long as one second after the onset of motion.  
-
-
-% D I S C U S S I O N 
-
 \section*{Discussion}
 We sought to test the suitability and robustness of an algorithm that determines a person's intent during reaching motion, even if there are disturbances. Sensitivity analysis on synthetic data revealed that errors in response to parameter variations were smaller than the trial-to-trial variance commonly observed in human reaching. Mis-estimation was largest if the stiffness was inaccurately modeled. We tested this on human reaching and found that in spite of the hand being disturbed by forces, the intended movement remained on-course to the target, perhaps changing between 200 and 300 milliseconds. This represents a new and accurate method for viewing intent and how it changes when faced with a force disturbance.
 
@@ -225,71 +285,44 @@ The simple linear scaling of Burdet et al.'s stiffness model \cite{burdet2006sta
 
 The general intent extraction approach presented here reveals the conditions needed to solve for the moving intent in an arbitrary dynamic process. Sensitivity analysis for this approach applied to the human arm demonstrated favorable conditions for determination of intent during force-disturbed reaching. Reaching intent became significantly different from baseline reaching only after enough time had elapsed for the disturbance to be processed and descending motor commands to change. This window into intent should allow advances in arm modeling, motor training, and human-machine interaction.
 
-% Do NOT remove this, even if you are not including acknowledgments
+
+% Do NOT remove this, even if you are not including acknowledgments.
 \section*{Acknowledgments}
-Research supported by NIH NS053606.  We thank Felix Huang, Jagan Jimmy, Christine Massie, Tejas Madhavan, and Mohi Ahmed for their review of preliminary manuscript. We also thank the community  of the Robotics Lab at the Rehabilitation Institute of Chicago for critical commentary during the genesis of this paper and the work leading up to it.
- 
-\section*{Grants} 
-Supported by US NIH NINDS1 R01 NS053606
+Research supported by US NIH NINDS1 R01 NS053606.  We thank Felix Huang, Jagan Jimmy, Christine Massie, Tejas Madhavan, and Mohi Ahmed for their review of preliminary manuscript. We also thank the community  of the Robotics Lab at the Rehabilitation Institute of Chicago for critical commentary during the genesis of this paper and the work leading up to it.
 
-%\section*{References}
-% The bibtex filename
+\section*{References}
 \bibliography{paper1}
+% Either type in your references using
+% \begin{thebibliography}{}
+% \bibitem{}
+% Text
+% \end{thebibliography}
+%
+% OR
+%
+% Compile your BiBTeX database using our plos2009.bst
+% style file and paste the contents of your .bbl file
+% here.
+% 
 
-\pagebreak
-\section*{Figures and Figure Legends}
-%\begin{figure}[!ht]
-%\begin{center}
-%%\includegraphics[width=4in]{figure_name.2.eps}
-%\end{center}
+\section*{Figure Legends}
+% This section is for figure legends only, do not include
+% graphics in your manuscript file.
+%
+%\begin{figure}
 %\caption{
-%{\bf Bold the first sentence.}  Rest of figure 2  caption.  Caption 
-%should be left justified, as specified by the options to the caption 
-%package.
+%{\bf Bold the first sentence.}  Rest of figure caption.  
 %}
 %\label{Figure_label}
 %\end{figure}
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=6in]{fig1.png}
-\end{center}
-\caption{
-{\bf Simulated data illustrating tautology of extraction across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows. Parameter errors are introduced into the extraction and varied according to Table 1 to estimate sensitivity. Examining the distribution of deviation in trajectories from this analysis reveals that sensitivity is not uniformly distributed throughout a reach.
-}
-\label{fig:synthetic}
-\end{figure}
 
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=6in]{fig2.png}
-\end{center}
-\caption{
-{\bf Model sensitivity testing (from the variance-based method of Saltelli et al.\cite{saltelli2010variance}) reveals that the model is mostly sensitive to stiffness.} Parameter values are varied in a Sobol-distributed fashion according to Table 1. First order sensitivity, in purple, is the error that would be removed if the parameter was fixed at its nominal value. Total sensitivity, in teal, shows error that would remain if all other parameters were fixed at their nominal values.
-}
-\label{fig:sensitivity}
-\end{figure}
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=6in]{fig3.png}
-\end{center}
-\caption{
-{\bf Subjects' disturbed hand trajectories and extraction of intended trajectories from them reveal that both variance and invariance of the motor plan can occur even in response to very large disturbances.} The hand path, in black, deviates from the green baseline, as a force pulse, gray arrows, are applied. This subject's extracted desired trajectories, in red (baseline in faded red), do not significantly differ from baseline during force application, but show some reaction afterwards.
-}
-\label{fig:anecdotes}
-\end{figure}
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=4in]{fig4.png}
-\end{center}
-\caption{
-{\bf Comparison of subjects' perpendicular deviations across disturbed and undisturbed conditions reveals that intention is statistically indistinguishable from undisturbed reaching for at least 300 ms.} At most 135 milliseconds after the onset of disturbance, hand deviation in the presence of disturbance (black dots, black band is mean $\pm$ half of the critical value for simultaneous comparisons at 95\% confidence interval) can no longer be explained by undisturbed hand deviation (green band is mean maximum deviation). Movement intention (red dots, band is mean deviation) does not significantly deviate until at least 300 ms after the onset of disturbance.
-}
-\label{fig:grouptrends}
-\end{figure}
 
 \section*{Tables}
+% 
+% See introductory notes if you wish to include sideways tables.
+%
+% NOTE: Please look over our table guidelines at http://www.plosone.org/static/figureGuidelines#tables to make sure that your tables meet our requirements. Certain types of spacing, cell merging, and other formatting tricks may have unintended results and will be returned for revision.
+%
 %\begin{table}[!ht]
 %\caption{
 %\bf{Table title}}
@@ -300,7 +333,6 @@ Supported by US NIH NINDS1 R01 NS053606
 %\end{flushleft}
 %\label{tab:label}
 % \end{table}
-
 \begin{table}[!ht]
 \caption{
 \bf{Arm Parameter Values and Sensitivities}}
@@ -506,4 +538,15 @@ Intent Deviation (milliseconds) \\ \hline
 \label{tab:onsets}
 \end{table}
 
+%\section*{Supporting Information Legends}
+%
+% Please enter your Supporting Information captions below in the following format:
+%\item{\bf Figure SX. Enter mandatory title here.} Enter optional descriptive information here.
+% 
+%\begin{description}
+%\item {\bf}
+%\item {\bf}
+%\end{description}
+
 \end{document}
+
