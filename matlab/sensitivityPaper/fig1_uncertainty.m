@@ -9,7 +9,7 @@ gray=.5*[1 1 1];
 green=[.1 .15 .7];
 red=[1 .5 .1];
 pink=[1 .8 .8];
-darkpink=[.8 1 .8];
+darkpink=.8*[.8 1 .8];
 blue=[.8 .8 1];
 black=[0 0 0];
 tda=-.01;
@@ -52,8 +52,8 @@ for k=1:3
     X=[xvaf(1:SKIP:end,1) xvaf(1:SKIP:end,2)+offset(k)];
     Y=X+qscale*xvaf(1:SKIP:end,7:8);
     arrow(X,Y,gray,.3);
-    plot(x(1:SKIP:end,1),x(1:SKIP:end,2)+offset(k),'o-','Color',green,'markerfacecolor',green)
-    plot(y(1:SKIP:end,1),y(1:SKIP:end,2)+offset(k),'.-','Color',red,'markersize',12)
+    plot(x(1:SKIP:end,1),x(1:SKIP:end,2)+offset(k),'o-','Color',green,'markerfacecolor',green,'markersize',5)
+    plot(y(1:SKIP:end,1),y(1:SKIP:end,2)+offset(k),'.-','Color',red,'markersize',8)
     
     
 end
@@ -73,9 +73,9 @@ text(0,.48+tda,'Late Pulse','horizontalalignment','left','Verticalalignment','to
 text(0,.4325+tda+tla,'Filtered Gaussian','horizontalalignment','left','Verticalalignment','top','color','k')
 
 %annotate(h)
-colors=[gray;black;green;red;darkpink];
-labs={'Force Disturbance','Hand Trajectory','Desired Hand Trajectory','Extracted Desired Hand Trajectory','Uncertainty Due to Parameter Misestimation'};
-p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.12,.4986];
+colors=[gray;black;green;red;.4*darkpink];
+labs={'Force Disturbance','Hand Path','Desired Hand Path','Extracted Desired Hand Path','Extraction Uncertainty'};
+p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.1133,.4965];
 d=[1,-1;1,1;1,-1;1,-1;1,1];
 al=.012;
 alength=[al;al;.8*al;1.7*al;.5*al];

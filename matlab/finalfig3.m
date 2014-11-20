@@ -17,6 +17,12 @@ anecdote(2).dcat=4;
 anecdote(2).rot=pi;
 anecdote(2).yoff=-.15;
 
+anecdote(3).sub=1;
+anecdote(3).SE=[2 3];
+anecdote(3).dcat=2;
+anecdote(3).rot=pi;
+anecdote(3).yoff=-.3;
+
 lw=1.5;
 
 SKIP=4;
@@ -24,8 +30,12 @@ qscale=.002;
 fade=.7;
 
 gray=.5*[1 1 1];
-green=[.1 .7 .3];
-red=[1 .3 .3];
+green=[.1 .15 .7];
+red=[1 .5 .1];
+pink=[1 .8 .8];
+darkpink=.8*[.8 1 .8];
+blue=[.8 .8 1];
+black=[0 0 0];
 
 figure(37)
 clf
