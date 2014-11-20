@@ -35,12 +35,12 @@ bar(centers,counts)
 
 fitmecounts=counts;
 fitmebins=edges;
-startW=mean(aPt(aPt>=edges(1))&(aPt<edges(end)));
-expfit=fmincon(@bruteforceexp,1,-1,-1E-5);
 
-ofinterest.W=expfit;
+W=expfit(abs(Pt));
 
-cdf=expcdf(fitmebins,expfit);
+ofinterest.W=W;
+
+cdf=expcdf(fitmebins,W);
 fit=cdf(2:end)-cdf(1:end-1);
 ofinterest.power_rmse=sqrt(mean((fit-counts).^2));
 plot(centers,fit,'r','linewidth',3)
@@ -48,7 +48,7 @@ plot(centers,fit,'r','linewidth',3)
 title(['RMS Error = ',num2str(ofinterest.power_rmse,3)])
 xlabel('Power, Watts')
 ylabel('Fraction of Time Points')
-legend('Data',['Exponential Fit, W=',num2str(expfit,2)])
+legend('Data',['Exponential Fit, W=',num2str(W,2)])
 
 %% Check symmetry by reflecting across zero
 edges=linspace(lower,upper,65)';
@@ -92,9 +92,11 @@ bar(centers,counts)
 
 fitmecounts=counts;
 fitmebins=edges;
-gamfit=fmincon(@bruteforcegam,[1.5; .5] ,-eye(2),[-1;-0.01]);
+nT=gamfit(Tt);
+ofinterest.n=nT(1);
+ofinterest.T=nT(2);
 
-cdf=gamcdf(fitmebins,gamfit(1),gamfit(2));
+cdf=gamcdf(fitmebins,nT(1),nT(2));
 fit=cdf(2:end)-cdf(1:end-1);
 ofinterest.kinetic_rmse=sqrt(mean((fit-counts).^2));
 plot(centers,fit,'r','linewidth',3)
@@ -102,7 +104,7 @@ plot(centers,fit,'r','linewidth',3)
 title(['RMS Error = ',num2str(ofinterest.kinetic_rmse,3)])
 xlabel('Kinetic Energy, Joules')
 ylabel('Fraction of Time Points')
-legend('Data',['Gamma Fit, n=',num2str(gamfit(1),2),', T=',num2str(gamfit(2),2)])
+legend('Data',['Gamma Fit, n=',num2str(nT(1),2),', T=',num2str(nT(2),2)])
 
 %% Bin and count speeds, plot raw and fit
 subplot(sWidth,sHeight,4)
@@ -127,11 +129,8 @@ bar(centers,counts)
 
 fitmecounts=counts;
 fitmebins=.5*m*edges.^2;
-gamfit=fmincon(@bruteforcegam,[1.5; .5] ,-eye(2),[-1;-0.01]);
-ofinterest.n=gamfit(1);
-ofinterest.T=gamfit(2);
 
-cdf=gamcdf(fitmebins,gamfit(1),gamfit(2));
+cdf=gamcdf(fitmebins,nT(1),nT(2));
 fit=cdf(2:end)-cdf(1:end-1);
 ofinterest.speed_rmse=sqrt(mean((fit-counts).^2));
 plot(centers,fit,'r','linewidth',3)
@@ -139,27 +138,8 @@ plot(centers,fit,'r','linewidth',3)
 title(['RMS Error = ',num2str(ofinterest.speed_rmse,3)])
 xlabel('Speed, m/s')
 ylabel('Fraction of Time Points')
-legend('Data',['Gamma Fit, n=',num2str(gamfit(1),2),', T=',num2str(gamfit(2),2)])
+legend('Data','Gamma Fit')
 
-
-end
-
-function cost=bruteforcegam(x)
-global fitmecounts fitmebins
-
-cdf=gamcdf(fitmebins,x(1),x(2));
-fit=cdf(2:end)-cdf(1:end-1);
-cost=sum((fitmecounts-fit).^2);
-
-end
-
-function cost=bruteforceexp(x)
-global fitmecounts fitmebins
-
-cdf=expcdf(fitmebins,x);
-fit=cdf(2:end)-cdf(1:end-1);
-
-cost=sum((fitmecounts-fit).^2);
 
 end
 

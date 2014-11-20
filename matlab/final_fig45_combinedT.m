@@ -34,50 +34,57 @@ set(gcf,'color',[1 1 1])
 set(gcf,'units','centimeters')
 set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
-for k=SUBS
-    load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
-    load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
+if ~exist('fig4dotsNmeans.mat','file')
+    for k=SUBS
+        load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
+        load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
 
-    clear cleanStruct
-    f=find([trialInfo.clean]);
-    for t=2:length(f)
-        X=trials(f(t)).x(:,2)-.5;
-        [ma,indX]=max(abs(X));
-        cleanStruct(t).R2BX=X(indX)*100;
-    end
-    subject(k).R2BX=vertcat(cleanStruct.R2BX);
-
-    clear triStruct
-
-    for R=1:NR+2
-        RANGE=edges(R):edges(R+1);
-
-        for t=1:length(trials)
-            if ~sum(trials(t).disturbcat==[distCats]) %Fast-ish skipping instead of indexing
-                continue
-            end
-            inds=trialInfo(t).forceinds(1)+RANGE;
-            onset=find(vecmag(trials(t).v)>.05,1,'first');
-            start=max(onset-35,1);
-            indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
-
-            sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
-
-            try
-                triStruct(t).R2X=sPeak*getR2(trials(t).x(inds,:));
-                triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
-            catch
-                st1=size(trials(t).x,1);
-                triStruct(t).R2X=sPeak*getR2(trials(t).x(inds(1):st1,:));
-                st1=size(trials(t).x,1);
-                triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy(1):st1,:));
-            end
-
+        clear cleanStruct
+        f=find([trialInfo.clean]);
+        for t=2:length(f)
+            X=trials(f(t)).x(:,2)-.5;
+            [ma,indX]=max(abs(X));
+            cleanStruct(t).R2BX=X(indX)*100;
         end
-        subject(k).R2X=vertcat(triStruct.R2X);
-        subject(k).R2X=subject(k).R2X;
-        subject(k).R2Y=vertcat(triStruct.R2Y);
+        substruct(k).R2BX=vertcat(cleanStruct.R2BX);
 
+        clear triStruct
+
+        for R=1:NR+2
+            RANGE=edges(R):edges(R+1);
+
+            for t=1:length(trials)
+                if ~sum(trials(t).disturbcat==[distCats]) %Fast-ish skipping instead of indexing
+                    continue
+                end
+                inds=trialInfo(t).forceinds(1)+RANGE;
+                onset=find(vecmag(trials(t).v)>.05,1,'first');
+                start=max(onset-35,1);
+                indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
+
+                sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
+
+                try
+                    triStruct(t).R2X=sPeak*getR2(trials(t).x(inds,:));
+                    triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
+                catch
+                    st1=size(trials(t).x,1);
+                    triStruct(t).R2X=sPeak*getR2(trials(t).x(inds(1):st1,:));
+                    st1=size(trials(t).x,1);
+                    triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy(1):st1,:));
+                end
+
+            end
+            substruct(k).R2X=vertcat(triStruct.R2X);
+            substruct(k).R2Y=vertcat(triStruct.R2Y);
+        end
+    end
+else
+    load('fig4dotsNmeans.mat')
+end
+
+for k=SUBS
+    for R=1:NR+2
         CBX=1*ones(size(subject(k).R2BX));
         CX=2*ones(size(subject(k).R2X));
         CY=3*ones(size(subject(k).R2Y));
@@ -96,7 +103,6 @@ for k=SUBS
         plot(zeros(size(CY))+binCenter+xoff+SCATTER*(rand(size(CY))-.5),subject(k).R2Y+yoff,'.','color',red,'MarkerSize',DOTSIZE)
     end
 end
-
 NR=200; %200
 edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
@@ -186,9 +192,11 @@ for S=SUBS
         y=vertcat(lists(S,k).xy(:,2));
         mids(k,3)=mean(y);
         [xn(S,k),pr,ci]=ttest2(P,x-mP,.05,'left','unequal');
-        errors(k,2)=ci(2);
+        [blah,pr,ci]=ttest2(P,x-mP,.05,'both','unequal');
+        errors(k,2)=(ci(1)-ci(2))/2;
         [yn(S,k),pr,ci]=ttest2(P,y-mP,.05,'left','unequal');
-        errors(k,3)=ci(2);
+        [blah,pr,ci]=ttest2(P,y-mP,.05,'both','unequal');
+        errors(k,3)=(ci(1)-ci(2))/2;
 
         rangemids(k)=5*edges(k+1);
         if onset<0
