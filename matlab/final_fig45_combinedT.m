@@ -2,18 +2,8 @@ clc
 clear all
 close all
 
-%Set ranges
-%For each range, show the bar plots with figure window titled
-%    set(gcf,'name',range)
-%Grab the mean and confidence interval from c=multcompare with output off
-%Plot mean and confidence interval against range
-%call that finalfig5
-
 SUBS=1:4;
 distCats=[3 4];
-
-NR=10;
-edges=[0 linspace(0,200,NR+1) 200]; %sampling rate is 200 Hz = .005 s samples
 
 black=[0 0 0];
 red=[1 .3 .3];
@@ -34,25 +24,22 @@ set(gcf,'color',[1 1 1])
 set(gcf,'units','centimeters')
 set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
+%% Compute everything we'll need later
+
 if ~exist('fig4dotsNmeans.mat','file')
     for k=SUBS
         load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
         load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
-
-        clear cleanStruct
-        f=find([trialInfo.clean]);
-        for t=2:length(f)
-            X=trials(f(t)).x(:,2)-.5;
-            [ma,indX]=max(abs(X));
-            cleanStruct(t).R2BX=X(indX)*100;
-        end
-        substruct(k).R2BX=vertcat(cleanStruct.R2BX);
-
+        
+        %First, get plottables
+        NR=10;
+        edges=[0 linspace(0,200,NR+1) 200]; %sampling rate is 200 Hz = .005 s samples
+        
+        %Force disturbed, deviation hand and extracted
         clear triStruct
-
         for R=1:NR+2
             RANGE=edges(R):edges(R+1);
-
+            
             for t=1:length(trials)
                 if ~sum(trials(t).disturbcat==[distCats]) %Fast-ish skipping instead of indexing
                     continue
@@ -61,34 +48,83 @@ if ~exist('fig4dotsNmeans.mat','file')
                 onset=find(vecmag(trials(t).v)>.05,1,'first');
                 start=max(onset-35,1);
                 indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
-
+                
                 sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
-
+                
                 try
-                    triStruct(t).R2X=sPeak*getR2(trials(t).x(inds,:));
-                    triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
+                    triStruct(t).dX=sPeak*getR2(trials(t).x(inds,:));
+                    triStruct(t).dY=sPeak*getR2(trials(t).y(indsy,:));
                 catch
                     st1=size(trials(t).x,1);
-                    triStruct(t).R2X=sPeak*getR2(trials(t).x(inds(1):st1,:));
+                    triStruct(t).dX=sPeak*getR2(trials(t).x(inds(1):st1,:));
                     st1=size(trials(t).x,1);
-                    triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy(1):st1,:));
+                    triStruct(t).dY=sPeak*getR2(trials(t).y(indsy(1):st1,:));
                 end
-
+                
             end
-            substruct(k).R2X=vertcat(triStruct.R2X);
-            substruct(k).R2Y=vertcat(triStruct.R2Y);
+            subjectplot(k,R).dX=vertcat(triStruct.dX);
+            subjectplot(k,R).dY=vertcat(triStruct.dY);
         end
+        
+        %Second, get t-testables
+        NR=200; %200
+        edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
+        
+        %Trials not near a disturbance, deviation baseline hand
+        clear cleanStruct
+        f=find([trialInfo.clean]);
+        for t=2:length(f) %Trial 1 isn't really a trial
+            X=trials(f(t)).x(:,2)-.5;
+            [ma,indX]=max(abs(X));
+            cleanStruct(t).dBX=X(indX)*100;
+        end
+        subjectbase(k).dBX=vertcat(cleanStruct.dBX);
+        
+        clear triStruct
+        for R=1:NR+1
+            RANGE=edges(R):edges(R+1);
+            
+            for t=1:length(trials)
+                if ~sum(trials(t).disturbcat==([distCats])) %Fast-ish skipping instead of indexing
+                    continue
+                end
+                inds=trialInfo(t).forceinds(1)+RANGE;
+                onset=find(vecmag(trials(t).v)>.05,1,'first');
+                start=max(onset-35,1);
+                indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
+                
+                sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
+                
+                try
+                    triStruct(t).dX=sPeak*getR2(trials(t).x(inds,:));
+                    triStruct(t).dY=sPeak*getR2(trials(t).y(indsy,:));
+                catch %Very rarely, you need to account for indexing issues
+                    thishappened=1
+                    st1=size(trials(t).x,1);
+                    triStruct(t).dX=sPeak*getR2(trials(t).x(inds(1):st1,:));
+                    st1=size(trials(t).x,1);
+                    triStruct(t).dY=sPeak*getR2(trials(t).y(indsy(1):st1,:));
+                end
+            end
+            subjecttest(k,R).dX=vertcat(triStruct.dX);
+            subjecttest(k,R).dY=vertcat(triStruct.dY);
+        end
+        
     end
+    save('fig4dotsNmeans.mat','subjectplot','subjecttest','subjectbase');
 else
     load('fig4dotsNmeans.mat')
 end
 
-for k=SUBS
-    for R=1:NR+2
-        CBX=1*ones(size(subject(k).R2BX));
-        CX=2*ones(size(subject(k).R2X));
-        CY=3*ones(size(subject(k).R2Y));
+%% Do the plotting
+NR=10;
+edges=[0 linspace(0,200,NR+1) 200]; %sampling rate is 200 Hz = .005 s samples
 
+for k=SUBS
+    for R=1:NR+1
+        sX=size(subjectplot(k,R).dX);
+        sY=size(subjectplot(k,R).dY);
+        
         DOTSIZE=3;
         LINEWIDTH=5;
         binCenter=5/2*(edges(R)+edges(R+1));
@@ -97,73 +133,14 @@ for k=SUBS
         NLines=2;
         xoff=10*mod(plotOrder(k)-1,2)-5; %drawnWidth/2*(2/(NLines-1)*(k-1)-1);
         yoff=(plotOrder(k)-1)*yoffSpan;
-
-        %plot(zeros(size(CBX))+binCenter+xoff+SCATTER*(rand(size(CBX))-.5),subject(k).R2BX+yoff,'.','color',green,'MarkerSize',DOTSIZE)
-        plot(zeros(size(CX))+binCenter+xoff+SCATTER*(rand(size(CX))-.5),subject(k).R2X+yoff,'.','color',black,'MarkerSize',DOTSIZE)
-        plot(zeros(size(CY))+binCenter+xoff+SCATTER*(rand(size(CY))-.5),subject(k).R2Y+yoff,'.','color',red,'MarkerSize',DOTSIZE)
+        
+        plot(zeros(sX)+binCenter+xoff+SCATTER*(rand(sX)-.5),subjectplot(k,R).dX+yoff,'.','color',black,'MarkerSize',DOTSIZE)
+        plot(zeros(sY)+binCenter+xoff+SCATTER*(rand(sY)-.5),subjectplot(k,R).dY+yoff,'.','color',red,'MarkerSize',DOTSIZE)
     end
 end
-NR=200; %200
-edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
-for k=SUBS
-    load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
-    load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
 
-    flag=0;
 
-    clear cleanStruct
-    f=find([trialInfo.clean]);
-    for t=2:length(f)
-        X=trials(f(t)).x(:,2)-.5;
-        [ma,indX]=max(abs(X));
-        cleanStruct(t).R2BX=X(indX)*100;
-    end
-    subject(k).R2BX=abs(vertcat(cleanStruct.R2BX));
-    %subject(k).R2BXP=subject(k).R2BX(subject(k).R2BX>0);
-    %subject(k).R2BXM=subject(k).R2BX(subject(k).R2BX<=0);
-
-    clear triStruct
-
-    for R=1:NR+1
-        RANGE=edges(R):edges(R+1);
-
-        for t=1:length(trials)
-            if ~sum(trials(t).disturbcat==([distCats])) %Fast-ish skipping instead of indexing
-                continue
-            end
-            inds=trialInfo(t).forceinds(1)+RANGE;
-            onset=find(vecmag(trials(t).v)>.05,1,'first');
-            start=max(onset-35,1);
-            indsy=max(1,trialInfo(t).forceinds(1)-start)+RANGE;
-
-            sPeak=sign(trials(t).x(trialInfo(t).forceinds(1)+50,2)-.5);
-
-            try
-                triStruct(t).R2X=sPeak*getR2(trials(t).x(inds,:));
-                triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy,:));
-            catch %Very rarely, you need to account for indexing issues
-                thishappened=1
-                st1=size(trials(t).x,1);
-                triStruct(t).R2X=sPeak*getR2(trials(t).x(inds(1):st1,:));
-                st1=size(trials(t).x,1);
-                triStruct(t).R2Y=sPeak*getR2(trials(t).y(indsy(1):st1,:));
-            end
-        end
-        subject(k).R2X=vertcat(triStruct.R2X);
-        subject(k).R2Y=vertcat(triStruct.R2Y);
-
-        CX=3*ones(size(subject(k).R2X));
-        CY=4*ones(size(subject(k).R2Y));
-
-        Xlist=[CX;CY];
-        Ylist=[subject(k).R2X;subject(k).R2Y];
-
-        lists(k,R).x=Xlist(:,1);
-        lists(k,R).y=Ylist(:,1);
-        lists(k,R).xy=[subject(k).R2X subject(k).R2Y];
-    end
-end
 
 %% From here on
 
@@ -176,7 +153,7 @@ for S=SUBS
     most=80; %max(sum(lists(S,k).x==3),sum(lists(S,k).x==4));
     %RP=randperm(length(subject(S).R2BX));
     %P=subject(S).R2BX(RP(1:most));
-    P=sort(subject(S).R2BX,1,'descend');
+    P=sort(subjectbase(S).dBX,1,'descend');
     %P=P(70+(1:most));
     %RP=randperm(length(subject(S).R2BX));
     %M=subject(S).R2BXM(RP(1:most));
@@ -185,11 +162,11 @@ for S=SUBS
     mP=mean(P);
     errors(:,1)=ones(NR+1,1)*mP;
     P=P-mP;
-
+    
     for k=1:NR+1
-        x=vertcat(lists(S,k).xy(:,1));
+        x=subjecttest(S,k).dX;
         mids(k,2)=mean(x);
-        y=vertcat(lists(S,k).xy(:,2));
+        y=subjecttest(S,k).dY;
         mids(k,3)=mean(y);
         [xn(S,k),pr,ci]=ttest2(P,x-mP,.05,'left','unequal');
         [blah,pr,ci]=ttest2(P,x-mP,.05,'both','unequal');
@@ -197,7 +174,7 @@ for S=SUBS
         [yn(S,k),pr,ci]=ttest2(P,y-mP,.05,'left','unequal');
         [blah,pr,ci]=ttest2(P,y-mP,.05,'both','unequal');
         errors(k,3)=(ci(1)-ci(2))/2;
-
+        
         rangemids(k)=5*edges(k+1);
         if onset<0
             if yn(S,k)
@@ -212,13 +189,13 @@ for S=SUBS
             end
         end
     end
-
+    
     yoff=(plotOrder(S)-1)*yoffSpan;
     plot([0,1000],yoff+[0 0],'-','linewidth',1,'color',color)
-
+    
     rangemids(1)=-5;
     rangemids(end)=1005;
-
+    
     ALPHA=.4;
     h=[fill([rangemids rangemids(end:-1:1)],[-mids(:,1)-errors(:,1); mids(end:-1:1,1)+errors(end:-1:1,1)]+yoff,'w','facecolor',green,'edgecolor',green);
         fill([rangemids rangemids(end:-1:1)],[mids(:,2)-errors(:,2); mids(end:-1:1,2)+errors(end:-1:1,2)]+yoff,'w','facecolor',black,'edgecolor',black);
