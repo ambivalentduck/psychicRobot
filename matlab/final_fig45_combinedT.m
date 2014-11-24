@@ -145,6 +145,8 @@ end
 %% From here on
 
 color=[0 0 195]/255;
+NR=200; %200
+        edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
 for S=SUBS
     %subplot(4,1,S)
@@ -158,22 +160,40 @@ for S=SUBS
     %RP=randperm(length(subject(S).R2BX));
     %M=subject(S).R2BXM(RP(1:most));
     mids=zeros(NR+1,3);
-    errors=mids;
+    lowers=zeros(NR+1,3);
+    uppers=zeros(NR+1,3);
     mP=mean(P);
-    errors(:,1)=ones(NR+1,1)*mP;
-    P=P-mP;
+    uppers(:,1)=ones(NR+1,1)*mP;
+    lowers(:,1)=-ones(NR+1,1)*mP;
+    P=P-mP; %Simplifies plotting confidence intervals
     
     for k=1:NR+1
         x=subjecttest(S,k).dX;
-        mids(k,2)=mean(x);
+        mx=mean(x);
+        mids(k,2)=mx;
+        if mx>0
+            [xn(S,k),pr,ci]=ttest2(P,x+mP,.05,'right','unequal');
+            uppers(k,2)=mx;
+            lowers(k,2)=max(mx+ci(2),0);
+        else
+            [xn(S,k),pr,ci]=ttest2(P,x+mP,.05,'right','unequal');
+            uppers(k,2)=mx;
+            lowers(k,2)=min(0,mx+ci(1));
+        end
+            
         y=subjecttest(S,k).dY;
-        mids(k,3)=mean(y);
-        [xn(S,k),pr,ci]=ttest2(P,x-mP,.05,'left','unequal');
-        [blah,pr,ci]=ttest2(P,x-mP,.05,'both','unequal');
-        errors(k,2)=(ci(1)-ci(2))/2;
-        [yn(S,k),pr,ci]=ttest2(P,y-mP,.05,'left','unequal');
-        [blah,pr,ci]=ttest2(P,y-mP,.05,'both','unequal');
-        errors(k,3)=(ci(1)-ci(2))/2;
+        my=mean(y);
+        mids(k,3)=my;
+        if my>0
+            [yn(S,k),pr,ci]=ttest2(P,y-mP,.05,'right','unequal');
+            uppers(k,3)=my;
+            lowers(k,3)=min(0,my+ci(1));
+        else
+            [yn(S,k),pr,ci]=ttest2(P,y+mP,.05,'left','unequal');
+            uppers(k,3)=my;
+            lowers(k,3)=max(my+ci(2),0);
+        end
+        
         
         rangemids(k)=5*edges(k+1);
         if onset<0
@@ -197,9 +217,9 @@ for S=SUBS
     rangemids(end)=1005;
     
     ALPHA=.4;
-    h=[fill([rangemids rangemids(end:-1:1)],[-mids(:,1)-errors(:,1); mids(end:-1:1,1)+errors(end:-1:1,1)]+yoff,'w','facecolor',green,'edgecolor',green);
-        fill([rangemids rangemids(end:-1:1)],[mids(:,2)-errors(:,2); mids(end:-1:1,2)+errors(end:-1:1,2)]+yoff,'w','facecolor',black,'edgecolor',black);
-        fill([rangemids rangemids(end:-1:1)],[mids(:,3)-errors(:,3); mids(end:-1:1,3)+errors(end:-1:1,3)]+yoff,'w','facecolor',red,'edgecolor',red)];
+    h=[fill([rangemids rangemids(end:-1:1)],[lowers(:,1); uppers(end:-1:1,1)]+yoff,'w','facecolor',green,'edgecolor',green);
+        fill([rangemids rangemids(end:-1:1)],[lowers(:,2); uppers(end:-1:1,2)]+yoff,'w','facecolor',black,'edgecolor',black);
+        fill([rangemids rangemids(end:-1:1)],[lowers(:,3); uppers(end:-1:1,3)]+yoff,'w','facecolor',red,'edgecolor',red)];
     for k=1:3
         set(h(k),'EdgeAlpha',ALPHA,'FaceAlpha',ALPHA);
     end

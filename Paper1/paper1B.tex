@@ -129,6 +129,10 @@
 
 \pagestyle{myheadings}
 
+% PLoS doesn't support/use the next package, but we get issues if we don't use this to generate the PDF. Comment this line out when submitting.
+\usepackage[section]{placeins}
+
+
 %% Include all macros below. Please limit the use of macros.
 
 %% END MACROS SECTION
@@ -305,7 +309,7 @@ Research supported by US NIH NINDS1 R01 NS053606.  We thank Felix Huang, Jagan J
 % style file and paste the contents of your .bbl file
 % here.
 % 
-
+\pagebreak
 \section*{Figure Legends}
 % This section is for figure legends only, do not include
 % graphics in your manuscript file.
@@ -316,7 +320,34 @@ Research supported by US NIH NINDS1 R01 NS053606.  We thank Felix Huang, Jagan J
 %}
 %\label{Figure_label}
 %\end{figure}
+\begin{figure}
+\caption{
+{\bf Simulated data illustrating tautology of extraction across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows. Parameter errors are introduced into the extraction and varied according to Table 1 to estimate sensitivity. Examining the distribution of deviation in trajectories from this analysis reveals that sensitivity is not uniformly distributed throughout a reach.
+}
+\label{fig:synthetic}
+\end{figure}
 
+\begin{figure}
+\caption{
+{\bf Model sensitivity testing (from the variance-based method of Saltelli et al.\cite{saltelli2010variance}) reveals that the model is mostly sensitive to stiffness.} Parameter values are varied in a Sobol-distributed fashion according to Table 1. First order sensitivity, in purple, is the error that would be removed if the parameter was fixed at its nominal value. Total sensitivity, in teal, shows error that would remain if all other parameters were fixed at their nominal values.
+}
+\label{fig:sensitivity}
+\end{figure}
+
+\begin{figure}
+\caption{
+{\bf Subjects' disturbed hand trajectories and extraction of intended trajectories from them reveal that both variance and invariance of the motor plan can occur even in response to very large disturbances.} The hand path, in black, deviates from the green baseline, as a force pulse, gray arrows, are applied. This subject's extracted desired trajectories, in red (baseline in faded red), do not significantly differ from baseline during force application, but show some reaction afterwards.
+}
+\label{fig:anecdotes}
+\end{figure}
+
+\begin{figure}
+\caption{
+{\bf Comparison of subjects' perpendicular deviations across disturbed and undisturbed conditions reveals that intention is statistically indistinguishable from undisturbed reaching for at least 300 ms.} At most 135 milliseconds after the onset of disturbance, hand deviation in the presence of disturbance (black dots, black band is mean $\pm$ half of the critical value for simultaneous comparisons at 95\% confidence interval) can no longer be explained by undisturbed hand deviation (green band is mean maximum deviation). Movement intention (red dots, band is mean deviation) does not significantly deviate until at least 300 ms after the onset of disturbance.
+}
+\label{fig:grouptrends}
+\end{figure}
+\pagebreak
 
 \section*{Tables}
 % 
