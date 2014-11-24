@@ -2,9 +2,7 @@ clc
 clear all
 close all
 
-outs=zeros(10,4);
-
-for k=1 %:20
+for k=1:10
     subname=num2str(k,'%2.2d');
     fname=['free_exp_',subname,'stroke.mat'];
     
@@ -23,7 +21,15 @@ for k=1 %:20
     else
         load(fname)
     end
-   boltzmannsubjectplots(t,x,v,a,k)
+    f=find((vecmag(v)>.25)|(vecmag(a)>1.5));
+    t=t(f);
+    x=x(f,:);
+    v=v(f,:);
+    a=a(f,:);
+    
+    figure(k)
+    clf
+    outs(k)=boltzmannsubjectplots(t,x,v,a);
     suplabel(['Stroke Subject ',subname],'t')
     %set(findall(gcf,'type','text'),'fontSize',24)
     set(gcf,'position',[76 11 1195 925])

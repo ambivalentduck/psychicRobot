@@ -4,9 +4,7 @@ close all
 
 sublets={'JL','JT','LP','MF','YM'};
 
-outs=zeros(length(sublets),2);
-
-for k=5 %1:length(sublets)
+for k=1:length(sublets)
     fname=['free_exp_',sublets{k},'.mat'];
     
     if ~exist(fname,'file')
@@ -37,7 +35,15 @@ for k=5 %1:length(sublets)
     else
         load(fname)
     end
-    out=boltzmannsubjectplots(t,x,v,a)
+    f=find((vecmag(v)>.2)|(vecmag(a)>1));
+    t=t(f);
+    x=x(f,:);
+    v=v(f,:);
+    a=a(f,:);
+    
+    figure(k)
+    clf
+    outs(k)=boltzmannsubjectplots(t,x,v,a)
     suplabel(['Healthy Subject ',sublets{k}],'t')
     %set(findall(gcf,'type','text'),'fontSize',12)
     set(gcf,'position',[76 11 1195 925])
