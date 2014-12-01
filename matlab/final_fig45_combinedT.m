@@ -149,15 +149,17 @@ NR=200; %200
         edges=[0 linspace(0,200,NR+1)]; %sampling rate is 200 Hz = .005 s samples
 
 for S=SUBS
+    S
     %subplot(4,1,S)
     onset=-inf;
     handonset=-inf;
-    most=80; %max(sum(lists(S,k).x==3),sum(lists(S,k).x==4));
     %RP=randperm(length(subject(S).R2BX));
     %P=subject(S).R2BX(RP(1:most));
-    P=sort(subjectbase(S).dBX,1,'descend');
+    %P=sort(subjectbase(S).dBX,1,'descend');
+    P=abs(subjectbase(S).dBX);
     %P=P(70+(1:most));
-    %RP=randperm(length(subject(S).R2BX));
+    %RP=randperm(length(P));
+    %P=P(RP(1:20));
     %M=subject(S).R2BXM(RP(1:most));
     mids=zeros(NR+1,3);
     lowers=zeros(NR+1,3);
@@ -169,42 +171,48 @@ for S=SUBS
     
     for k=1:NR+1
         x=subjecttest(S,k).dX;
+        x=x(~isnan(x));
         mx=mean(x);
+        sem95=1.684*std(x)/sqrt(length(x));
         mids(k,2)=mx;
+        uppers(k,2)=mx+sem95;
+        lowers(k,2)=mx-sem95;
+        
         if mx>0
-            [xn(S,k),pr,ci]=ttest2(P,x+mP,.05,'right','unequal');
-            uppers(k,2)=mx;
-            lowers(k,2)=max(mx+ci(2),0);
+            [xn(S,k),pr,cix]=ttest2(P,x-mP,.05,'left','unequal');
+            %uppers(k,2)=mx;
+            %lowers(k,2)=max(mx+ci(2),0);
         else
-            [xn(S,k),pr,ci]=ttest2(P,x+mP,.05,'right','unequal');
-            uppers(k,2)=mx;
-            lowers(k,2)=min(0,mx+ci(1));
+            [xn(S,k),pr,cix]=ttest2(P,x+mP,.05,'right','unequal');
+            %uppers(k,2)=mx;
+            %lowers(k,2)=min(0,mx+sem95);
         end
             
         y=subjecttest(S,k).dY;
         my=mean(y);
+        sem95=1.684*std(y)/sqrt(length(y));
         mids(k,3)=my;
+        uppers(k,3)=my+sem95;
+        lowers(k,3)=my-sem95;
         if my>0
-            [yn(S,k),pr,ci]=ttest2(P,y-mP,.05,'right','unequal');
-            uppers(k,3)=my;
-            lowers(k,3)=min(0,my+ci(1));
+            [yn(S,k),pr,ciy]=ttest2(P,y-mP,.05,'left','unequal');
+            %uppers(k,3)=my;
+            %lowers(k,3)=min(0,my-sem95);
         else
-            [yn(S,k),pr,ci]=ttest2(P,y+mP,.05,'left','unequal');
-            uppers(k,3)=my;
-            lowers(k,3)=max(my+ci(2),0);
+            [yn(S,k),pr,ciy]=ttest2(P,y+mP,.05,'right','unequal');
+            %uppers(k,3)=my;
+            %lowers(k,3)=max(my+sem95,0);
         end
         
         
         rangemids(k)=5*edges(k+1);
         if onset<0
             if yn(S,k)
-                S
                 onset=rangemids(k)
             end
         end
         if handonset<0
             if xn(S,k)
-                S
                 handonset=rangemids(k)
             end
         end
@@ -246,7 +254,7 @@ set(gca,'position',[lmargin bmargin width height])
 set(0,'defaulttextinterpreter','none')
 
 %% Save the image
-matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
+%matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
 
 %print figures/fig4.eps -depsc
 

@@ -3,6 +3,7 @@ function findKpGain(k)
 global kp0gain kp1gain
 
 load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
+%params.mass=45;
 
 % Categorize by start/end pair
 figure(1)

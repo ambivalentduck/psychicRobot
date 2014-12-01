@@ -1,17 +1,29 @@
 function extractPulses(k)
 
-global kp0gain kp1gain
+global kpgain
 
 figure(k)
 clf
 hold on
+axis equal
 
 scale=.8;
 
 load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
-kp0gain=scale*W(end,1)
-kp1gain=scale*W(end,1);
+params
+%Subject 1
+% params.mass=50;
+% params.shoulder(2)=.48;
+% params.l1=.28;
+% params.l2=.3;
+
+%Subject 2
+kpgain=.16
+
+%Subject 3 and 4
+%kpgain=scale*W(end,1)
+
 set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
 
 offsetForce=onset;
@@ -35,18 +47,10 @@ for c=1:length(F)
     trials(kk).y=y;
     trials(kk).ty=t;
     
-    first=trialInfo(kk).forceinds(1);
-    tp=[trials(kk).t(first:end); trials(kk+1).t(1:onset2)]';
-    xvafp=[xvaf1(first:end,:); xvaf2(1:onset2,:)];
-    yp=extract(tp,xvafp,'reflex');
-    trials(kk).yp=yp;
-    trials(kk).typ=tp;
-
-    yoff=-xvaf(1,2)+trialInfo(kk).startcat;
-    xoff=-xvaf(1,1)+trialInfo(kk).endcat;
+    yoff=-xvaf(1,2)+trialInfo(kk).startcat/3;
+    xoff=-xvaf(1,1)+trialInfo(kk).endcat/3;
     plot(xvaf1(:,1)+xoff,xvaf1(:,2)+yoff,'b')
     plot(y(:,1)+xoff,y(:,2)+yoff,'r')
-    plot(yp(:,1)+xoff,yp(:,2)+yoff,'g')
     drawnow
 end
 save(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'],'trials')

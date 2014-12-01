@@ -10,22 +10,33 @@ if nargin==1
     return
 end
 
-latexscale=1.2;
+latexscale=1;
+
+if length(alength)==1
+    alength=alength*ones(size(d,1));
+end
 
 for k=1:length(labs)
     x=p(k,1);
     y=p(k,2);
-    l=-alength*d(k,:)/norm(d(k,:));
+    l=-alength(k)*d(k,:)/norm(d(k,:));
     h(k).a=arrow([x y]+latexscale*l,[x y],colors(k,:),.3,2);
+    
     if d(k,1)>0
         ha='right';
-    else
+    elseif d(k,1)<0
         ha='left';
+    else
+        ha='center';
     end
+    
     if d(k,2)>0
         va='top';
-    else
+    elseif d(k,2)<0
         va='bottom';
+    else
+        va='middle';
     end
+    
     h(k).t=text(x+l(1), y+l(2),labs{k},'horizontalalignment',ha,'Verticalalignment',va,'color',colors(k,:));
 end
