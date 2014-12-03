@@ -6,8 +6,8 @@ SUBS=1:4;
 distCats=[3 4];
 
 black=[0 0 0];
-red=[1 .3 .3];
-green=[.1 .7 .3];
+green=[.1 .15 .7];
+red=[1 .5 .1];
 width=12;
 height=1.618*width;
 lmargin=.5;
@@ -168,6 +168,7 @@ for S=SUBS
     uppers(:,1)=ones(NR+1,1)*mP;
     lowers(:,1)=-ones(NR+1,1)*mP;
     P=P-mP; %Simplifies plotting confidence intervals
+    yoff=(plotOrder(S)-1)*yoffSpan;
     
     for k=1:NR+1
         x=subjecttest(S,k).dX;
@@ -204,21 +205,25 @@ for S=SUBS
             %lowers(k,3)=max(my+sem95,0);
         end
         
-        
+        lscale=1.5;
         rangemids(k)=5*edges(k+1);
         if onset<0
             if yn(S,k)
                 onset=rangemids(k)
+                plot(rangemids(k)+[0 0],lscale*mP*[-1 1]+yoff,'color',[1 0 0],'linewidth',1.5)
+                %plot(rangemids(k),.5+lscale*mP+yoff,'o','markerfacecolor',[1 0 0],'markersize',10)
             end
         end
         if handonset<0
             if xn(S,k)
                 handonset=rangemids(k)
+                plot(rangemids(k)+[0 0],lscale*mP*[-1 1]+yoff,'color',[0 1 0],'linewidth',1.5)
+                %plot(rangemids(k),.5+lscale*mP+yoff,'o','markerfacecolor',[0 1 0],'markersize',10)
             end
         end
     end
     
-    yoff=(plotOrder(S)-1)*yoffSpan;
+
     plot([0,1000],yoff+[0 0],'-','linewidth',1,'color',color)
     
     rangemids(1)=-5;
@@ -254,7 +259,7 @@ set(gca,'position',[lmargin bmargin width height])
 set(0,'defaulttextinterpreter','none')
 
 %% Save the image
-%matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
+matlabfrag('figures/fig4raw','renderer','opengl','dpi',600);
 
 %print figures/fig4.eps -depsc
 

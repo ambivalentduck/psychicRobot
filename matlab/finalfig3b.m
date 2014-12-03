@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-lw=1.5;
+lw=.75;
 
 SKIP=9;
 qscale=.002;
@@ -19,9 +19,18 @@ black=[0 0 0];
 xoff=[.15 .15;0 0];
 yoff=[3 1; 2 0]*.13;
 
+lmargin=1;
+bmargin=.5;
+figmargin=.4;
+width=13.6;
+height=15;
+
 figure(37)
 clf
 hold on
+set(gcf,'color',[1 1 1])
+set(gcf,'units','centimeters')
+set(gcf,'position',[4,8,width,height])
 
 S=4;
 load(['../Data/Data_pulse/pulse',num2str(S),'W.mat'])
@@ -90,16 +99,12 @@ for k=2:length(trials)
     arrow(XF,XF+qscale*F,gray,.3,lw);
 end
 
-margin=.02;
-set(gca,'position',[margin margin 1-margin 1-margin],'units','normalized')
-set(gcf,'color',[1 1 1])
-
 axis equal
 
 %annotate(h);
-p=[.1822 .04918;.2092 -.01458;.2907 .3619;.1942 .302];
+p=[.18 .055;.2092 -.0185;.265 .3619;.21 .302];
 d=[1 0; 1 1;1 0;-1 0];
-alength=[.03,.015,.03,.03];
+alength=[.03,.02,.03,.03];
 colors=[gray; green; red; black];
 labs{1}='Force Disturbance';
 labs{2}='Undisturbed Hand Trajectory';
@@ -108,28 +113,29 @@ labs{4}='Hand Trajectory';
 
 h=annotate(p,d,labs,colors,alength);
 
-plot([.01 .04],-.01*[1 1],'k','linewidth',3)
-text(.025,-.011,'3 cm','horizontalalignment','center','verticalalignment','top')
+lshift=.01;
+plot([.01 .04]-lshift,-.01*[1 1],'k','linewidth',3)
+text(.025-lshift,-.011,'3 cm','horizontalalignment','center','verticalalignment','top')
 
 A=.008*[1 1];
+A(1)=A(1)-lshift;
 arrow(A,A+[0 qscale*10],gray,.3,2)
-text(.006,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
+text(.006-lshift,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
-f=findobj('Type','text');
-set(f,'fontsize',10)
+%f=findobj('Type','text');
+%set(f,'fontsize',10)
 
-
-text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
+text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontweight','bold');
 %text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top');
-text(0,.2,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
-
+text(0,.2,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontweight','bold');
 
 axis off
 
-set(gcf,'units','centimeters')
-set(gcf,'position',[3 3 18 18])
+set(0,'defaulttextinterpreter','none')
+set(gca,'units','centimeters')
+set(gca,'position',[lmargin bmargin width-(figmargin+lmargin) height-(figmargin+bmargin)])
 
 matlabfrag('figures/fig3raw')
-%laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
+laprint(gcf,'figures/fig3rawb','width',15,'scalefonts','off','factor',1)
 
 %print('figures/fig3','-dtiff','-r300')
