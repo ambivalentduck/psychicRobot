@@ -1,10 +1,10 @@
 function params=paramsPopulator(varargin)
 
-nom=[.33; %l1
-    .34; %l2
+nom=[.353; %l1
+    .363; %l2
     .436; %lc1/l1 factor, Winters 1990
     .682; %lc2/l2 factor, Winter 1990
-    175*.4535; %mass, lb to kg conversion
+    195*.4535; %mass, lb to kg conversion
     .028; %m1/mass conversion factor, Winters 1990
     .022; %m2/mass conversion factor, Winters 1990
     .322; %rog1 Winters 1990
@@ -48,15 +48,15 @@ end
 
 lnom=length(nom);
 
-sd=[.01; %l1, 1cm
-    .01; %l2, 1cm
-    .0695; %lc1/l1 factor, 1cm
-    .0431; %lc2/l2 factor, 1cm
+sd=[.017; %l1, Dempster 1955
+    .011; %l2, Dempster 1955
+    .15*.436; %lc1/l1 factor, 1cm
+    .15*.682; %lc2/l2 factor, 1cm
     3.1; %mass self-report error SD=3.1 kg (The Accuracy of Self-Reported Weights, stunkard and albaum Am J Clin Nutr 1981)
     .0029; %m1/mass conversion factor, Dempster 1955
     .00248; %m2/mass conversion factor, Dempster 1955
-    .322/20; %rog1 5%
-    .468/20; %rog2 5%
+    .15*.322; %rog1 5%
+    .15*.468; %rog2 5%
     .02; %Shoulder x in robot space
     .02; %Shoulder y in robot space
     .2310; %Robot x bias, empirical

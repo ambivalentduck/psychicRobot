@@ -1,10 +1,10 @@
 clc
 clear all
 
-if ~exist('finalfig1data.mat','file')
+if ~exist('finalfig1data.mat','file')|1
     setGlobals(paramsPopulator('burdet'))
     
-    load BATCH10.mat
+    load BATCH2.mat
 
     t=0:.005:2;
     coeff=calcminjerk([0 .5],[.15 .5],[0 0],[0 0],[0 0],[0 0],0,.7);

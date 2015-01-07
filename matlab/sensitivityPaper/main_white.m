@@ -48,75 +48,77 @@ legend('Intent','Forward Sim','Forces','Shad&Muss','Extracted Intent','Extracted
 
 xvaf=[xsim f];
 xvafsm=[xsimSM f];
-drawnow 
+drawnow
 
 save('baselines_white.mat','yex','yexsm')
 
 %% Step 3a: OAT - Burdet
-
-clear OAT
-
-names=paramsPopulator('names');
-dat=paramsPopulator('burdet');
-f=find(dat(:,3));
-
-params=paramsPopulator(f(1));
-sp1=size(params,1);
-lf=length(f);
-
-vals=zeros(lf,sp1);
-
-for k=1:lf
-    params=paramsPopulator(f(k));
-    if k==1
-        OAT=repeatedSim(params,t,xvaf,'reflex',0,lf);
-    else
-        OAT(k,:)=repeatedSim(params,t,xvaf,'reflex',0,lf-k+1);
+if 0
+    clear OAT
+    
+    names=paramsPopulator('names');
+    dat=paramsPopulator('burdet');
+    f=find(dat(:,3));
+    
+    params=paramsPopulator(f(1));
+    sp1=size(params,1);
+    lf=length(f);
+    
+    vals=zeros(lf,sp1);
+    
+    for k=1:lf
+        params=paramsPopulator(f(k));
+        if k==1
+            OAT=repeatedSim(params,t,xvaf,'reflex',0,lf);
+        else
+            OAT(k,:)=repeatedSim(params,t,xvaf,'reflex',0,lf-k+1);
+        end
+        for kk=1:sp1
+            vals(k,kk)=params(kk,f(k));
+        end
     end
-    for kk=1:sp1
-        vals(k,kk)=params(kk,f(k));
-    end
-end
-
-for k=1:lf
-    for kk=1:sp1
-        OAT(k,kk).name=names{f(k)};
-        OAT(k,kk).val=vals(k,kk);
+    
+    for k=1:lf
+        for kk=1:sp1
+            OAT(k,kk).name=names{f(k)};
+            OAT(k,kk).val=vals(k,kk);
+        end
     end
 end
 
 %% Step 3b: OAT - ShadMuss
-
-clear OATSM
-dat=paramsPopulator('shadmuss');
-f=find(dat(:,3));
-
-params=paramsPopulator(f(1));
-sp1=size(params,1);
-lf=length(f);
-
-vals=zeros(lf,sp1);
-
-for k=1:lf
-    params=paramsPopulator(f(k));
-    if k==1
-        OATSM=repeatedSim(params,t,xvafsm,@armdynamics_inverted,0,lf);
-    else
-        OATSM(k,:)=repeatedSim(params,t,xvafsm,@armdynamics_inverted,0,lf-k+1);
+if 0
+    clear OATSM
+    dat=paramsPopulator('shadmuss');
+    f=find(dat(:,3));
+    
+    params=paramsPopulator(f(1));
+    sp1=size(params,1);
+    lf=length(f);
+    
+    vals=zeros(lf,sp1);
+    
+    for k=1:lf
+        params=paramsPopulator(f(k));
+        if k==1
+            OATSM=repeatedSim(params,t,xvafsm,@armdynamics_inverted,0,lf);
+        else
+            OATSM(k,:)=repeatedSim(params,t,xvafsm,@armdynamics_inverted,0,lf-k+1);
+        end
+        for kk=1:sp1
+            vals(k,kk)=params(kk,f(k));
+        end
     end
-    for kk=1:sp1
-        vals(k,kk)=params(kk,f(k));
+    
+    for k=1:lf
+        for kk=1:sp1
+            OATSM(k,kk).name=names{f(k)};
+            OATSM(k,kk).val=vals(k,kk);
+        end
     end
+    
+    save('OAT_KICK_white.mat','OAT','OATSM')
 end
-
-for k=1:lf
-    for kk=1:sp1
-        OATSM(k,kk).name=names{f(k)};
-        OATSM(k,kk).val=vals(k,kk);
-    end
-end
-
-save('OAT_KICK_white.mat','OAT','OATSM')
 
 %% Step 4a: Set up Monte Carlo Variance estimation
 
@@ -140,38 +142,41 @@ for k=1:20
 end
 
 %% Actually do the estimation
-
-dat=paramsPopulator('shadmuss');
-f=find(dat(:,4));
-lf=length(f);
-
-simAsm=repeatedSim(paramsPopulator(A(:,1:lf)),t,xvafsm,@armdynamics_inverted,0,1);
-simBsm=repeatedSim(paramsPopulator(B(:,1:lf)),t,xvafsm,@armdynamics_inverted,0,1);
-
-for k=1:length(f)
-    k
-    if k==1
-        simABsm=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvafsm,@armdynamics_inverted,0,1);
-    else
-        simABsm(k,:)=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvafsm,@armdynamics_inverted,0,1);
+if 0
+    dat=paramsPopulator('shadmuss');
+    f=find(dat(:,4));
+    lf=length(f);
+    
+    simAsm=repeatedSim(paramsPopulator(A(:,1:lf)),t,xvafsm,@armdynamics_inverted,0,1);
+    simBsm=repeatedSim(paramsPopulator(B(:,1:lf)),t,xvafsm,@armdynamics_inverted,0,1);
+    
+    for k=1:length(f)
+        k
+        if k==1
+            simABsm=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvafsm,@armdynamics_inverted,0,1);
+        else
+            simABsm(k,:)=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvafsm,@armdynamics_inverted,0,1);
+        end
     end
+    
+    save('KICKsm_white.mat','simAsm','simBsm','simABsm')
 end
 
-save('KICKsm_white.mat','simAsm','simBsm','simABsm')
-
-dat=paramsPopulator('burdet');
-f=find(dat(:,4));
-lf=length(f);
-
-simA=repeatedSim(paramsPopulator(A(:,1:lf)),t,xvaf,'reflex',0,1);
-simB=repeatedSim(paramsPopulator(B(:,1:lf)),t,xvaf,'reflex',0,1);
-
-for k=1:length(f)
-    k
-    if k==1
-        simAB=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvaf,'reflex',0,1);
-    else
-        simAB(k,:)=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvaf,'reflex',0,1);
+if 1
+    dat=paramsPopulator('burdet');
+    f=find(dat(:,4));
+    lf=length(f);
+    
+    simA=repeatedSim(paramsPopulator(A(:,1:lf)),t,xvaf,'reflex',0,1);
+    simB=repeatedSim(paramsPopulator(B(:,1:lf)),t,xvaf,'reflex',0,1);
+    
+    for k=1:length(f)
+        k
+        if k==1
+            simAB=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvaf,'reflex',0,1);
+        else
+            simAB(k,:)=repeatedSim(paramsPopulator(AB(:,1:lf,k)),t,xvaf,'reflex',0,1);
+        end
     end
+    save('KICK_white.mat','simA','simB','simAB')
 end
-save('KICK_white.mat','simA','simB','simAB')

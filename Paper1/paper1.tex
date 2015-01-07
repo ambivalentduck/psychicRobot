@@ -16,11 +16,13 @@
 \usepackage{amssymb}
 
 % graphicx package, useful for including eps and pdf graphics
-% include graphics with the command \includegraphics
+% include graphics with the command \includegraphicsf
 \usepackage{graphicx}
 
 % cite package, to clean up citations in the main text. Do not remove.
 \usepackage{cite}
+
+% PLoS doesn't support/use the next package, but we get issues if we don't use this to generate the PDF. Comment this line out when submitting.
 \usepackage[section]{placeins}
 
 \usepackage{color} 
@@ -105,7 +107,7 @@ There are many situations, such as disturbances, distractions, and pathologies, 
 
 It is important to distinguish intended trajectory from \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, or \textit{goal selection decisions}\cite{ziebart2010modeling}. In typical motor control studies, subjects are motivated to complete the experiment in a timely fashion and are usually explicitly provided targets to be reached. Classification of intent is prevalent in both lower \cite{strausser2011development, hargrove2013robotic} and upper limb\cite{englehart2003robust, young2012improving} prosthetics where hybrid control algorithms select from among a set of actions (walking/standing/flexion/extension/etc). While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of the arm) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action (i.e, the intended trajectory), even when the actual movement is disturbed and hence no longer matches the intent.
 
-Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement even though it did not consider mass as a feedforward controller would. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised and more general method, \textit{intent extraction}, which calculates the intended trajectory even in the face of disturbances by relating environmental interaction and state to intent. This method affords new ways to 1) test and falsify candidate models of motor control, 2) study the timing and composition of alterations to intent during movement, and 3) understand how intent might be altered by pathology after neural insult. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured.
+Attempts to deduce motor intent in the past have focused on the assumed spring-like properties of human muscles. Springs produce a force according to their impedance and stretch. By measuring force, impedance, and position, Gomi and Kawato\cite{gomi1997human} were able to deduce stretch and thereby infer the muscle's equilibrium point. Supporters of the ``$\lambda$ model''\cite{feldman1995origin} hypothesized that this equilibrium point represented the intent of a movement even though it did not compensate for the dynamics of the arm as a feedforward controller would. Upon Gomi and Kawato's inspection of the equilibrium point as it evolved in time, it was clear that it was highly complex and often not anatomically realizable. Therefore, it could not well-represent the intent of a simple reaching movement. We propose a revised and more general method, \textit{intent extraction}, which calculates the intended trajectory even in the face of disturbances by relating environmental interaction and state to intent. This method affords new ways to 1) test and falsify candidate models of motor control, 2) study the timing and composition of alterations to intent during movement, and 3) understand how intent might be altered by pathology after neural insult. This method describes a class of filters that map a disturbance, process, actuator, and realized trajectory to an intended trajectory. In human reaching, these initial ingredients are available: the process is a dynamic model of the arm, the actuators (muscles) are assumed to act as viscoelastic torque generators, the human interface forces are measured by a sensor, and the realized trajectory is measured.
 
 Here we develop and analyze the mathematics underlying intent extraction, a method to determine one's intended trajectory. We focused, for simplicity in this initial study, on planar targeted arm reaching actions. First, we produce synthetic reaching data using a forward model so that we can examine the quality and uncertainty of intent extraction. We then explore sensitivity and failure modes, demonstrating the accuracy and utility of this method. We show efficacy on a preliminary dataset of healthy reaching movements disrupted by occasional, unpredictable disturbances. Finally, we demonstrate the viability of this method for providing a better understanding of what a person means to do when they move and are disturbed, showing how one's intended trajectory may change following a disturbance.
 
@@ -163,7 +165,7 @@ We chose 15 centimeters long simulated reaches of the right arm, beginning 38 ce
 Our error metric was deviation in position, where unsigned error was calculated as the mean magnitude of deviation from the straight-line nominal trajectory to the target. This was evaluated across each of 150 bins measuring 1 millimeter in width and spaced evenly throughout the 15 centimeter reach. Mean unsigned error (MUE) was also used to summarize the overall error in each movement for sensitivity analysis. Mean and maximum signed error relative to the direction of disturbance, also called perpendicular deviation, were used to measure reaching accuracy in order to elucidate direction of any corrections.
 
 \subsection*{Indices of variance-based sensitivity}
-To ensure a properly spaced and efficient evaluation of sensivity, we employed Sobol-distributed matrices, generated using MATLAB's \textit{sobolset()} function and converted to parameter distributions (see Table~\ref{tab:parameters}) using inverse cumulative probability density. Nominal parameters values were mostly taken from taken Dempster \cite{dempster1955space} and Burdet et al. \cite{burdet2006stability} with typical values where subject-specific parameters (height and weight) and direct where necessary (force sensor noise and drift). Standard deviations reflect expected variation in repeated measurement (ie. height and weight) or measured variance (ie. trial-to-trial variation in sensor noise or uncertainty in mass ratios reported by Dempster \cite{dempster1955space}). Distributions were clamped to the range of $\pm3$ standard deviations in order to limit parameters to a realistic range. Combinations and calculations were made as prescribed by Saltelli et al. \cite{saltelli2010variance} to arrive at direct and total sensitivity indices.
+To ensure a properly spaced and efficient evaluation of sensivity, we employed Sobol-distributed matrices, generated using MATLAB's \textit{sobolset()} function and converted to parameter distributions (see Table~\ref{tab:parameters}) using inverse cumulative probability density. Nominal parameters values were mostly taken from taken Dempster \cite{dempster1955space} and Burdet et al. \cite{burdet2006stability} with typical values where subject-specific parameters (height and weight) and direct where necessary (force sensor noise and drift). Standard deviations reflect expected variation in repeated measurement (ie. height and weight) or measured variance (ie. trial-to-trial variation in sensor noise or uncertainty in mass ratios reported by Dempster \cite{dempster1955space}). Distributions were clamped to the range of $\pm 3$ standard deviations in order to limit parameters to a realistic range. Combinations and calculations were made as prescribed by Saltelli et al. \cite{saltelli2010variance} to arrive at direct and total sensitivity indices.
 
 \subsection*{Human Subjects}
 The human data trajectories analyzed here are drawn from four subjects who gave informed consent in accordance with Northwestern University Institutional Review Board, which specifically approved this study and follows the principles expressed in the Declaration of Helsinki. Two male and two female right-handed subjects (ages 24 to 30) performed the reaches with their right arm and were not compensated. Subjects' arm segment lengths were directly measured \textit{in situ} while body mass was self-reported. 
@@ -252,7 +254,7 @@ Supported by US NIH NINDS1 R01 NS053606
 \includegraphics[width=6in]{fig1.png}
 \end{center}
 \caption{
-{\bf Simulated data illustrating tautology of extraction absent parameter error across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows.
+{\bf Simulated data illustrating tautology of extraction across pulse and filtered Gaussian noise disturbance types.} Intent is modeled as a minimum jerk, 5th order polynomial. Forces experienced are combined with intent via Burdet et al.'s \cite{burdet2006stability} model to produce the simulated arm trajectory. Extraction to recover intention from arm and force trajectory follows. Parameter errors are introduced into the extraction and varied according to Table 1 to estimate sensitivity. Examining the distribution of deviation in trajectories from this analysis reveals that sensitivity is not uniformly distributed throughout a reach.
 }
 \label{fig:synthetic}
 \end{figure}
@@ -302,136 +304,178 @@ Supported by US NIH NINDS1 R01 NS053606
 \begin{table}[!ht]
 \caption{
 \bf{Arm Parameter Values and Sensitivities}}
-\begin{tabular}{|c|c|c c|c c|}
+\begin{tabular}{|c|c|c c|c c|c c|c|}
 \hline
 Parameter Name &
 Units &
 Nominal &
+Source &
 SD &
+Source &
 $S$ &
 $S_T$ \\ \hline
 Upper Arm Length ($L_1$) &
 m &
-0.33 &
-0.01 &
-0 &
-0.10 \\
+0.353 &
+\cite{dempster1955space} &
+0.017 &
+\cite{dempster1955space} &
+0.03 &
+0.17 \\
 Forearm Length ($L_2$) &
 m &
-0.34 &
-0.01 &
+0.363 &
+\cite{dempster1955space} &
+0.011 &
+\cite{dempster1955space} &
 0 &
 0.03 \\
 Upper Arm Center of Mass Ratio ($\frac{L_{m1}}{L_1}$) &
 1 &
 0.436 &
+\cite{winter2009biomechanics} &
 0.0695 &
+15\% &
 0 &
 0.02 \\
 Forearm Center of Mass Ratio ($\frac{L_{m2}}{L_2}$) &
 1 &
 0.682 &
+\cite{winter2009biomechanics} &
 0.0431 &
-0 &
-0.02 \\
+15\% &
+0.01 &
+0.07 \\
 Gross Body Mass ($m_g$) &
 kg &
-79.36 &
+88.4 &
+\cite{fryar2012anthropometric} &
 3.1 &
+\cite{stunkard1981accuracy} &
 0 &
 0.02 \\
 Upper Arm Mass Ratio ($\frac{m_1}{m_g}$) &
 1 &
 0.028 &
+\cite{winter2009biomechanics} &
 0.0029 &
+\cite{dempster1955space} &
 0 &
 0.01 \\
 Forearm Mass Ratio ($\frac{m_2}{m_g}$) &
 1 &
 0.022 &
+\cite{winter2009biomechanics} &
 0.0025 &
+\cite{dempster1955space} &
 0 &
 0.06 \\
 Upper Arm Radius of Gyration Ratio &
 1 &
 0.322 &
+\cite{winter2009biomechanics} &
 0.0161 &
-0 &
-0.01 \\
+15\% &
+0.01 &
+0.06 \\
 Forearm Radius of Gyration Ratio &
 1 &
 0.468 &
+\cite{winter2009biomechanics} &
 0.0234 &
+15\% &
 0 &
-0.01 \\
+0.04 \\
 Shoulder Parallel Coordinate &
 m &
 -0.057 &
+RM &
 0.02 &
-0.02 &
-0.18 \\
+RM &
+0.01 &
+0.14 \\
 Shoulder Perpendicular Coordinate &
 m &
 0.88 &
+RM &
 0.02 &
-0 &
-0.08 \\
+RM &
+0.02 &
+0.06 \\
 Force Sensor Miscalibration $x\text{-axis}$ &
 N &
 0 &
+RM &
 0.231 &
-0 &
-0.08 \\
+RM &
+0.01 &
+0.05 \\
 Force Sensor Miscalibration $y\text{-axis}$ &
 N &
 0 &
+RM &
 0.1067 &
+RM &
 0.03 &
 0.08 \\
 Force Sensor Gaussian Noise SD $x\text{-axis}$ &
 N &
 0 &
+RM &
 0.1653 &
+RM &
 0 &
 0.01 \\
 Force Sensor Gaussian Noise SD $y\text{-axis}$ &
 N &
 0 &
+RM &
 0.2869 &
+RM &
 0 &
 0.01 \\
 Torque-Invariant Impedance Misestimation Ratio &
 1 &
 1 &
+\cite{burdet2006stability} &
 0.15 &
-0.06 &
-0.31 \\
+15\% &
+0.05 &
+0.19 \\
 Torque-Varying Impedance Misestimation Ratio &
 1 &
 1 &
+\cite{burdet2006stability} &
 0.15 &
-0 &
-0.15 \\
+15\% &
+0.05 &
+0.19 \\
 Damping-to-Stiffness Ratio ($k_d$) &
 $\text{sec}^{-1}$ &
 0.0833 &
+\cite{burdet2006stability} &
 0.0125 &
-0 &
+15\% &
+0.01 &
 0.08 \\
 Reflex Impedance Scale Factor &
 1 &
 0.02 &
+\cite{burdet2006stability} &
 0.003 &
-0 &
+15\% &
+0.01 &
 0.04 \\
 Reflex Damping to Stiffness Ratio ($g_d$) &
 $\text{sec}^{-1}$ &
 2 &
+\cite{burdet2006stability} &
 0.3 &
+15\% &
 0 &
 0.04 \\ \hline
 \end{tabular}
-\begin{flushleft}Synthetic model parameters and their associated mean (nominal) values and standard deviations (SD) used to determine the sensitivity indices of Saltelli et al. \cite{saltelli2010variance}. Also shown are the resulting sensitivity indices. Sensitivity indices less than one-thousandth were reported as zero. Total variance was $1.3 \mu m^2$, showing very small average deviations when using this approach. First-order sensitivity, $S$, can be interpreted as fraction of variance removable by perfectly correcting a factor. Total sensitivity, $S_T$, can be interpreted as the fraction left after correcting all other factors.
+\begin{flushleft}Synthetic model parameters and their associated mean (nominal) values and standard deviations (SD) used to determine the sensitivity indices of Saltelli et al. \cite{saltelli2010variance}. Also shown are the resulting sensitivity indices. Sensitivity indices less than one-thousandth were reported as zero. Total variance was $1.56 mm^2$, showing very small average deviations when using this approach. First-order sensitivity, $S$, can be interpreted as fraction of variance removable by perfectly correcting a factor. Total sensitivity, $S_T$, can be interpreted as the fraction left after correcting all other factors. Most parameter values come from the literature, but instrument-specific parameters were determined empirically through repeated measurements (RM). Where parameter values were unavailable, 15\% of the mean was used as a conservative estimate.
 \end{flushleft}
 \label{tab:parameters}
 \end{table}

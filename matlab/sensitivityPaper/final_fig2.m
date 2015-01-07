@@ -2,9 +2,7 @@ clc
 clear all
 
 if ~exist('justMUE4fig2.mat','file')
-    whites=6:10;
-    whites=whites(randperm(5));
-    loadme=[whites(1:4) 11:14];
+    loadme=1:8;
 
     bins=0:.005:.15;
 
@@ -13,7 +11,7 @@ if ~exist('justMUE4fig2.mat','file')
     for k=1:length(loadme)
         load(['BATCH',num2str(loadme(k)),'.mat'])
         yex=extract(t,xvaf,'reflex');
-
+        
         [trash,ref]=getMUE(bins,0*bins,yex);
 
         mueA=zeros(1000,1);
@@ -21,15 +19,18 @@ if ~exist('justMUE4fig2.mat','file')
         mueAB=zeros(1000,20);
 
         for c=1:1000
+            if ~mod(c,100)
+                plot(simA(c).y(:,1),simA(c).y(:,2),'g')
+            end
             mueA(c)=getMUE(bins,ref,simA(c).y);
             mueB(c)=getMUE(bins,ref,simB(c).y);
             for cc=1:20
-                mueAB(c,cc)=1000*getMUE(bins,ref,simAB(cc,c).y);
+                mueAB(c,cc)=getMUE(bins,ref,simAB(cc,c).y);
             end
         end
-        justMUE(k).mueA=mueA;
-        justMUE(k).mueB=mueB;
-        justMUE(k).mueAB=mueAB;
+        justMUE(k).mueA=1000*mueA;
+        justMUE(k).mueB=1000*mueB;
+        justMUE(k).mueAB=1000*mueAB;
     end
 
     save('justMUE4fig2.mat','justMUE')
@@ -66,6 +67,11 @@ for k=1:20
 end
 v=[S' ST']
 vall=var(allAB(:))
+sub_white=allAB(1:4000,:);
+v_white=var(sub_white(:))
+sub_pulse=allAB(4001:8000,:);
+v_pulse=var(sub_pulse(:))
+
 v=v/vall
 totalSensitivity=sum(sum(v))
 %v=v/totalSensitivity;

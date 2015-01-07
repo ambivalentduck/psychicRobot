@@ -10,10 +10,9 @@ if nargin==1
     return
 end
 
-latexscale=1;
-
+latexscale=1.1;
 if length(alength)==1
-    alength=alength*ones(size(d,1));
+    alength=ones(size(colors,1),1)*alength;
 end
 
 for k=1:length(labs)

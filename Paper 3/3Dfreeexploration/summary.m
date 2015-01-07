@@ -1,6 +1,8 @@
 clc
 clear all
 
+load('3dmetrics.mat')
+
 h=load('healthy.mat');
 h=h.outs;
 s=load('stroke.mat');
