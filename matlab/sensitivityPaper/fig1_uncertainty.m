@@ -34,7 +34,7 @@ for k=1:3
     MN=SD;
     xs=linspace(0,.15,51)';
     for kk=1:50
-        F=find((Y(:,1)>xs(kk))&(Y(:,1)>xs(kk+1)));
+        F=find((Y(:,1)>xs(kk))&(Y(:,1)<xs(kk+1)));
         MN(kk)=mean(Y(F,2));
         SD(kk)=std(Y(F,2));
     end
@@ -68,14 +68,14 @@ axis off
 
 latexscale=1.2;
 
-text(0,.54,'Early Pulse','horizontalalignment','left','Verticalalignment','top','color','k')
-text(0,.48+tda,'Late Pulse','horizontalalignment','left','Verticalalignment','top','color','k')
-text(0,.4325+tda+tla,'Filtered Gaussian','horizontalalignment','left','Verticalalignment','top','color','k')
+text(0,.54,'Early Pulse','horizontalalignment','left','Verticalalignment','top','color','k','fontweight','bold')
+text(0,.48+tda,'Late Pulse','horizontalalignment','left','Verticalalignment','top','color','k','fontweight','bold')
+text(0,.4325+tda+tla,'Filtered Gaussian','horizontalalignment','left','Verticalalignment','top','color','k','fontweight','bold')
 
 %annotate(h)
 colors=[gray;black;green;red;.4*darkpink];
 labs={'Force Disturbance','Hand Path','Desired Hand Path','Extracted Desired Hand Path','Extraction Uncertainty'};
-p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.1133,.4965];
+p=[.078,.4455+tda;.1263,.5312;.1301,.4009+tda+tla;.145,.4+tda+tla;.112,.4922];
 d=[1,-1;1,1;1,-1;1,-1;1,1];
 al=.012;
 alength=[al;al;.8*al;1.7*al;.5*al];
