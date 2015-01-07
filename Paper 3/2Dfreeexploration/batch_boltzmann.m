@@ -37,7 +37,7 @@ for k=4 %1:length(sublets)
     else
         load(fname)
     end
-    [outs(k,1), outs(k,2), outs(k,3), outs(k,4)]=boltzmannsubjectplots(t,x,v,a,k)
+    m=boltzmannsubjectplots(t,x,v,a,k)
     suplabel(['Healthy Subject ',sublets{k}],'t')
     %set(findall(gcf,'type','text'),'fontSize',12)
     set(gcf,'position',[76 11 1195 925])
