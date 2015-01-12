@@ -42,5 +42,8 @@ for k=1:3
     hist(state(:,k))
 end
 
-subplot(3,3,[7 8 9])
+subplot(3,3,[7])
 hist(state(:,2).*state(:,3))
+
+subplot(3,3,8)
+hist(log(state(:,2).^2))
