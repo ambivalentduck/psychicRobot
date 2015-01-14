@@ -9,6 +9,7 @@ out=[10*ta.^3-15*ta.^4+6*ta.^5,
     (60*ta-180*ta.^2+120*ta.^3)/(ts^2)];
 
 out(t<=lower,:)=0;
-out(t>=upper,:)=1;
+out(t>=upper,2:3)=0;
+out(t>=upper,1)=1;
 
 
