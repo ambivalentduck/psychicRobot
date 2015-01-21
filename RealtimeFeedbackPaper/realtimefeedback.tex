@@ -49,10 +49,6 @@ Reaching is Easier When You Get What You Want: Realtime Feedback of Intended Rea
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
 Turbulence is an everyday problem that affects piloting and input devices. We derive a method of cancelling its effects that can be performed in realtime. Subjects completed a standard reaching task that required no learning with a turbulent force environment. During the reaching task, subjects were able to view their actual hand positions and their intended hand positions in real time. 
-
-
-
-To see how this affects performance and effort, we place subjects in a standard reaching task with a turbulent force environment. Replacing feedback of hand position with intended position requires no learning to use, reaching accuracy does not degrade, and arm stiffness drops significantly. This therefore represents a promising new feedback modality.
 \end{abstract}
 
 
@@ -63,13 +59,9 @@ Humans often interact with uncertain and complicated environments, such as turbu
 
 The word \textit{intent} is ambiguous and must be distinguished from \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, and \textit{goal selection decisions}\cite{ziebart2010modeling}. While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of an arm or vehicle) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action (i.e, the intended trajectory), even when the actual movement is disturbed and hence no longer matches the intent.
 
-Past attempts to study motor intent have focused on either finding a cost function to generate intended trajectories using \textit{optimal feedback control} or infering the moving \textit{equilibrium point} that results from the spring-like properties of human muscles. Optimal feedback control has been very successful at replicating bulk statistics of outcomes, but it cannot be used to determine the intent underlying any particular action. The $\lambda$ version of the \textit{equilibrium point hypothesis} claimed it could determine the intent underlying any action through a relationship with measured force, impedance, and position of muscles. Gomi and Kawato\cite{gomi1997human} performed these measurements and reported highly complex and often not anatomically realizable trajectories that could not well-represent the intent of a simple reaching movement.
+Past attempts to study motor intent have focused on either finding a cost function to generate intended trajectories using \textit{optimal feedback control} or infering the moving \textit{equilibrium point} that results from the spring-like properties of human muscles. Optimal feedback control has been very successful at replicating bulk statistics of outcomes, but it cannot be used to determine the intent underlying any particular action. The $\lambda$ version of the equilibrium point hypothesis claimed it could determine the intent underlying any action through a relationship with measured force, impedance, and position of muscles. Gomi and Kawato\cite{gomi1997human} performed these measurements and reported highly complex and often not anatomically realizable trajectories that could not well-represent the intent of a simple reaching movement.
 
-Can't know intent, but at least we know there's a correlation between stiffness and error. We do know stiffness and "instability" and noise.
-
-Even though we lack an accepted means of deducing intent, 
-
-If indeed we have deduced the motor intent, we should expect a few properties. First and foremost, no learning should required to use one?s own intent. By definition, there is no error to respond to when you get exactly what you want. Second, this intent should look like an undisturbed movement: a straight-line reach to a target, perhaps changing midreach, perhaps not. Third, the intent should be as accurate as the hand when the human is shown their intent if not moreso. Finally, we know that co-contraction occurs in response to disturbances. If the human is getting what they want, co-contraction is unnecessary and we should see measures of stiffness return to undisturbed levels. If these conditions are met, we can reasonably declare provisional success.
+Since lack an accepted model of intent or an accepted means of deducing it, we turn to arm stiffness and its well-studied relationships with instability and uncertainty. If subjects reach in an uncertain and unstable force environment, we should expect their arm stiffness to increase. If subjects are then asked to reach using their intent, even if our estimate is not perfect, the decrease in uncertainty and instability should lead to a decrease in stiffness.
 
 \section{Methods}
 
