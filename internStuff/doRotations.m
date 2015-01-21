@@ -91,6 +91,12 @@ for s=1:7
     plot((1:5)-rn(s),stiff(exp2(s),:),'b.')
 end
 set(gca,'xtick',1:5)
+set(gca,'ytick',[0:50:200 225 250 275])
+ylabs=get(gca,'yticklabels');
+ylabs{end}='Forces On';
+ylabs{end-1}='Cursor=Hand';
+ylabs{end-2}='Cursor=Deduced Intent';
+
 xlim([.5 5.5])
 ylabel('Stiffness, N/m')
 
