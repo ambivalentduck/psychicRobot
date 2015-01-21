@@ -1,0 +1,140 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out if you need a4paper
+
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts                              % This command is only needed if
+                                                         % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+% The following packages can be found on http:\\www.ctan.org
+\usepackage{graphics} % for pdf, bitmapped graphics files
+%\usepackage{epsfig} % for postscript graphics files
+\usepackage{mathptmx} % assumes new font selection scheme installed
+\usepackage{times} % assumes new font selection scheme installed
+\usepackage{amsmath} % assumes amsmath package installed
+\usepackage{amssymb}  % assumes amsmath package installed
+
+\title{\LARGE \bf
+Reaching is Easier When You Get What You Want: Realtime Feedback of Intended Reaching Trajectory Despite Turbulence
+}
+
+\author{Justin Horowitz$^{1}$, interns, and James Patton$^{1,2*}$% <-this % stops a space
+\thanks{*This work was not supported by any organization}% <-this % stops a space
+\thanks{$^{1}$Albert Author is with Faculty of Electrical Engineering, Mathematics and Computer Science,
+       University of Twente, 7500 AE Enschede, The Netherlands
+       {\tt\small albert.author@papercept.net}}%
+\thanks{$^{2}$Bernard D. Researcheris with the Department of Electrical Engineering, Wright State University,
+       Dayton, OH 45435, USA
+       {\tt\small b.d.researcher@ieee.org}}%
+}
+
+
+\begin{document}
+
+
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+Turbulence is an everyday problem that affects piloting and input devices. We derive a method of cancelling its effects that can be performed in realtime. Subjects completed a standard reaching task that required no learning with a turbulent force environment. During the reaching task, subjects were able to view their actual hand positions and their intended hand positions in real time. 
+
+
+
+To see how this affects performance and effort, we place subjects in a standard reaching task with a turbulent force environment. Replacing feedback of hand position with intended position requires no learning to use, reaching accuracy does not degrade, and arm stiffness drops significantly. This therefore represents a promising new feedback modality.
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{INTRODUCTION}
+
+Humans often interact with uncertain and complicated environments, such as turbulence, crowds and traffic. Despite our capacity to learn and adapt, some environments evolve too quickly or with too much uncertainty for meaningful learning. High frequency disturbances, such as turbulence, that arise while piloting cars and airplanes are particularly difficult to learn. Worse, delays in our responses and reflexes can give to rise to feedback instabilities that cause crashes and deaths. Modern cars and airplanes incorporate electronic controllers to detect these situations and take control from the operator to prevent harm. Operators sometimes turn off these systems, perhaps due to a cognitive wherein humans feel irrationally safer when they are ``in control." Instead of taking the operator out of the control loop, we propose an algorithm that can determine an operator's intent and deliver it while rejecting any external disturbance and the operators's now-unnecessary response to it.
+
+The word \textit{intent} is ambiguous and must be distinguished from \textit{motivation}\cite{mcclelland1985motives, rawolle2013relationships}, \textit{cost}\cite{todorov2002optimal, flash1985coordination}, and \textit{goal selection decisions}\cite{ziebart2010modeling}. While subjects may be \textit{motivated} to complete experiments with minimal effort/cost and their \textit{goal} may be to reach a target, here we use intent to describe the course of action (i.e., the trajectory of an arm or vehicle) taken in service of goals and motives and not the goals nor the motives themselves. Particularly of interest is the intended course of action (i.e, the intended trajectory), even when the actual movement is disturbed and hence no longer matches the intent.
+
+Past attempts to study motor intent have focused on either finding a cost function to generate intended trajectories using \textit{optimal feedback control} or infering the moving \textit{equilibrium point} that results from the spring-like properties of human muscles. Optimal feedback control has been very successful at replicating bulk statistics of outcomes, but it cannot be used to determine the intent underlying any particular action. The $\lambda$ version of the \textit{equilibrium point hypothesis} claimed it could determine the intent underlying any action through a relationship with measured force, impedance, and position of muscles. Gomi and Kawato\cite{gomi1997human} performed these measurements and reported highly complex and often not anatomically realizable trajectories that could not well-represent the intent of a simple reaching movement.
+
+Can't know intent, but at least we know there's a correlation between stiffness and error. We do know stiffness and "instability" and noise.
+
+Even though we lack an accepted means of deducing intent, 
+
+If indeed we have deduced the motor intent, we should expect a few properties. First and foremost, no learning should required to use one?s own intent. By definition, there is no error to respond to when you get exactly what you want. Second, this intent should look like an undisturbed movement: a straight-line reach to a target, perhaps changing midreach, perhaps not. Third, the intent should be as accurate as the hand when the human is shown their intent if not moreso. Finally, we know that co-contraction occurs in response to disturbances. If the human is getting what they want, co-contraction is unnecessary and we should see measures of stiffness return to undisturbed levels. If these conditions are met, we can reasonably declare provisional success.
+
+\section{Methods}
+
+\subsection{Intent Extraction}
+The well-known motion control structure of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} relates arm trajectory, $q$, to desired arm trajectory, $q_d$, and any external disturbance, $E$ using physical parameters of the arm. To show how this model can be algebraically inverted to instead describe desired arm trajectory as a function of arm trajectory and external disturbance, we write it as a torque balance:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=
+\underbrace{\overbrace{\tau_{ff}}^{\text{Feedforward}}+\overbrace{\tau_{fb}}^{\text{Feedback}}}_\text{Controller}
+\end{equation}
+Where $M$ is the mass matrix, $q$ is the joint angles, $\dot{q}$ is joint angular velocity, $\ddot{q}$ is joint angular acceleration, and $G$ contains both Coriolis and centripetal effects. Typical applications solve this torque balance for $\ddot{q}$ and use a numerical differential equation solver to predict arm trajectory in the context of a disturbance of interest, a feedback model, and feedforward torques determined by inverse dynamics. Rather than test hypotheses regarding the learning, production, or composition of this feedforward torque, we instead solve for it:
+\begin{equation}
+\tau_{ff}=M(q)\ddot{q}+G(q,\dot{q})+E-\tau_{fb}
+\end{equation}
+Then we note that feedforward torque can have a one-to-one correspondence with desired acceleration, $\ddot{q}_d$:
+\begin{equation}
+\hat{M}(q_d)\ddot{q}_d+\hat{G}(q_d,\dot{q}_d)+\hat{E}=\tau_{ff}
+\end{equation}
+Hats ($\hat{}$) denote the nervous system's best estimate of a physical quantity. This relationship presumes that any torque produced to compensate for expected disturbances,$\hat{E}$ is known. When there is no history of disturbance or that disturbance cannot be predicted or learned (as in the case of turbulence), we can presume that $\hat{E}=0$. Inversion also requires that $\hat{M}(q_d)$ be invertible, but we can ensure this through our choice of workspace. Finally, feedback torque requires a model of arm impedance, which is known to be task-dependent and to vary over the course of a reach. With no prior knowledge of arm impedance for this task-disturbance combination, we use the model of Shadmehr and Mussa-Ivaldi unchanged.
+
+Under these conditions, desired trajectory can be solved numerically and given to a person as feedback because it is a function of its own history, measurable quantities, and feedback torque.
+
+Arm impedance is task-dependent and can be volitionally controlled, so it is unclear what feedback model is appropriate when subjects are shown their estimated intent. In experiment 1, we presume the feedback torque model of Shadmehr and Mussa-Ivaldi in the hope that it is sufficiently accurate or easy to learn. After determining that subjects' arm impedance was much lower than modeled, we lowered our impedance estimate to the smallest value that was numerically stable for experiment 2.
+
+
+subsection*{Experimental Design}
+We chose 15 centimeters long, center-out reaches of the right arm to targets chosen at 60 degree intervals about that central point. Target selection was carried out pseudorandomly such that each outer target was visited 16 times in each 96 reach block. (Protocol figure) In the absence of disturbing forces, the intended trajectory is nearly identical to the hand trajectory, but reflects force sensor error. Blocks are designed to test the consequences of disturbing forces with feedback of hand position versus feedback of determined intended position. Our error metric was deviation in position, where unsigned error was calculated as the mean magnitude of deviation from the straight-line nominal trajectory to the target. 
+
+\subsection*{Dynamic simulation of arm and intended trajectories}
+Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} relate body mass to limb mass, limb length to limb center of mass, and limb mass and length to moment of inertia. Viscosity parameters were taken from ShadMuss. Stiffness parameters were either taken from ShadMuss or estimated for experiment 2 (mat2(8,2,2,5)). Numerical simulation was performed in real time using the GNU Scientific Library?s odeiv2 driver with Runge-Kutta 4,5 stepping.
+
+\subsection*{Human Subjects}
+The human data trajectories analyzed here are drawn from nine subjects who gave informed consent in accordance with Northwestern University Institutional Review Board, which specifically approved this study and follows the principles expressed in the Declaration of Helsinki. Seven male and two female right-handed subjects (ages 21 to 30) performed the reaches with their right arm and were not compensated. Subjects' arm segment lengths were directly measured \textit{in situ} while body mass was self-reported.
+
+\subsection*{Apparatus}
+A planar manipulandum (described in Patton and Mussa-Ivaldi \cite{patton2004robot}) was programmed to compensate and minimize any friction or mass. The MATLAB XPC-TARGET package \cite{MATLAB:2008} was used to render this force environment at 1000 Hz and data were collected at 1000 Hz.  Visual feedback of hand position was performed at 60 Hz using OpenGL. Closed-loop data transmission time (position measurement to completed rendering to recognition of rendering by the position measurement system) was less than 8 milliseconds, ensuring a visual delay less than one 60 Hz frame. Because force sensors tend to drift, we performed a linear re-zeroing procedure between each motion to assure unbiased measurements.
+
+\subsection*{Statistical Analysis}
+Our principal goal was to determine if and when disturbed trajectories departed from undisturbed trajectories. To detect this departure, we use the one-tailed Student's t-test $(\alpha=.05)$ at 5 millisecond intervals to determine whether or not the deviation of the disturbed trajectories had exceeded the maximum deviations of the undisturbed trajectories. The MATLAB statistics toolbox package \cite{MATLAB:2008} was used.
+
+\section{Results}
+
+Need to cover a few figures:
+A learning curve (that?s flat)
+straightness (which might be an issue)
+error tradeoff figure
+stiffness figure
+
+\subsection{Headings, etc}
+
+
+\section{CONCLUSIONS}
+
+
+\section*{ACKNOWLEDGMENT}
+
+%\begin{thebibliography}{99}
+
+
+
+
+%\end{thebibliography}
+
+
+
+
+\end{document}
+
+
