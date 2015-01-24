@@ -76,7 +76,7 @@ end
 
 figure(50)
 clf
-subplot(2,4,1:4)
+subplot(2,4,2:4)
 hold on
 exp1=2:8;
 exp2=23:29;
@@ -85,37 +85,49 @@ rn=.1*(rand(7,1)-.5);
 stiff=abs(stiff);
 
 for s=1:7
-    plot((1:5)-rn(s),stiff(exp1(s),:),'k-')
-    plot((1:5)-rn(s),stiff(exp1(s),:),'k.')
+    plot((1:5)-rn(s),stiff(exp1(s),:),'r-')
+    plot((1:5)-rn(s),stiff(exp1(s),:),'r.')
     plot((1:5)-rn(s),stiff(exp2(s),:),'b-')
     plot((1:5)-rn(s),stiff(exp2(s),:),'b.')
 end
 set(gca,'xtick',1:5)
 set(gca,'ytick',[0:50:200 225 250 275])
-ylabs=get(gca,'yticklabels');
-ylabs{end}='Forces On';
-ylabs{end-1}='Cursor=Hand';
-ylabs{end-2}='Cursor=Deduced Intent';
+ylabs={};
+for k=0:50:200
+    ylabs{k/50+1}=num2str(k);
+end
+ylabs{end+1}='Cursor=Deduced Intent';
+ylabs{end+1}='Cursor=Hand';
+ylabs{end+1}='Forces On';
+length(ylabs)
+length([0:50:200 225 250 275])
+set(gca,'yticklabels',ylabs)
+ylim([0 300])
 
 xlim([.5 5.5])
 ylabel('Stiffness, N/m')
+xlabel('Block')
+plot([1.5 4.5],275*[1 1],'k')
+plot([2.5 3.5],225*[1 1],'k')
+plot([.5 2.5],250*[1 1],'k',[3.5 5.5],250*[1 1],'k')
 
 xl=[.7 2.3];
 %Hypothesis 1: forces increase stiffness (2-1)
+msize=3;
 subplot(2,4,5)
 hold on
-plot(1+rn,stiff(exp1,2)-stiff(exp1,1),'k.')
-plot(2+rn,stiff(exp2,2)-stiff(exp2,1),'b.')
+plot(1+rn,stiff(exp1,2)-stiff(exp1,1),'r.','markersize',msize)
+plot(2+rn,stiff(exp2,2)-stiff(exp2,1),'b.','markersize',msize)
 set(gca,'xtick',[1 2])
 xlim(xl)
-ylabel('Stiffness Change, N/m')
+ylabel('\DeltaStiffness, N/m')
 title('2-1')
 
 %Hypothesis 2: intent decreases stiffness despite forces (3-2)
 subplot(2,4,6)
 hold on
-plot(1+rn,stiff(exp1,3)-stiff(exp1,2),'k.')
-plot(2+rn,stiff(exp2,3)-stiff(exp2,2),'b.')
+plot(1+rn,stiff(exp1,3)-stiff(exp1,2),'r.','markersize',msize)
+plot(2+rn,stiff(exp2,3)-stiff(exp2,2),'b.','markersize',msize)
 set(gca,'xtick',[1 2])
 xlim(xl)
 title('3-2')
@@ -123,16 +135,16 @@ title('3-2')
 %Hypothesis 2.5: indistinguishable from baseline (3-1)
 subplot(2,4,7)
 hold on
-plot(1+rn,stiff(exp1,3)-stiff(exp1,1),'k.')
-plot(2+rn,stiff(exp2,3)-stiff(exp2,1),'b.')
+plot(1+rn,stiff(exp1,3)-stiff(exp1,1),'r.','markersize',msize)
+plot(2+rn,stiff(exp2,3)-stiff(exp2,1),'b.','markersize',msize)
 set(gca,'xtick',[1 2])
 xlim(xl)
 title('3-1')
 %Hypothesis 3: stiffness increases again when intent is removed (4-3)
 subplot(2,4,8)
 hold on
-plot(1+rn,stiff(exp1,4)-stiff(exp1,3),'k.')
-plot(2+rn,stiff(exp2,4)-stiff(exp2,3),'b.')
+plot(1+rn,stiff(exp1,4)-stiff(exp1,3),'r.','markersize',msize)
+plot(2+rn,stiff(exp2,4)-stiff(exp2,3),'b.','markersize',msize)
 set(gca,'xtick',[1 2])
 xlim(xl)
 title('4-3')

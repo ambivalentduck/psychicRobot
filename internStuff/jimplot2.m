@@ -10,6 +10,7 @@ markers={'-','-.','--'};
 for k=1:7
     figure(k)
     clf
+    subplot(3,1,3)
     hold on
     for kk=1:3
         plot(0,0,'color',colors(kk,:))
@@ -27,18 +28,34 @@ for k=1:7
                 t=trials(T).t(inds)-trials(T).t(trials(T).start);
                 tlength(T)=length(inds);
                 qoi=abs(trials(T).xrot(inds,2))-abs(trials(T).yrot(inds,2));
+                subplot(3,1,3)
                 plot(t,qoi,'-','color',colors(blocksetup(B,3),:),'markersize',.001);
+                subplot(3,1,2)
+                hold on
+                plot(t,vecmag(trials(T).f(inds,:)),'-','color',colors(blocksetup(B,3),:))
+                subplot(3,1,1)
+                hold on
+                plot(t,vecmag(trials(T).v(inds,:)),'-','color',colors(blocksetup(B,3),:))
                 tr(T).qoi=zeros(150,1);
                 lqoi=min(length(qoi),150);
                 tr(T).qoi(1:lqoi)=qoi(1:lqoi);
+                rmsx(k,T)=sqrt(mean(trials(T).xrot(inds,2).^2));
+                rmsy(k,T)=sqrt(mean(trials(T).yrot(inds,2).^2));
             end
         end
     end
     %axis equal
+    subplot(3,1,3)
     legend('No forces','Forces','Forces+Intent')
     ylabel('|Hand Error|-|Intent Error|, m')
     xlabel('time, s')
     
+    subplot(3,1,2)
+    ylabel('|Force|')
+    subplot(3,1,1)
+    ylabel('Speed')
+    
+    subplot(3,1,3)
     tlist=(1:480)';
     b=floor((tlist-1)/96)+1
     t=0:.005:149*.005;
@@ -64,3 +81,18 @@ ylabel('|Hand Error|-|Intent Error|, m')
 xlabel('time, s')
 plot([0 t(end)],[0 0],'k-')
 xlim([0 t(end)])
+
+figure(18)
+clf
+hold on
+
+tls=5:2:479
+for k=1:7
+    plot(
+end
+legend('No forces','Forces','Forces+Intent')
+ylabel('|Hand Error|-|Intent Error|, m')
+xlabel('time, s')
+plot([0 t(end)],[0 0],'k-')
+xlim([0 t(end)])
+
