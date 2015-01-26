@@ -28,7 +28,7 @@ Reaching is Better When You Get What You Want: Realtime Feedback of Intended Rea
 
 \author{Justin Horowitz$^{1}$, Tejas Madhavan$^{1}$, Christine Massie$^{1}$, and James Patton$^{1,2*}$% <-this % stops a space
 \thanks{*Ask Jim Who Funded This}% <-this % stops a space
-\thanks{$^{1}$All authors are with the Deparment of Bioengineering Science, University of Illinois at Chicago, 
+\thanks{$^{1}$All authors are with the Deparment of Bioengineering, University of Illinois at Chicago, 
 		Chicago, IL 60607, USA 
 		}
 \thanks{$^{2}$James Patton is with the Sensory Motor Performance Program, Rehabiliation Institute of Chicago,
@@ -48,7 +48,7 @@ Reaching is Better When You Get What You Want: Realtime Feedback of Intended Rea
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-Turbulence is an everyday problem that affects piloting and input devices. We derive a method of cancelling its effects to arrive at a human operator's intent that can be performed in realtime. We then explore subjects' ability to make targeted reaching motions using this estimate of their intent as a cursor while experiencing turbulent forces. All eight subjects were capable of doing so. Reaching performance during turbulence was significantly better using the estimated intent than the hand and arm stiffness was significantly lower. As arm stiffness is known to correlate with perceived instability and uncertainty, this may indicate a decline in either or both. In this first exploration we used a classic arm model, but even better performance might be achieved with more accurate modeling.
+Turbulence is an everyday problem that affects piloting and input devices. We derive a method of cancelling its effects to arrive at a human operator's intent that can be performed in realtime. We then explore subjects' ability to make targeted reaching motions using this estimate of their intent as a cursor while experiencing turbulent forces. All eight subjects were capable of doing so. Reaching performance during turbulence was significantly better using the estimated intent than the hand and arm stiffness was significantly lower. As arm stiffness is known to correlate with instability and uncertainty, this may indicate a decline in either or both. In this first exploration we used a classic arm model, but even better performance might be achieved with more accurate modeling. In the future, this method could be abstracted and applied to plants other than the human arm such as automobiles, boats, airplanes, touch screen devices.
 \end{abstract}
 
 
@@ -125,23 +125,12 @@ As expected, the model was able to deduce an intended trajectory and all subject
 Even if subjects are capable of performing a reaching task using their estimated intent, a poor estimate should lead to poor performance. Indeed, the hand significantly outperforms our intent estimate when the force disturbance is not present in block 1 (Figure 2B). Model and sensor inaccuracies degrade performance and result in an error of approximately 5 millimeters. In the presence of a force disturbance in block 2, the hand loses its advantage as model and sensor inaccuracies are balanced by some degree of cancellation of the disturbance. In block 3 where visual feedback of the intent is given instead of hand, the intent significantly outperforms the hand. For this intent estimate to be useful, subjects should perform better when using feedback of the intent than when using feedback of the hand. Comparing the hand's performance in block 2 to the intent's performance in block 3, subjects perform significantly better using their estimated intent. Finally, no significant differences were present across the two experiments. Performance appears relatively insensitive to this change in the stiffness model used to deduce the intent.
 
 \subsection*{Endpoint Stiffness}
-While accuracy is desirable, it can be attained by cocontracting the muscles to increase arm stiffness at the cost of metabolic effort \cite{gribble2003role}\cite{takahashi2001impedance}. Subjects stiffen significantly in response to white noise forces as seen by comparing stiffness in blocks 1 and 2 (Figure 3B). Subjects' stiffness significantly decreases when feedback of the deduced intent replaces feedback of the hand as seen by comparing blocks 2 and 3. This decrease does not return stiffness to undisturbed levels and it remains even after feedback of the hand resumes as seen by comparing blocks 3 and 4. Stiffness tends to decrease with duration of exposure to a forced disturbance\cite{o}
-
- If feedback of intent increases accuracy and decreases stiffness, 
-
+While accuracy is desirable, it can be attained by cocontracting the muscles to increase arm stiffness at the cost of metabolic effort \cite{gribble2003role}\cite{takahashi2001impedance}. Subjects stiffen significantly in response to white noise forces as seen by comparing stiffness in blocks 1 and 2 (Figure 3B). Subjects' stiffness significantly decreases when feedback of the deduced intent replaces feedback of the hand as seen by comparing blocks 2 and 3. This decrease does not return stiffness to undisturbed levels and it remains even after feedback of the hand resumes as seen by comparing blocks 3 and 4. Stiffness may decrease with duration of exposure to uncertain disturbances\cite{takahashi2001impedance}. Subjects do not appear to have adjusted their stiffness to match the stiffness used in the estimation as subject and model stiffnesses were significantly different in experiment 2.
 
 \section{Discussion}
-Long story short, white noise still causes people to stiffen up and intent feedback alleviates that.
+Exposure to turbulent forces damaged subjects' reaching accuracy and increasing their arm stiffness, but replacing feedback of a subject's hand with feedback of their estimated intent alleviated accuracy and stiffness. In the absence of disturbing forces estimated intent accuracy was lower than that of the hand, which suggests the need for model improvements. While we could can uniquely determine muscle torque through a torque balance, we assumed a feedback torque model to arrive at feedforward torque. While our choice of stiffness model is clearly inaccurate, we had good reason to believe that our subjects would readily adapt to a constant stiffness, but this does not seems to be the case. Moreover, difficulties acquiring and holding the target support claims that different mechanisms are at work during that stage of movement\cite{niu2010temporal}. 
 
-In theory, our intended trajectories can be used to better fit cost functions for optimal control and this is more a refinement of the equilibrium point hypothesis that sort of gets physics right.
-
-
-While we could can uniquely determine muscle torque through a torque balance, we assumed a feedback torque model to arrive at feedforward torque. While our choice of stiffness model is clearly inaccurate, we had good reason to believe that our subjects would readily adapt to a constant stiffness and this seems to be the case during the ballistic phase of movement. Difficulties acquiring and holding the target support claims that different mechanisms are at work during that stage of movement\cite{shapiro}.
-
-With a feed-forward torque in hand, we made a second assumption: no force learning.  Without presumed limitations or a model of force learning to constrain our choice of $\hat{E}$, we could choose it to obtain an arbitrary value for $\ddot{q}_d$. If we were to presume $\ddot{q}_d$, perhaps most defensibly as a minimum-jerk straight line reach\cite{flash1985coordination}, we could instead determine $\hat{E}$. This suggests a third treatment group in future work: cancelling the target-perpendicular component of movement entirely. If movement intent is always a straight-line reach to the target, our technique represents unnecessary complication. Conversely, the planned reach may not always be a straight line. This \textit{straight-line hypothesis} could be readily tested by examining whether or not the determined $\hat{E}$ is symmetrically distributed.
-
-Subjects got more of what they seemingly wanted using our feedback than without it. This represents a promising new treatment, but further study is needed.
-
+Future directions include
 
 \section*{ACKNOWLEDGMENT}
 
