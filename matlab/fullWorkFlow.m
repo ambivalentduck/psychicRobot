@@ -1,7 +1,7 @@
 clc
 clear all
 
-n=1:4;
+n=5:8;
 
 % workflow={'','addSubjectPulse';
 %     'W','findKpGain';
