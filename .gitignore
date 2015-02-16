@@ -8,6 +8,7 @@ moc*
 *.tiff
 .dvi
 .log
+*.pdf
 .aux
 .ps
 manipulandumDisplay
@@ -17,6 +18,11 @@ getAlpha*.m
 *.png
 *.jpg
 *.dat
+*.aux
+*.out
+*.log
+*.gz
+*.dvi
 Pictures/*
 SfN Poster/*
 matlab/sensitivityPaper/*
@@ -36,4 +42,5 @@ Paper1
 *.odp
 .asv
 
+Paper1 (copy)/*
 BasicCompensator-Reset2v2/*
