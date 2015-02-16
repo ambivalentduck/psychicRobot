@@ -1,6 +1,6 @@
 function [dqi,torque_fb,torque_inertial]=armdynamicsInvertedBurdetReflexes(t,qi)
 
-global measuredVals measuredTime errorVals errorTime kpgain
+global measuredVals measuredTime errorVals errorTime kpgain massgain
 
 interped=twoNearestNeighbor(measuredVals,measuredTime,t);
 theta_real=interped(1:2)';
@@ -32,7 +32,7 @@ torque_fb=kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired))+(k
 
 % Update the change in desired state
 dqi=[omega_desired;
-    D_expected\(D_real*alpha_real+torque_fb+torque_outside+C_real-C_expected);];  %If torque_fb and torque_outside=0, and c_real ~ c_expected, alpha = alpha desired.
+    D_expected\(D_real*alpha_real+(torque_fb+torque_outside)/massgain+C_real-C_expected);];  %If torque_fb and torque_outside=0, and c_real ~ c_expected, alpha = alpha desired.
 
 torque_inertial=D_expected*dqi(3:4)+C_expected;
 end

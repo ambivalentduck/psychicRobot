@@ -23,6 +23,10 @@ getAlpha*.m
 *.log
 *.gz
 *.dvi
+*.ps
+*.bbl
+*.blg
+*.ps
 Pictures/*
 SfN Poster/*
 matlab/sensitivityPaper/*

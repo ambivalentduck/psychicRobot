@@ -12,11 +12,9 @@ n=5:8;
 %     };
 
 workflow={'','addSubjectPulse';
-    'W','findKpGain';
-    'Y','extractPulses';
-    'U','extractUndisturbed';
+    'W','findWhiteKpGain';
+    'Y','extractPulses'
     };
-
 
 
 mfiles=dir('.');
