@@ -224,6 +224,10 @@ for TN=1:2
     end
 end
 
+figure(50001)
+clf
+plot(TMP(:,1),TNP(:,1),'.')
+
 error
 
 
