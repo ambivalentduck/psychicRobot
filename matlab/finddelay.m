@@ -41,4 +41,13 @@ for S=1:8 %why not
     
 end
 
+for S=1:8
+    subplot(4,2,S)
+    if S~=3
+            ylabel('')
+    end
+    title(num2str(S))
+    forcelag(S)=dot(fit(:,1,S),fit(:,2,S))/sum(fit(:,2,S));
+end
 
+save('forcelag.mat','forcelag')
