@@ -1,32 +1,15 @@
 function extractPulses(k)
 
-global kpgain
+global kpgain massgain
 
 figure(k)
 clf
 hold on
 axis equal
 
-scale=.8;
-
-load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
-params
-%Subject 1
-% params.mass=50;
-% params.shoulder(2)=.48;
-% params.l1=.28;
-% params.l2=.3;
-
-%Subject 2
-kpgain=.16
-
-%Subject 3 and 4
-%kpgain=scale*W(end,1)
 
 set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
-
-offsetForce=onset;
 
 dcats=[trials.disturbcat];
 F=find((dcats>0)&(dcats<5)); %Just like title implies, only the pulses
