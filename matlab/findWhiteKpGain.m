@@ -2,6 +2,11 @@ function findWhiteKpGain(k)
 
 load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
+global kpgain massgain
+
+kpgain=1;
+massgain=1;
+
 GWR=2000;
 
 %% Categorize by start/end pair
@@ -54,41 +59,46 @@ figure(2)
 clf
 hold on
 yoffset=.1;
+toi=0:.01:1;
 for U=1:length(urc)
     f=find(clean'&(reachcat==(urc(U))));
     rp=randperm(length(f));
     for krp=1:length(rp)
         fk=rp(krp);
         if krp<=20
-            catme(U,krp).x=[trials(f(fk)).x(:,1) trials(f(fk)).v(:,1) trials(f(fk)).a(:,1)]';
-            catme(U,krp).y=[trials(f(fk)).x(:,2) trials(f(fk)).v(:,2) trials(f(fk)).a(:,2)]';
+            start=onsetDetector(trials(f(fk)));
+            time=trials(f(fk)).t-trials(f(fk)).t(start);
+            x=trials(f(fk)).x;
+            pl=sum(sqrt(sum((x(2:end,:)-x(1:end-1,:)).^2,2)));
+            if pl>1.3*(abs(means(starts(f(fk)))-means(ends(f(fk)))))
+                continue
+            end
+            catme(U,krp).t=time;
+            catme(U,krp).x=[x trials(f(fk)).v trials(f(fk)).a];
         end
         plot(trials(f(fk)).x(:,1),trials(f(fk)).x(:,2)+yoffset*U,'linewidth',.01)
         plot(trials(f(fk)).x(end,1),trials(f(fk)).x(end,2)+yoffset*U,'rx')
     end
-    st=floor(urc(U)/10);
-    en=mod(urc(U),10);
-    catx=[catme(U,:).x];
-    caty=[catme(U,:).y];
-    X=linspace(means(st),means(en));
-    Y=gaussianWeightedRegression(catx(1,:)',caty',X,GWR);
-    plot(X,Y(:,1)+yoffset*U,'g')
+    catx=vertcat(catme(U,:).x);
+    catt=vertcat(catme(U,:).t);
+    X=gaussianWeightedRegression(catt,catx(:,1:2),toi,GWR);
+    plot(X(:,1),X(:,2)+yoffset*U,'g')
 end
 axis equal
 
-yoffset=.3;
+yoffset=.4;
 figure(3)
 clf
 hold on
+toi=0:.01:1;
 for U=1:length(urc)
     st=floor(urc(U)/10);
     en=mod(urc(U),10);
-    catx=[catme(U,:).x];
-    caty=[catme(U,:).y];
-    X=linspace(means(st),means(en));
-    Y=gaussianWeightedRegression(catx(1,:)',caty',X,GWR);
-    plot(catx(1,:),caty(2,:)+yoffset*U,'b.','markersize',.01)
-    plot(X,Y(:,2)+yoffset*U,'g')
+    catx=vertcat(catme(U,:).x);
+    catt=vertcat(catme(U,:).t);
+    X=gaussianWeightedRegression(catt,catx(:,1:2),toi,GWR);
+    plot(catt,catx(:,1)+yoffset*U,'b.','markersize',.01)
+    plot(toi,X(:,1)+yoffset*U,'g')
 end
 
 %% Shift force trace relative to position trace due to sensor lead.
@@ -97,7 +107,7 @@ lag=round(forcelag(k)/5);
 f_all=vertcat(trials.f);
 
 for T=3:length(trials)-2 %Quietly fail to fix the first two and last two reaches because they don't matter and are undisturbed
-    trials(T).f=f_all(trials(T).rawinds+lag,:); %#ok<*AGROW>
+    trials(T).f=f_all(trials(T).rawinds-lag,:); %#ok<*AGROW>
 end
 
 %% We'll need to know the onset of pulse forces later
@@ -138,14 +148,13 @@ fitlower=.0;
 fitupper=.5;
 for U=1:length(urc)
     f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
-    catx=[catme(U,:).x]';
-    caty=[catme(U,:).y]';
     for fk=1:length(f)
         plot(trials(f(fk)).x(:,1),trials(f(fk)).x(:,2)+yoffset*U,'linewidth',.01)
         [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
 
         time=trials(f(fk)).t;
         trialInfo(f(fk)).kPeak=ind;
+        % This trialInfo.forceinds is what we need later.
         trialInfo(f(fk)).forceinds=find((time>=(time(ind)+onset))&(time<=(time(ind)-onset)));
     end
 end
@@ -159,24 +168,24 @@ set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 % inertia and coriolis are linear in body mass
 % k2 is essentially a stiffness adjustment
 
-fitlower=.2/.005;
-fitupper=.4/.005;
+fitlower=.0/.005;
+fitupper=.6/.005;
 indspan=fitlower:fitupper;
 for U=1:length(urc)
     f=find((dcats==5)&(reachcat'==(urc(U))));
-    catx=[catme(U,:).x]';
-    caty=[catme(U,:).y]';
+    catx=vertcat(catme(U,:).x);
+    catt=vertcat(catme(U,:).t);
     for fk=1:length(f)
         kk=f(fk);
 
-        onset=find(vecmag(trials(kk).v)>.05,1,'first');
-        start=max(onset-35,1);
+        start=onsetDetector(trials(kk));
         time=trials(kk).t(start+indspan);
         time=time-time(1);
 
         %Find typical reach-perpendicular p,v,a.
-        Y=gaussianWeightedRegression(catx(:,1),caty,trials(kk).x(start+indspan,1),GWR);
-        %Y(:,1)=Y(:,1)-(Y(1,1)-trials(f(fk)).x(start+indspan(1),2)); %If the "shape" holds, this corrects for starting bias.
+        
+        Y=gaussianWeightedRegression(catt,catx(:,1:6),time,GWR);
+        Y(:,2)=Y(:,2)-(Y(1,2)-trials(f(fk)).x(start+indspan(1),2)); %If the "shape" holds, this corrects for starting bias.
         
         X=[trials(kk).x(start+indspan,:) trials(kk).v(start+indspan,:) trials(kk).a(start+indspan,:) trials(kk).f(start+indspan,:)];
 
@@ -201,7 +210,7 @@ hold on
 X=vertcat(storeme(:).X);
 Y=vertcat(storeme(:).Y);
 plot(X(:,6),X(:,8),'b.')
-plot(Y(:,3),X(:,8),'g.')
+plot(Y(:,6),X(:,8),'g.')
 plot(X(:,5),X(:,7),'r.')
 
 figure(289)
@@ -215,23 +224,38 @@ for TN=1:2
         ft=[TMP(f,TN), TSP(f,TN)]\TNP(f,TN);
         subplot(2,2,TN)
         hold on
-        plot(T*5,ft(1),'r.')
-        plot(T*5,ft(2),'b.')
+        plot(indspan(T+1)*5,ft(1),'r.')
+        plot(indspan(T+1)*5,ft(2),'b.')
+        if TN==1
+            title('Shoulder')
+            ylabel('Gain, Unitless')
+            legend('Mass','Stiffness')
+        else
+            title('Elbow')
+        end
         subplot(2,2,2+TN)
         hold on
-        err=TNP(f,TN)-[TMP(f,TN) TSP(f,TN)]*ft;
-        plot(T*5,err,'k.')
+        err=mean((TNP(f,TN)-[TMP(f,TN) TSP(f,TN)]*ft).^2);
+        plot(indspan(T+1)*5,err,'k.')
+        if TN==1
+            ylabel('Mean Squared Fit Error, N^2')
+        end
+        xlabel('Time Since Movement Onset , ms')
     end
 end
 
 figure(50001)
 clf
-plot(TMP(:,1),TNP(:,1),'.')
-
-error
-
+hold on
+plot3(TSP(:,1),TMP(:,1),TNP(:,1),'b.')
+plot3(TSP(:,2),TMP(:,2),TNP(:,2),'r.')
+xlabel('TSP')
+ylabel('TMP')
+zlabel('TNP')
 
 massgain=fit(1);
 kpgain=fit(2);
+
+error
 
 save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'massgain','kpgain','trialInfo','means','trials','params')

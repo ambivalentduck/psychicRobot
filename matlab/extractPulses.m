@@ -10,6 +10,8 @@ axis equal
 load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
 set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
+kpgain=1 %10/25;
+massgain=1 %5/10;
 
 dcats=[trials.disturbcat];
 F=find((dcats>0)&(dcats<5)); %Just like title implies, only the pulses
@@ -18,8 +20,7 @@ for c=1:length(F)
     c/length(F)
 
     kk=F(c);
-    onset=find(vecmag(trials(kk).v)>.05,1,'first');
-    start=max(onset-35,1);
+    start=onsetDetector(trials(kk));
     onset2=find(vecmag(trials(kk+1).v)>.1,1,'first');
     xvaf1=[trials(kk).x trials(kk).v trials(kk).a trials(kk).f];
     xvaf2=[trials(kk+1).x trials(kk+1).v trials(kk+1).a trials(kk+1).f];

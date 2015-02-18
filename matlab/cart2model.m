@@ -28,10 +28,10 @@ for k=1:size(X,1)
     [D_real,C_real]=computeDC(qreal(1:2),qreal(3:4));
 
     %Compute desired q and tau
-    q=ikin([X(k,1) Y(k,1)]);
+    q=ikin(Y(k,1:2));
     fJq=fJ(q);
-    qdot=fJq\[X(k,3) Y(k,2)]';
-    qddot=getAlpha(q,qdot,[X(k,5) Y(k,3)]');
+    qdot=fJq\Y(k,3:4)';
+    qddot=getAlpha(q,qdot,Y(k,5:6)');
     qdes=[q; qdot; qddot];
     [D_des,C_des]=computeDC(qdes(1:2),qdes(3:4));
     
