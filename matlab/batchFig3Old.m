@@ -1,6 +1,4 @@
-clc
-clear all
-close all
+function batchFig3Old(S)
 
 lw=1.5;
 
@@ -23,10 +21,8 @@ figure(37)
 clf
 hold on
 
-S=5;
 load(['../Data/Data_pulse/pulse',num2str(S),'W.mat'])
 load(['../Data/Data_pulse/pulse',num2str(S),'Y.mat'])
-%load(['../Data/Data_pulse/pulse',num2str(S),'U.mat'])
 
 starts=[trialInfo.startcat];
 ends=[trialInfo.endcat];
@@ -131,7 +127,7 @@ axis off
 set(gcf,'units','centimeters')
 %set(gcf,'position',[3 3 18 18])
 
-matlabfrag('figures/fig3raw')
+%matlabfrag('figures/fig3raw')
 %laprint(gcf,'figures/fig3raw','width',15,'scalefonts','off','factor',1)
 
-%print('figures/fig3','-dtiff','-r300')
+print(['figures/fig3Old_',num2str(S)],'-dtiff','-r300')

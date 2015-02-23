@@ -10,8 +10,6 @@ axis equal
 load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
 
 set2dGlobals(params.l1,params.l2,params.origin,params.shoulder,params.mass)
-kpgain=1 %10/25;
-massgain=1 %5/10;
 
 dcats=[trials.disturbcat];
 F=find((dcats>0)&(dcats<5)); %Just like title implies, only the pulses
@@ -27,6 +25,10 @@ for c=1:length(F)
     
     t=[trials(kk).t(start:end); trials(kk+1).t(1:onset2)]';
     xvaf=[xvaf1(start:end,:); xvaf2(1:onset2,:)];
+    
+    kpgain=kpgains(1); %(trialInfo(kk).startcat);
+    massgain=massgains(1); %(trialInfo(kk).startcat);
+    
     y=extract(t,xvaf,'reflex');
     trials(kk).y=y;
     trials(kk).ty=t;

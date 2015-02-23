@@ -101,15 +101,6 @@ for U=1:length(urc)
     plot(toi,X(:,1)+yoffset*U,'g')
 end
 
-%% Shift force trace relative to position trace due to sensor lead.
-load forcelag.mat
-lag=round(forcelag(k)/5);
-f_all=vertcat(trials.f);
-
-for T=3:length(trials)-2 %Quietly fail to fix the first two and last two reaches because they don't matter and are undisturbed
-    trials(T).f=f_all(trials(T).rawinds-lag,:); %#ok<*AGROW>
-end
-
 %% We'll need to know the onset of pulse forces later
 figure(5)
 clf
@@ -144,14 +135,12 @@ figure(6)
 clf
 hold on
 
-fitlower=.0;
-fitupper=.5;
 for U=1:length(urc)
     f=find((dcats>0)&(dcats<5)&(reachcat'==(urc(U))));
     for fk=1:length(f)
         plot(trials(f(fk)).x(:,1),trials(f(fk)).x(:,2)+yoffset*U,'linewidth',.01)
         [val,ind]=findpeaks(abs(trials(f(fk)).f(:,2)),'minpeakheight',5,'npeaks',1);
-
+        
         time=trials(f(fk)).t;
         trialInfo(f(fk)).kPeak=ind;
         % This trialInfo.forceinds is what we need later.
@@ -160,7 +149,7 @@ for U=1:length(urc)
 end
 
 
-%% Use a helper function to [x v a], [xd vd ad], and F into mass and viscoelastic ratios
+%% Use a helper function to get [x v a], [xd vd ad], and F into torques
 set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 
 %This code is super straight-forward: error and error velocity vs typical
@@ -177,85 +166,50 @@ for U=1:length(urc)
     catt=vertcat(catme(U,:).t);
     for fk=1:length(f)
         kk=f(fk);
-
+        
         start=onsetDetector(trials(kk));
         time=trials(kk).t(start+indspan);
         time=time-time(1);
-
+        
         %Find typical reach-perpendicular p,v,a.
         
         Y=gaussianWeightedRegression(catt,catx(:,1:6),time,GWR);
         Y(:,2)=Y(:,2)-(Y(1,2)-trials(f(fk)).x(start+indspan(1),2)); %If the "shape" holds, this corrects for starting bias.
         
         X=[trials(kk).x(start+indspan,:) trials(kk).v(start+indspan,:) trials(kk).a(start+indspan,:) trials(kk).f(start+indspan,:)];
-
+        
         [storeme(U,fk).TMP,storeme(U,fk).TSP,storeme(U,fk).TNP]=cart2model(X,Y);
         storeme(U,fk).time=time;
         storeme(U,fk).X=X;
         storeme(U,fk).Y=Y;
+        storeme(U,fk).starts=starts(kk);
+        storeme(U,fk).ends=ends(kk);
     end
 end
 axis equal
 
-TMP=vertcat(storeme(:).TMP);
-TSP=vertcat(storeme(:).TSP);
-TNP=vertcat(storeme(:).TNP);
-fit=[TMP(:) TSP(:)]\TNP(:)
-time=vertcat(storeme(:).time);
-indtime=floor(time*200); %indices
+%% Relate torques to find shift as well as mass and stiff gains
 
-figure(5000)
-clf
-hold on
-X=vertcat(storeme(:).X);
-Y=vertcat(storeme(:).Y);
-plot(X(:,6),X(:,8),'b.')
-plot(Y(:,6),X(:,8),'g.')
-plot(X(:,5),X(:,7),'r.')
+scat=[storeme.starts];
+subfitlower=.25/.005;
+subfitupper=.45/.005;
+for kk=1 %:3
+    f=find(scat);
+    TMP=[storeme(f).TMP];
+    TSP=[storeme(f).TSP];
+    TNP=[storeme(f).TNP];
+    [massgains(kk),kpgains(kk),lag]=deoptMassStiffShift(TMP,TSP,TNP,subfitlower:subfitupper)
+end
 
-figure(289)
-clf
-for TN=1:2
-    for T=0:(fitupper-fitlower)
-        f=find(indtime==T);
-        if isempty(f)
-            continue
-        end
-        ft=[TMP(f,TN), TSP(f,TN)]\TNP(f,TN);
-        subplot(2,2,TN)
-        hold on
-        plot(indspan(T+1)*5,ft(1),'r.')
-        plot(indspan(T+1)*5,ft(2),'b.')
-        if TN==1
-            title('Shoulder')
-            ylabel('Gain, Unitless')
-            legend('Mass','Stiffness')
-        else
-            title('Elbow')
-        end
-        subplot(2,2,2+TN)
-        hold on
-        err=mean((TNP(f,TN)-[TMP(f,TN) TSP(f,TN)]*ft).^2);
-        plot(indspan(T+1)*5,err,'k.')
-        if TN==1
-            ylabel('Mean Squared Fit Error, N^2')
-        end
-        xlabel('Time Since Movement Onset , ms')
+
+%% Shift force trace relative to position trace due to sensor lead.
+if 0
+    lag=round(lag);
+    f_all=vertcat(trials.f);
+    
+    for T=3:length(trials)-2 %Quietly fail to fix the first two and last two reaches because they don't matter and are undisturbed
+        trials(T).f=f_all(trials(T).rawinds+lag,:); %#ok<*AGROW>
     end
 end
 
-figure(50001)
-clf
-hold on
-plot3(TSP(:,1),TMP(:,1),TNP(:,1),'b.')
-plot3(TSP(:,2),TMP(:,2),TNP(:,2),'r.')
-xlabel('TSP')
-ylabel('TMP')
-zlabel('TNP')
-
-massgain=fit(1);
-kpgain=fit(2);
-
-error
-
-save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'massgain','kpgain','trialInfo','means','trials','params')
+save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'massgains','kpgains','trialInfo','means','trials','params')

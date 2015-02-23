@@ -1,7 +1,10 @@
 clc
 clear all
 
-n=5:8;
+n=1:8;
+
+%Add differential optimization just in case it's needed
+addpath ../../DeOpt/
 
 % workflow={'','addSubjectPulse';
 %     'W','findKpGain';
