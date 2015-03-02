@@ -1,10 +1,6 @@
-%function fitAllParams(S)
-clc
-clear all
+function [fitparams,nominal]=fitAllParams(S)
 
 global fJ getAlpha
-
-S=4
 
 load(['../Data/Data_pulse/pulse',num2str(S),'W.mat'])
 
@@ -65,5 +61,5 @@ kp0=[10.8 2.83; 2.51 8.67];
 kp1=[3.18 2.15; 2.34 6.18];
 
 nominal=[.436*l1,.682*l2,m1,m2,m1*(.322*l1)^2,m2*(.468*l2)^2,kp0(:)',kp1(:)'];
+fitparams=deoptImpedanceParams(qd,qr,tau_a,l1,nominal);
 
-deoptImpedanceParams(qd,qr,tau_a,l1,nominal)
