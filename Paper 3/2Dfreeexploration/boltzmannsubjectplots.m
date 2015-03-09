@@ -43,7 +43,11 @@ ofinterest.W=W;
 cdf=expcdf(fitmebins,W);
 fit=cdf(2:end)-cdf(1:end-1);
 error
-[trash,ofinterest.power_ksP]=kstest(aPt,[aPt,expcdf(aPt,W)]);
+[trash,ofinterest.power_ksP]=kstest(aPt,'CDF',[aPt,expcdf(aPt,W)]);
+figure(20)
+clf
+[ex,ec,lo,up]=ecdf(aPt);
+plot(aPt,expcdf(aPt,W),'b',ec,ex,'r',ec,lo,'r--',ec,up,'r--')
 ofinterest.power_rmse=sqrt(mean((fit-counts).^2));
 plot(centers,fit,'r','linewidth',3)
 
