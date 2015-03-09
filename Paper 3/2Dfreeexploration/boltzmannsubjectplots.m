@@ -42,6 +42,8 @@ ofinterest.W=W;
 
 cdf=expcdf(fitmebins,W);
 fit=cdf(2:end)-cdf(1:end-1);
+error
+[trash,ofinterest.power_ksP]=kstest(aPt,[aPt,expcdf(aPt,W)]);
 ofinterest.power_rmse=sqrt(mean((fit-counts).^2));
 plot(centers,fit,'r','linewidth',3)
 
@@ -132,7 +134,8 @@ fitmebins=.5*m*edges.^2;
 
 cdf=gamcdf(fitmebins,nT(1),nT(2));
 fit=cdf(2:end)-cdf(1:end-1);
-ofinterest.speed_rmse=sqrt(mean((fit-counts).^2));
+error
+[trash,ofinterest.speed_ksP]=kstest(speed,[.5*m*speed.^2,gamcdf(speed,nT(1),nT(2))]);
 plot(centers,fit,'r','linewidth',3)
 
 title(['RMS Error = ',num2str(ofinterest.speed_rmse,3)])

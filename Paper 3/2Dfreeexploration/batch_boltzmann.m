@@ -4,7 +4,7 @@ close all
 
 sublets={'JL','JT','LP','MF','YM'};
 
-for k=1:length(sublets)
+for k=1 %:length(sublets)
     fname=['free_exp_',sublets{k},'.mat'];
     
     if ~exist(fname,'file')
@@ -47,7 +47,7 @@ for k=1:length(sublets)
     outs(k)=boltzmannsubjectplots(t,x,v,a)
 
     suplabel(['Healthy Subject ',sublets{k}],'t')
-    %set(findall(gcf,'type','text'),'fontSize',12)
+    set(findall(gcf,'type','text'),'fontname','Times','fontSize',48)
     set(gcf,'position',[76 11 1195 925])
     print('-dtiff','-r300',['summary',sublets{k},'.tiff'])
     print('-dpng','-r300',['summary',sublets{k},'.png'])
