@@ -56,8 +56,4 @@ params.l2=l2;
 params.shoulder=shoulder;
 params.origin=origin;
 
-if exist('mass','var')
-    params.mass=0.453592*mass;
-else
-    params.mass=((l1+l2)/.77)*91; %Shitty locally linear scaling of weight with height, remember that 200 lbs = 91 kg.
-end
+params.mass=0.453592*mass; %Kg vs lbs

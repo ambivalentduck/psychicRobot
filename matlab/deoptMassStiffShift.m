@@ -10,7 +10,7 @@ I_D = 3;
 %    		the algorithm seems to work especially well if [FVr_minbound,FVr_maxbound] 
 %    		covers the region where the global minimum is expected
 %               *** note: these are no bound constraints!! ***
-      FVr_minbound = [.6, .15, -1]; 
+      FVr_minbound = [.2, .15, -1]; 
       FVr_maxbound = [2, 2, 1]; 
       I_bnd_constr = 1;  %1: use bounds as bound constraints, 0: no bound constraints      
             

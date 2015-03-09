@@ -212,4 +212,4 @@ if 0
     end
 end
 
-save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'massgains','kpgains','trialInfo','means','trials','params')
+save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'massgains','kpgains','trialInfo','means','trials','params','storeme')
