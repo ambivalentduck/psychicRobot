@@ -41,80 +41,165 @@ end
 jerror1=jerror1*100;
 jerror2=jerror2*100;
 
-fh=figure(18);
+%% New stuff
+msize=8;
+
+f=figure(3);
+set(f,'units','in');
+width=6;
+lmargin=1;
+rmargin=.05;
+
+set(f,'Position',[5,5,3,5.5])
 clf
 
-subplot(3,4,[2:4 6:8])
+margin=.1;
+ploth=1;
+
+sp=subplot('Position',[0 .9 1 .05]);
+set(sp,'Units','in','Position',[lmargin 4.75 3-rmargin-lmargin .5])
+hold on
+plot([1.5 4.5],3*[1 1],'k')
+plot([2.5 3.5],1*[1 1],'k')
+plot([.5 2.5],2*[1 1],'k',[3.5 5.5],2*[1 1],'k')
+
+set(gca,'xtick',[])
+set(gca,'ytick',1:3)
+ylabs={'Cursor=Intent','Cursor=Hand','Forces On'};
+
+set(gca,'yticklabel',ylabs)
+set(gca,'xcolor','w')
+
+ylim([.5 3.5])
+
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/.5;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'A','FontWeight','Bold')
+
+%% Hand
+
+sp1=subplot('Position',[0 .4 1 .2])
+set(sp1,'Units','in','Position',[lmargin 3.5 3-rmargin-lmargin 1])
 hold on
 exp1=2:9;
 exp2=23:30;
-rn=.1*(rand(nsubs,1)-.5);
+rn=.1*linspace(-1,1,8);
 
-spacer=5;
+for s=1:8
+    plot((1:5)-rn(s),jerror1(exp1(s),:),'r-')
+    plot((1:5)-rn(s),jerror1(exp1(s),:),'r.')
+    plot((1:5)-rn(s),jerror1(exp2(s),:),'b-')
+    plot((1:5)-rn(s),jerror1(exp2(s),:),'b.')
+end
+xlim([.5 5.5])
+set(gca,'xtick',[])
+%set(gca,'xcolor','w')
+ylabel('Hand Error (cm)')
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/1;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'B','FontWeight','Bold')
 
-for s=1:nsubs
-    plot((1:5)+rn(s),jerror1(exp1(s),:)+spacer,'r-')
-    plot((1:5)+rn(s),jerror1(exp1(s),:)+spacer,'r.')
-    plot((1:5)+rn(s),jerror1(exp2(s),:)+spacer,'b-')
-    plot((1:5)+rn(s),jerror1(exp2(s),:)+spacer,'b.')
-    
-    plot((1:5)+rn(s),jerror2(exp1(s),:),'r-')
-    plot((1:5)+rn(s),jerror2(exp1(s),:),'r.')
-    plot((1:5)+rn(s),jerror2(exp2(s),:),'b-')
-    plot((1:5)+rn(s),jerror2(exp2(s),:),'b.')
+%% Intent
+sp1=subplot('Position',[0 .2 1 .3])
+set(sp1,'Units','in','Position',[lmargin 2.25 3-rmargin-lmargin 1])
+hold on
+exp1=2:9;
+exp2=23:30;
+rn=.1*linspace(-1,1,8);
+
+
+for s=1:8
+    plot((1:5)-rn(s),jerror2(exp1(s),:),'r-')
+    plot((1:5)-rn(s),jerror2(exp1(s),:),'r.')
+    plot((1:5)-rn(s),jerror2(exp2(s),:),'b-')
+    plot((1:5)-rn(s),jerror2(exp2(s),:),'b.')
 end
-set(gca,'xtick',1:5)
-ticks=[0:3 spacer+(0:3)];
-extras=spacer+4+(1:3)*.9;
-set(gca,'ytick',[ticks extras])
-ylabs={};
-nums=[0:3 0:3];
-for k=1:length(nums)
-    ylabs{k}=num2str(nums(k));
-end
-ylabs{end+1}='Cursor=Intent';
-ylabs{end+1}='Cursor=Hand';
-ylabs{end+1}='Forces On';
-set(gca,'yticklabel',ylabs)
 
 xlim([.5 5.5])
-uyl=ylabel('Hand');
-g=get(uyl,'Position');
-set(uyl,'Position',[.25 g(2:3)])
-tap=[.1277,.77,0,0];
-ann=annotation(fh,'textarrow',[.5 .5],[.5 .5],'String','Max Deviation (cm)','TextRotation',90,'HeadStyle','none','LineStyle', 'none');
-set(ann,'Position',tap)
-ann2=annotation(fh,'textarrow',[.5 .5],[.5 .5],'String','Intent','TextRotation',90,'HeadStyle','none','LineStyle', 'none');
-tap2=[.1277,.75,0,0];
-set(ann2,'Position',tap2)
-plot([1.5 4.5],extras(3)*[1 1],'k')
-plot([.5 2.5],extras(2)*[1 1],'k',[3.5 5.5],extras(2)*[1 1],'k')
-plot([2.5 3.5],extras(1)*[1 1],'k')
-ylim([0 extras(3)+.25])
-
+ylabel('Intent Error (cm)')
 xlabel('Block')
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/1;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'C','FontWeight','Bold')
 
+%% Comparisons
 
-xl=[.7 2.3];
+sp=subplot('Position',[0 0 1 .1])
+set(sp,'Units','in','Position',[lmargin .5 3-rmargin-lmargin 1])
+
+hold on
+
+k=1;
+kstep=.5;
+kleap=1;
+
+xtick=[];
+xticklabs={};
+c=k;
+for it=1:4
+    xtick(end+1)=c;
+    c=c+kstep;
+    xtick(end+1)=c;
+    c=c+kleap;
+    xticklabs{end+1}='1';
+    xticklabs{end+1}='2';
+end
+
+asts=8;
+asth=1.5;
+
+plot([xtick(1)-kstep xtick(end)+kstep],[0 0],'color',.7*[1 1 1])
+
+%Hypothesis 1: forces increase stiffness (2-1)
+
+labheight=2.2;
+
 %Hypothesis 1: I estimation innaccury
-msize=10;
-subplot(3,4,9)
-miniplot(jerror1(exp1,1),jerror2(exp1,1),jerror1(exp2,1),jerror2(exp2,1),msize,xl,rn)
-ylabel('\Delta Max Deviation (cm)')
-title('H_1-I_1')
+miniplot(jerror1(exp1,1),jerror2(exp1,1),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'H_1-I_1','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(jerror1(exp2,1),jerror2(exp2,1),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 2: Performance in noise
-subplot(3,4,10)
-miniplot(jerror1(exp1,2),jerror2(exp1,2),jerror1(exp2,2),jerror2(exp2,2),msize,xl,rn)
-title('H_2-I_2')
+miniplot(jerror1(exp1,2),jerror2(exp1,2),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'H_2-I_2','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(jerror1(exp2,2),jerror2(exp2,2),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 3: Performance with I feedback
-subplot(3,4,11)
-miniplot(jerror1(exp1,3),jerror2(exp1,3),jerror1(exp2,3),jerror2(exp2,3),msize,xl,rn)
-title('H_3-I_3')
+miniplot(jerror1(exp1,3),jerror2(exp1,3),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'H_3-I_3','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(jerror1(exp2,3),jerror2(exp2,3),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 4: Which is better?
-subplot(3,4,12)
-miniplot(jerror1(exp1,2),jerror2(exp1,3),jerror1(exp2,2),jerror2(exp2,3),msize,xl,rn)
-title('H_2-I_3')
+miniplot(jerror1(exp1,2),jerror2(exp1,3),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'H_2-I_3','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(jerror1(exp2,2),jerror2(exp2,3),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
+
+ylabel('\Delta Max Deviation (cm)')
+
+set(gca,'xtick',xtick)
+set(gca,'xticklabel',xticklabs)
+xlim([xtick(1)-kstep xtick(end)+kstep])
+
 xlabel('Experiment')
+
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/1;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'D','FontWeight','Bold')
+
+

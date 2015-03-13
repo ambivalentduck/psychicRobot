@@ -7,4 +7,6 @@ en=dot(v',v');
 
 figure(75)
 clf
-plot3(x(:,1),x(:,2),en,'.')
+sx1=size(x,1);
+ds=1:150:sx1;
+plot3(x(ds,1),x(ds,2),en(ds),'.')

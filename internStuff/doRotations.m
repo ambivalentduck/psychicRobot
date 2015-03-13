@@ -79,9 +79,46 @@ end
 
 %% Post-hoc analysis
 
-figure(50)
+
+msize=8;
+
+f=figure(3);
+set(f,'units','in');
+width=6;
+lmargin=1;
+rmargin=.05;
+
+set(f,'Position',[5,5,3,4.25])
 clf
-subplot(2,4,1.5:3.5)
+
+margin=.1;
+ploth=1;
+
+sp=subplot('Position',[0 .8 1 .1]);
+set(sp,'Units','in','Position',[lmargin 3.5 3-rmargin-lmargin .5])
+hold on
+plot([1.5 4.5],3*[1 1],'k')
+plot([2.5 3.5],1*[1 1],'k')
+plot([.5 2.5],2*[1 1],'k',[3.5 5.5],2*[1 1],'k')
+
+set(gca,'xtick',[])
+set(gca,'ytick',1:3)
+ylabs={'Cursor=Intent','Cursor=Hand','Forces On'};
+
+set(gca,'yticklabel',ylabs)
+set(gca,'xcolor','w')
+
+ylim([.5 3.5])
+
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/.5;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'A','FontWeight','Bold')
+
+
+sp1=subplot('Position',[0 .4 1 .2])
+set(sp1,'Units','in','Position',[lmargin 2.25 3-rmargin-lmargin 1])
 hold on
 exp1=2:9;
 exp2=23:30;
@@ -95,48 +132,87 @@ for s=1:8
     plot((1:5)-rn(s),stiff(exp2(s),:),'b-')
     plot((1:5)-rn(s),stiff(exp2(s),:),'b.')
 end
-set(gca,'xtick',1:5)
-set(gca,'ytick',[0:50:200 225 250 275])
-ylabs={};
-for k=0:50:200
-    ylabs{k/50+1}=num2str(k);
-end
-ylabs{end+1}='Cursor=Intent';
-ylabs{end+1}='Cursor=Hand';
-ylabs{end+1}='Forces On';
-length(ylabs)
-length([0:50:200 225 250 275])
-set(gca,'yticklabel',ylabs)
-ylim([0 300])
+
 
 xlim([.5 5.5])
 ylabel('Stiffness (N/m)')
 xlabel('Block')
-plot([1.5 4.5],275*[1 1],'k')
-plot([2.5 3.5],225*[1 1],'k')
-plot([.5 2.5],250*[1 1],'k',[3.5 5.5],250*[1 1],'k')
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/1;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'B','FontWeight','Bold')
 
-xl=[.7 2.3];
+sp=subplot('Position',[0 0 1 .2])
+set(sp,'Units','in','Position',[lmargin .5 3-rmargin-lmargin 1])
+
+hold on
+
+k=1;
+kstep=.5;
+kleap=1;
+
+xtick=[];
+xticklabs={};
+c=k;
+for it=1:4
+    xtick(end+1)=c;
+    c=c+kstep;
+    xtick(end+1)=c;
+    c=c+kleap;
+    xticklabs{end+1}='1';
+    xticklabs{end+1}='2';
+end
+
+asts=8;
+asth=199;
+
+plot([xtick(1)-kstep xtick(end)+kstep],[0 0],'color',.7*[1 1 1])
+
 %Hypothesis 1: forces increase stiffness (2-1)
-msize=10;
-subplot(2,4,5)
-miniplot(stiff(exp1,2),stiff(exp1,1),stiff(exp2,2),stiff(exp2,1),msize,xl,rn)
-ylabel('\DeltaStiffness (N/m)')
-title('2-1')
+
+labheight=250;
+
+miniplot(stiff(exp1,2),stiff(exp1,1),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'2-1','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(stiff(exp2,2),stiff(exp2,1),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 2: intent decreases stiffness despite forces (3-2)
-subplot(2,4,6)
-miniplot(stiff(exp1,3),stiff(exp1,2),stiff(exp2,3),stiff(exp2,2),msize,xl,rn)
-title('3-2')
+miniplot(stiff(exp1,3),stiff(exp1,2),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'3-2','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(stiff(exp2,3),stiff(exp2,2),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 3: stiffness increases again when intent is removed (4-3)
-subplot(2,4,7)
-miniplot(stiff(exp1,4),stiff(exp1,3),stiff(exp2,4),stiff(exp2,3),msize,xl,rn)
-title('4-3')
+miniplot(stiff(exp1,4),stiff(exp1,3),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'4-3','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(stiff(exp2,4),stiff(exp2,3),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
 
 %Hypothesis 4: people are essentially adopting model stiffness
-subplot(2,4,8)
-load('modelstiff.mat')
+load modelstiff.mat
 ms=mean(modelstiff')';
-miniplot(stiff(exp1,3),ms(exp1),stiff(exp2,3),ms(exp2),msize,xl,rn)
-title('3-Model')
+miniplot(stiff(exp1,3),ms(exp1),k,'b.',msize,rn,asth,asts)
+text(k+kstep/2,labheight,'3-Model','HorizontalAlignment','Center')
+k=k+kstep;
+miniplot(stiff(exp2,3),ms(exp2),k,'r.',msize,rn,asth,asts)
+k=k+kleap;
+
+
+ylabel('\DeltaStiffness (N/m)')
+
+set(gca,'xtick',xtick)
+set(gca,'xticklabel',xticklabs)
+xlim([xtick(1)-kstep xtick(end)+kstep])
+
+xlabel('Experiment')
+
+yl=ylim;
+xl=xlim;
+xrat=-.9/1.95;
+yrat=1+.1/1;
+text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),'C','FontWeight','Bold')
