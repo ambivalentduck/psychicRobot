@@ -1,12 +1,12 @@
-function [cost,fit]=fitgamcdf(params)
+function cost=fitgamcdf(params)
 
-global binedges bincounts
+global fitmecounts fitmebins
 
 n=params(1);
 T=params(2);
 
-gcdf=gamcdf(binedges,n,T);
+gcdf=gamcdf(fitmebins,n,T);
 fit=gcdf(2:end)-gcdf(1:end-1);
 
-cost=sum((bincounts-fit).^2);
+cost=sum((fitmecounts-fit).^2);
 

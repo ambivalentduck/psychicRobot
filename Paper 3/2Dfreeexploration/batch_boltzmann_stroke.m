@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-for k=1:10
+for k=5 %1:10
     subname=num2str(k,'%2.2d');
     fname=['free_exp_',subname,'stroke.mat'];
     

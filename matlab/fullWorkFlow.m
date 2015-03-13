@@ -14,11 +14,14 @@ addpath ../../DeOpt/
 %     'NEVERMATCH','finalfig4'
 %     };
 
-workflow={'','addSubjectPulse';
-    'W','findWhiteKpGain';
+% workflow={'','addSubjectPulse';
+%     'W','findWhiteKpGain';
+%     'Y','extractPulses'
+%     };
+
+workflow={'W','findWhiteKpGain';
     'Y','extractPulses'
     };
-
 
 mfiles=dir('.');
 datafiles=dir('../Data/Data_pulse/');

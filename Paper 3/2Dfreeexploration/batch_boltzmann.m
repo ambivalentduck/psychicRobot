@@ -4,7 +4,14 @@ close all
 
 sublets={'JL','JT','LP','MF','YM'};
 
-for k=1 %:length(sublets)
+figure(4000)
+clf
+subplot(2,1,1)
+hold on
+subplot(2,1,2)
+hold on
+
+for k=1:length(sublets)
     fname=['free_exp_',sublets{k},'.mat'];
     
     if ~exist(fname,'file')
@@ -44,13 +51,19 @@ for k=1 %:length(sublets)
     
     figure(k)
     clf
-    outs(k)=boltzmannsubjectplots(t,x,v,a)
+    [outs(k),P,E]=boltzmannsubjectplots(t,x,v,a)
 
     suplabel(['Healthy Subject ',sublets{k}],'t')
-    set(findall(gcf,'type','text'),'fontname','Times','fontSize',48)
+    set(findall(gcf,'type','text'),'fontname','Times','fontSize',12)
     set(gcf,'position',[76 11 1195 925])
     print('-dtiff','-r300',['summary',sublets{k},'.tiff'])
     print('-dpng','-r300',['summary',sublets{k},'.png'])
+    
+    figure(4000)
+    subplot(2,1,1)
+    plot(P(:,2),P(:,1),'b')
+    subplot(2,1,2)
+    plot(E(:,2),E(:,1),'b')
 end
 
 save('healthy.mat','outs')

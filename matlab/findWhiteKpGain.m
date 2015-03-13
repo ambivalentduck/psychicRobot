@@ -7,6 +7,9 @@ global kpgain massgain
 kpgain=1;
 massgain=1;
 
+params
+params.mass=0.453592*190 %*params.mass
+
 GWR=2000;
 
 %% Categorize by start/end pair
@@ -65,7 +68,7 @@ for U=1:length(urc)
     rp=randperm(length(f));
     for krp=1:length(rp)
         fk=rp(krp);
-        if krp<=20
+        if 1 %krp<=20
             start=onsetDetector(trials(f(fk)));
             time=trials(f(fk)).t-trials(f(fk)).t(start);
             x=trials(f(fk)).x;

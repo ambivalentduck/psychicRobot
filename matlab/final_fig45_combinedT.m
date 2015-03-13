@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-SUBS=1:4;
+SUBS=1:8;
 distCats=[3 4];
 
 black=[0 0 0];
@@ -15,7 +15,7 @@ bmargin=0;
 figmargin=.4;
 
 yoffSpan=8;
-plotOrder=[1 4 2 3];
+plotOrder=1:8 %[1 4 2 3 5 6 7 8];
 
 figure(1)
 clf
@@ -26,7 +26,7 @@ set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
 %% Compute everything we'll need later
 
-if ~exist('fig4dotsNmeans.mat','file')
+if ~exist('fig4dotsNmeans.mat','file')|1
     for k=SUBS
         load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
         load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
@@ -57,7 +57,7 @@ if ~exist('fig4dotsNmeans.mat','file')
                 catch
                     st1=size(trials(t).x,1);
                     triStruct(t).dX=sPeak*getR2(trials(t).x(inds(1):st1,:));
-                    st1=size(trials(t).x,1);
+                    st1=size(trials(t).y,1);
                     triStruct(t).dY=sPeak*getR2(trials(t).y(indsy(1):st1,:));
                 end
                 
@@ -102,7 +102,7 @@ if ~exist('fig4dotsNmeans.mat','file')
                     thishappened=1
                     st1=size(trials(t).x,1);
                     triStruct(t).dX=sPeak*getR2(trials(t).x(inds(1):st1,:));
-                    st1=size(trials(t).x,1);
+                    st1=size(trials(t).y,1);
                     triStruct(t).dY=sPeak*getR2(trials(t).y(indsy(1):st1,:));
                 end
             end
@@ -222,7 +222,7 @@ for S=SUBS
             end
         end
     end
-    
+    differences(S)=onset-handonset
 
     plot([0,1000],yoff+[0 0],'-','linewidth',1,'color',color)
     
@@ -237,6 +237,8 @@ for S=SUBS
         set(h(k),'EdgeAlpha',ALPHA,'FaceAlpha',ALPHA);
     end
 end
+
+return
 
 plot(-30+[0,0],[0 5],'-','linewidth',1,'color',color)
 text(-30,2.5,'Error, 5 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom','color',color)
