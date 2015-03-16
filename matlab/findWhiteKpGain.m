@@ -89,6 +89,7 @@ for U=1:length(urc)
 end
 axis equal
 
+
 yoffset=.4;
 figure(3)
 clf
@@ -159,6 +160,9 @@ set2dGlobals(params.l1, params.l2, params.origin, params.shoulder, params.mass)
 %error and typical error velocity. F=k1(Da+C)+k2(Ze)
 % inertia and coriolis are linear in body mass
 % k2 is essentially a stiffness adjustment
+figure(27)
+clf
+hold on
 
 fitlower=.0/.005;
 fitupper=.6/.005;
@@ -180,6 +184,9 @@ for U=1:length(urc)
         Y(:,2)=Y(:,2)-(Y(1,2)-trials(f(fk)).x(start+indspan(1),2)); %If the "shape" holds, this corrects for starting bias.
         
         X=[trials(kk).x(start+indspan,:) trials(kk).v(start+indspan,:) trials(kk).a(start+indspan,:) trials(kk).f(start+indspan,:)];
+        
+        plot(time,X(:,1)+yoffset*U,'b')
+        plot(time,Y(:,1)+yoffset*U,'r')
         
         [storeme(U,fk).TMP,storeme(U,fk).TSP,storeme(U,fk).TNP]=cart2model(X,Y);
         storeme(U,fk).time=time;

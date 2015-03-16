@@ -26,7 +26,7 @@ set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
 %% Compute everything we'll need later
 
-if ~exist('fig4dotsNmeans.mat','file')|1
+if ~exist('fig4dotsNmeans.mat','file')
     for k=SUBS
         load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
         load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])
@@ -238,8 +238,6 @@ for S=SUBS
     end
 end
 
-return
-
 plot(-30+[0,0],[0 5],'-','linewidth',1,'color',color)
 text(-30,2.5,'Error, 5 cm','rotation',90,'horizontalalignment','center','verticalalignment','bottom','color',color)
 set(gca,'ycolor',[1 1 1])
@@ -249,7 +247,7 @@ set(gca,'xtick',[])
 set(gca,'TickLength',[0 0]);
 %set(gca,'linewidth',1);
 xlim([-40 1020])
-ylim([-10 40])
+ylim([-10 60])
 for k=0:100:1000
     text(k,-1.4,num2str(k),'horizontalalignment','center','verticalalignment','top','color',color)
 end

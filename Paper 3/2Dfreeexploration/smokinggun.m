@@ -3,6 +3,7 @@ clear all
 close all
 
 load('free_exp_05stroke.mat')
+%load('free_exp_MF.mat')
 
 en=dot(v',v');
 figure(74)
