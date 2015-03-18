@@ -5,7 +5,7 @@ figure(37)
 clf
 subplot(5,1,1:3)
 hold on
-specialestsub=5;
+specialestsub=6;
 
 %% Fig3 stuff
 
@@ -128,16 +128,21 @@ text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalign
 %text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top');
 text(0,.2,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
 
-
-axis off
+xlim([-.05 .4])
+ylim([-1 1])
+%axis off
 
 set(gcf,'units','centimeters')
 %set(gcf,'position',[3 3 18 18])
 
 %% Fig4 stuff
 
+tw=get(gca,'position')
+
 load('fig4dotsNmeans.mat')
 subplot(5,1,4)
+mp=get(gca,'position')
+set(gca,'position',[tw(1) mp(2) tw(3) mp(4)])
 hold on
 NR=10;
 DOTSIZE=3;
@@ -225,7 +230,7 @@ for S=1:8
             rangemids(1)=-5;
             rangemids(end)=1005;
             plot(onset+[0 0],lscale*mP*[-1 1]+yoff,'color',[1 0 0],'linewidth',1.5)
-            plot(rangemids(k)+[0 0],lscale*mP*[-1 1]+yoff,'color',[0 1 0],'linewidth',1.5)
+            plot(handonset+[0 0],lscale*mP*[-1 1]+yoff,'color',[0 1 0],'linewidth',1.5)
             ALPHA=.4;
             h=[fill([rangemids rangemids(end:-1:1)],[lowers(:,1); uppers(end:-1:1,1)]+yoff,'w','facecolor',green,'edgecolor',green);
                 fill([rangemids rangemids(end:-1:1)],[lowers(:,2); uppers(end:-1:1,2)]+yoff,'w','facecolor',black,'edgecolor',black);
