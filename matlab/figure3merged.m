@@ -3,7 +3,7 @@ clear all
 
 figure(37)
 clf
-subplot(5,1,1:3)
+subplot(4,1,1:3)
 hold on
 specialestsub=6;
 
@@ -38,7 +38,7 @@ clean=[trialInfo.clean];
 
 f=find(clean);
 for c=2:length(f)
-    if rand<.8
+    if rand<.9
         continue
     end
     k=f(c);
@@ -128,8 +128,8 @@ text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalign
 %text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top');
 text(0,.2,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
 
-xlim([-.05 .4])
-ylim([-1 1])
+%xlim([-.05 .4])
+%ylim([-1 1])
 %axis off
 
 set(gcf,'units','centimeters')
@@ -140,9 +140,9 @@ set(gcf,'units','centimeters')
 tw=get(gca,'position')
 
 load('fig4dotsNmeans.mat')
-subplot(5,1,4)
+subplot(4,1,4)
 mp=get(gca,'position')
-set(gca,'position',[tw(1) mp(2) tw(3) mp(4)])
+%set(gca,'position',[tw(1) mp(2) tw(3) mp(4)])
 hold on
 NR=10;
 DOTSIZE=3;
@@ -263,13 +263,13 @@ end
 
 text(500,-6,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','middle','color',color)
 
-subplot(5,1,5)
 hold on
 for k=1:8
-    plot(onsets(k),k,'.','color',[1 0 0])
-    plot(handonsets(k),k,'.','color',[0 1 0])
+    yoff=-5-k;
+    plot(onsets(k),yoff,'.','color',[1 0 0])
+    plot(handonsets(k),yoff,'.','color',[0 1 0])
     if handonsets(k)<1000
-        plot([onsets(k) handonsets(k)],k+[0 0],'color',black,'linewidth',1.5)
+        plot([onsets(k) handonsets(k)],yoff+[0 0],'color',black,'linewidth',1.5)
     else
         arrow
     end
