@@ -2,7 +2,7 @@ clc
 clear all
 
 figure(37)
-set(gcf,'position',[1524, 105, 764, 799])
+set(gcf,'position',[8.8268    3.2713   26.8753   20.0790])
 clf
 hold on
 
@@ -233,7 +233,7 @@ for LR=1:2
     for k=0:100:1000
         text(k*tnorm+xoff,-.03,num2str(k),'horizontalalignment','center','verticalalignment','top','color',color)
     end
-    text(.15+xoff,-.03-.02,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','top','color',color)
+    text(.15+xoff,-.03-.012,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','top','color',color)
     
 end
 
@@ -244,12 +244,11 @@ set(gcf,'color',[1 1 1])
 xlim([-.1 .32])
 axis equal
 
-return
-
+%%  Annotations
 
 %annotate(h);
-p=[-.27 .15;.2092 -.01458;.28 .3619;.2 .302];
-d=[-1 0; 1 1;1 0;-1 0];
+p=[-.27 .155;-.176 .39;.2486 .18;-.21 .123];
+d=[-1 0; 1 1;1 0;-1 -.5];
 alength=[.03,.02,.03,.03];
 colors=[gray; green; red; black];
 labs{1}='Force Disturbance';
@@ -259,22 +258,26 @@ labs{4}='Hand Trajectory';
 
 h=annotate(p,d,labs,colors,alength);
 
-lshift=.01;
-plot([.01 .04]-lshift,-.01*[1 1],'k','linewidth',3)
-text(.025-lshift,-.011,'3 cm','horizontalalignment','center','verticalalignment','top')
+lshift=-.4;
+plot([0 .03]+lshift,.087*[1 1],'k','linewidth',3)
+text(.015+lshift,.084,'3 cm','horizontalalignment','center','verticalalignment','top')
 
-A=.008*[1 1];
-A(1)=A(1)-lshift;
-arrow(A,A+[0 qscale*10],gray,.3,2)
-text(.006-lshift,(.008+qscale*5),'10 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
+A=[.014+lshift, .105];
+arrow(A,A+[0 qscale*15],gray,.3,2)
+text(.0135+lshift,.105+qscale*7.5,'15 N','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
 
-f=findobj('Type','text');
-set(f,'fontsize',10)
+plot(.014+lshift+[0 0],.01+[0 .03],'k','linewidth',3)
+text(.0135+lshift,.01+.015,'3 cm','rotation',90,'Horizontalalignment','center','Verticalalignment','bottom')
+
+%f=findobj('Type','text');
+%set(f,'fontsize',10)
 
 
-text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
+text(-.4,.47,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
 %text(0,.46,'Early Pulse Disturbance','horizontalalignment','left','verticalalignment','top');
-text(0,.2,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
+text(-.4,.27,'Late Pulse Disturbance','horizontalalignment','left','verticalalignment','top','fontsize',12,'fontweight','bold');
+
+return
 
 %xlim([-.05 .4])
 %ylim([-1 1])
