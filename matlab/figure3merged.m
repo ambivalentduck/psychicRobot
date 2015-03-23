@@ -2,7 +2,7 @@ clc
 clear all
 
 figure(37)
-set(gcf,'position',[1524, 105, 514, 799])
+set(gcf,'position',[1524, 105, 764, 799])
 clf
 hold on
 
@@ -63,7 +63,7 @@ for LR=1:2
     end
     
     for k=2:length(trials)
-        if rand<0
+        if rand<0 %.7
             continue
         end
         %First decide length class
@@ -230,21 +230,26 @@ for LR=1:2
             arrow([handonsets(k)*tnorm+xoff, yoff2],[.3+xoff, yoff2],[0 0 0],.025,1.5);
         end
     end
+    for k=0:100:1000
+        text(k*tnorm+xoff,-.03,num2str(k),'horizontalalignment','center','verticalalignment','top','color',color)
+    end
+    text(.15+xoff,-.03-.02,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','top','color',color)
+    
 end
 
-margin=.02;
+margin=0;
 set(gca,'position',[margin margin 1-margin 1-margin],'units','normalized')
 set(gcf,'color',[1 1 1])
 
-xlim([-.02 .4])
+xlim([-.1 .32])
 axis equal
 
 return
 
 
 %annotate(h);
-p=[.18 .055;.2092 -.01458;.28 .3619;.2 .302];
-d=[1 0; 1 1;1 0;-1 0];
+p=[-.27 .15;.2092 -.01458;.28 .3619;.2 .302];
+d=[-1 0; 1 1;1 0;-1 0];
 alength=[.03,.02,.03,.03];
 colors=[gray; green; red; black];
 labs{1}='Force Disturbance';
@@ -289,9 +294,4 @@ set(gca,'TickLength',[0 0]);
 %set(gca,'linewidth',1);
 xlim([-40 1020])
 %ylim([-10 60])
-for k=0:100:1000
-    text(k,-1.4,num2str(k),'horizontalalignment','center','verticalalignment','top','color',color)
-end
-
-text(500,-6,'Time Post Onset of Disturbing Forces, ms','horizontalalignment','center','verticalalignment','middle','color',color)
 
