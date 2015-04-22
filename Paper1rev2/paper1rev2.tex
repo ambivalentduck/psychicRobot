@@ -229,16 +229,16 @@ Our error metric was deviation in position, where unsigned error was calculated 
 \subsection*{Dynamic simulation of arm and intended trajectories}
 While the derivation of intent determination is general, testing its application to human reaching requires choosing plant and actuator models, which themselves require physical parameters. Appropriate plant modeling is well-understood: measured arm segment lengths and self-reported body mass are converted into the plant's inertial, centripetal, and Coriolis terms. Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} relate body mass to limb mass, limb length to limb center of mass, and limb mass and length to moment of inertia. For the actuator, we choose the model and parameters of Burdet et al. \cite{burdet2006stability}. We fit a subject-specific constant scale factor for impedance relative to this model to account for any task-dependence of the subjects' impedance\cite{gomi1998task} as described in the next section. Desired trajectory in time was idealized as a typical minimum jerk, 5th order polynomial of duration 700 ms starting and ending with zero velocity and acceleration \cite{flash1985coordination}.  In this  model, musculoskeletal stiffness was linearly related to torque. Like Burdet et al. \cite{burdet2006stability}, we approximated muscle torque by looking backward in time $500 \mathrm{\mu s}$. Note that this backward look led to negligible (sub-micrometer mean unsigned error) discrepancies in subsequent intent estimates. 
 
-\subsection*{Torque Calculations}
+\subsection*{Torque Calculations for Intent Extraction}
 The impedance properties of the human arm are known to be task-dependent\cite{gomi1998task}, but we need to model them in the context of our task without assuming our conclusions in the premises. To accomplish this, we fit a linear scale factor to the torque output an established model using an intermittently, unpredictably presented secondary task. This unpredictability enables us to leverage the ergodic assumption: our tasks should at least initally share the same motor plan and impedance properties. Both portions of this assumption are important. First, we fit some expectation of the motor plan, $x_d$, by using a Gaussian weighted average ($\sigma=22$ milliseconds) of each subject's hand trajectory as it evolves in time during undisturbed movement. Separate expectations were fit for each pair of movement start and end points. We then use inverse kinematics to convert these expected hand trajectories to expected joint angle trajectories, $q_d$. Taking time derivates of $q_d$ then allows us to form an expectation of the feedforward torque, $\tau_{ff}$, that will be present early in movement as in \eqref{eq:controlLaw},
 \begin{equation}
-\tau_{ff}=\hat{M}(q_d)\ddot{q}_d+\hat{G}(q_d,\dot{q}_d)+\hat{E}
+\tau_{ff}=\hat{M}(q_d)\ddot{q}_d+\hat{G}(q_d,\dot{q}_d)
 \end{equation}
 which then allows us to construct the full torque balance for the joints,
 \begin{equation} \label{eq:torqueBalance}
 \tau_P+E=\tau_{ff}+c\tau_{fb}
 \end{equation}
-where $\tau_P$ is calculated from the arm's dynamics, $\tau_{fb}$ is calculated from the impedance model of Burdet et al.\cite{burdet2006stability}, and $c$ is the scaling parameter to be fit. We calculate $\tau_P$ using measured limb segment lengths, $L_1$ and $L_2$ and self-reported body mass, $m_g$. We converted from these gross measurements to specific parameters using the nominal ratios provided in Table~\ref{tab:parameters},
+where $E$ is the measured force on the hand converted to joint torques via the Jacobian, $\tau_P$ is calculated from the arm's dynamics, $\tau_{fb}$ is calculated from the impedance model of Burdet et al.\cite{burdet2006stability}, and $c$ is a scalar constant to be fit. We calculate $\tau_P$ using measured limb segment lengths, $L_1$ and $L_2$ and self-reported body mass, $m_g$. Terms followed by a subscript 1 indicate the upper arm or shoulder joint while terms followed by a subscript 2 indicate the forearm or elbow joint. We converted from these gross measurements to specific parameters using the nominal ratios provided in Table~\ref{tab:parameters},
 \begin{align}
 m_1 &=0.028 m_g & L_{m1}&=0.426 L_1 & J_1&=m_1(0.322 L_1)^2 \\  
 m_2 &=0.022 m_g & L_{m2}&=0.682 L_2 & J_2&=m_2(0.468 L_2)^2
@@ -271,8 +271,7 @@ for each subject as the sum of all torques acting on the joints should ideally b
 \begin{equation}
 \ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+c\tau_{fb}]\right\}
 \end{equation}
-and integrated numerically as described. This provides a check on the fit value $c$ as an inappropriate value would cause $q_d$ to deviate from reasonable values.
- 
+and integrated numerically as described. By scaling an established model using a force disturbance other than our disturbance of interest, we avoided presuming the intent trajectory we hoped to recover.
 
 
 \subsection*{Indices of variance-based sensitivity}
