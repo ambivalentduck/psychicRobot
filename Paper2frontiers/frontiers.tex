@@ -70,7 +70,8 @@ $^{2}$Laboratory X, Institute X, Department X, Organization X, City X , State XX
 %%% Leave the Abstract empty if your article falls under any of the following categories: Editorial Book Review, Commentary, Field Grand Challenge, Opinion or specialty Grand Challenge.
 \section{}
 %As a primary goal, the abstract should render the general significance and conceptual advance of the work clearly accessible to a broad readership. References should not be cited in the abstract.
-Refer to \url{http://www.frontiersin.org/about/AuthorGuidelines} \\ or \textbf{Table\ref{Tab:01}} for abstract requirement and length according to article type.
+Unstable and uncertain environments are an everyday problem that affects piloting and input devices in human-machine interaction. Here we experimentally evaluate intent feedback (IF), which estimates and displays the human operator’s underlying intent in real-time. IF is a filter that combines a model of the arm with position and force data to determine the intended position. Subjects performed targeted reaching motions while seeing either their hand position or their intent estimate as a cursor while they experienced white noise forces rendered by a robotic handle. We found significantly better reaching performance during force exposure using the estimated intent. Additionally, IF reduced estimated arm stiffness to about half that without IF, indicating a more relaxed state of operation. While visual distortions typically degrade performance and require an adaptation period to overcome, this particular distortion immediately enhances performance. In the future, this method could provide novel insights into the nature of control. IF might also be applied in driving and piloting applications to best follow a person’s desire in unpredictable or turbulent conditions.
+
 
 
 \tiny
@@ -95,142 +96,105 @@ In this paper we describe our abridged method for real-time IF, and then expose 
 \begin{methods}
 \section{Material \& Methods}
 
-Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text Text  Text Text Text Text Text Text  Text Text.  \cite{Neuro2013} might want to know about  text text text text Text Text Text Text  Text Text Text Text Text Text  Text Text. \citep{Gene2012} might want to know about  text text text text
-Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text Text  Text Text Text Text Text Text  Text Text.  \cite{Neurobot2013} might want to know about  text text text text
+\subsection{Intent Extraction}
+The well-known motion control structure of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} relates arm trajectory, $q$, to desired arm trajectory, $q_d$, and any external disturbance, $E$ using physical parameters of the arm. To show how this model can be algebraically inverted to instead describe desired arm trajectory as a function of arm trajectory and external disturbance, we write it as a torque balance:
+\begin{equation}
+\underbrace{\overbrace{M(q)\ddot{q}}^{\text{Inertia}}+\overbrace{G(q,\dot{q})}^{\text{Coriolis, Centripal}}}_{\text{Plant}}+E=
+\underbrace{\overbrace{\tau_{ff}}^{\text{Feedforward}}+\overbrace{\tau_{fb}}^{\text{Feedback}}}_\text{Controller}
+\end{equation}
+Where $M$ is the mass matrix, $q$ is the joint angles, $\dot{q}$ is joint angular velocities, $\ddot{q}$ is joint angular accelerations, and $G$ contains both Coriolis and centripetal effects. Typical applications solve this torque balance for $\ddot{q}$ and use a numerical differential equation solver to predict arm trajectory in the context of a disturbance of interest, a feedback model, and feedforward torques determined by inverse dynamics. Rather than test hypotheses regarding the learning, production, or composition of this feedforward torque, we instead solve for it:
+\begin{equation}
+\tau_{ff}=M(q)\ddot{q}+G(q,\dot{q})+E-\tau_{fb}
+\end{equation}
+Then we note that feedforward torque can have a one-to-one correspondence with desired acceleration, $\ddot{q}_d$:
+\begin{equation}
+\hat{M}(q_d)\ddot{q}_d+\hat{G}(q_d,\dot{q}_d)+\hat{E}=\tau_{ff}
+\end{equation}
+Hats ( $\hat{}$ ) denote the nervous system's best estimate of a physical quantity. Combining these expressions, suppressing state dependencies, and solving for $\ddot{q}_d$:
+\begin{equation}
+\ddot{q}_d=\hat{M}^{-1} \{M\ddot{q}+G-\hat{G}+E-\hat{E}-\tau_{fb}\}
+\end{equation}
+In this form, a differential equation solver can determine $q_d$ as it evolves in time if a few assumptions are made and conditions are met. First, $\hat{E}$ must be modeled or assumed, so we choose $\hat{E}=0$. In the presence of a zero mean white noise force disturbance its mean should be zero, but it is unlikely to be exactly zero and may reflect an average of only the last few exposures\cite{scheidt2001learning}. Next, the matrix $\hat{M}(q_d)$ must be invertible, but we can ensure this through our choice of workspace. Finally, feedback torque requires a model of arm impedance, which is known to be task-dependent\cite{gomi1998task} and may vary over the course of a reach\cite{niu2010temporal}. With no prior knowledge of arm impedance for this task-disturbance combination, we presumed the feedback torque model of Shadmehr and Mussa-Ivaldi anticipating that it is sufficiently accurate or easy to learn (experiment 1). The experiment was repeated with a lower stiffness estimate (experiment 2) to explore any dependence on this assumption.
 
+\subsection{Apparatus}
+A planar manipulandum (described in Patton and Mussa-Ivaldi \cite{patton2004robot}) was programmed to compensate and minimize any friction or mass. The MATLAB XPC-TARGET package \cite{MATLAB:2008} was used to render this force environment at 1000 Hz and data were collected at 1000 Hz.  Visual feedback of cursor position was performed at 60 Hz using OpenGL. Closed-loop data transmission time (position measurement to completed rendering to recognition of rendering by the position measurement system) was less than 8 milliseconds, ensuring a visual delay less than one 60 Hz frame.
 
+\subsection{Human Subjects}
+The human data trajectories analyzed here are drawn from nine subjects who gave informed consent in accordance with Northwestern University Institutional Review Board, which specifically approved this study and follows the principles expressed in the Declaration of Helsinki. Seven male and one female right-handed subjects (ages 21 to 30) performed the reaches with their right arm and were not compensated. Subjects' arm segment lengths were directly measured \textit{in situ} while body mass was self-reported.
 
-\begin{table}[!t]
-\textbf{\refstepcounter{table}\label{Tab:01} Table \arabic{table}.}{ Maximum size of the Manuscript }
+\subsection{Experimental Design}
+We chose 15 centimeters long, center-out reaches of the right arm to visually-presented targets chosen at 60 degree intervals about that central point. Target selection was carried out pseudorandomly such that each outer target was visited 16 times in each of 5 blocks of 96 reaches each. During blocks 2 through 4, subjects experienced filtered white noise forces drawn from a white noise generator at 1000 Hertz with flat power spectral density of 1 Newton, and then passed through a 4th order low-pass Butterworth filter with cutoff $10 \pi$ radians per second. During block 3, cursor position indicated deduced intent. During all other blocks, the cursor position indicated hand position (Figure 2A).
 
-\processtable{ }
-{\begin{tabular}{lllll}\toprule
- & Abstract max. legth (incl. spaces) & Figures or tables & Manuscript max. length & Final PDF length\\\midrule
-Clinical Case Study & & & &\\
-Clinical Trial & & & &\\
-Hypothesis and Theory & & & &\\
-Methods & 2000 characters  & 15 & 12000 words & 12 pages\\
-Original Research & & & &\\
-Review & & & &\\
-Technology Report & & & &\\
-Focused Review & 2000 characters & 5 & 5000 words & 5 pages\\
-CPC &  1250 characters& 6 & 2500 words & 4 pages\\
-Perspective & 1250 characters & 2 & 3000 words & 3 pages\\
-Mini Review & & & &\\
-Classification & 1250 characters & 10 & 2000 words & 12 pages\\
-Editorial & none & none & 1000 words & 1 page \\
-Book review & & & &\\
-Frontiers Commentary & none & 1 & 1000 words & 1 page\\
-General Commentary & & & &\\
-Field Grand Challenge & & & &\\
-Opinion & none & 1 & 2000 words & 2 pages\\
-Specialty Grand Challenge& & & &\\\botrule
-\end{tabular}}{}
-\end{table}
+\subsection{Dynamic simulation of arm and intended trajectories}
+Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} were used to estimate relationships between body mass and limb mass, limb length and limb center of mass, and limb mass and length and moment of inertia. Viscosity parameters were taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive}. Stiffness parameters were either taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} ($K_{P1}$, experiment 1) or estimated ($K_{P2}$, experiment 2). Expressed in Newton-Meters per Radian:
+\begin{equation}
+K_{P1}=
+\begin{bmatrix}
+15 & 6 \\
+6 & 16
+\end{bmatrix}
+\quad
+K_{P2}=
+\begin{bmatrix}
+8 & 2 \\
+2 & 5
+\end{bmatrix}
+\end{equation}
+Numerical simulation was performed in real time using the GNU Scientific Library's odeiv2 driver with Runge-Kutta-Fehlberg (4,5) stepping\cite{gough2009gnu}.
 
-Please note that very large tables (covering several pages) cannot be included in the final PDF for reasons of space. These tables will be published as supplementary material on the online article abstract page at the time of acceptance. The author will notified during the typesetting of the final article if this is the case. A link in the final PDF will direct to the online material.
-
-\subsection{Original Research Articles, Clinical Trial Articles, and Technology Reports}
-
-For Original Research Articles, Clinical Trial Articles, and Technology Reports the section headings should be those appropriate for your field and the research itself. It is recommended to organize your manuscript in the following sections or their equivalents for your field:
-
-\begin{itemize}
-%for bulleted list, use itemize
-\item Introduction: Succinct, with no subheadings.
-\item Materials and Methods: This section may be divided by subheadings. This section should contain sufficient detail so that when read in conjunction with cited references, all procedures can be repeated.
-\item Results: This section may be divided by subheadings. Footnotes should not be used and have to be transferred into the main text.
-\item Discussion: This section may be divided by subheadings. Discussions should cover the key findings of the study: discuss any prior art related to the subject so to place the novelty of the discovery in the appropriate context; discuss the potential short-comings and limitations on their interpretations; discuss their integration into the current understanding of the problem and how this advances the current views; speculate on the future direction of the research and freely postulate theories that could be tested in the future.
-\end{itemize}
-
-Please note that the Material and Methods section can be placed in any of the following ways: before Results, before Discussion or after Discussion.
-
-\subsection{Clinical Case Studies}
-
-For Clinical Case Studies the following sections are mandatory:
-
-\begin{itemize}
-%for bulleted list, use itemize
-\item Introduction: Include symptoms at presentation, physical exams and lab results.
-\item Background: This section may be divided by subheadings. Include history and review of similar cases.
-\item Results: This section may be divided by subheadings. Include diagnosis and treatment.
-\item Concluding Remarks
-\end{itemize}
-
-%\end{methods}
-
+\subsection{Metrics and Statistical Analysis}
+Trajectories and forces were rotated such that movement and force parallel to the line connecting the previous target (the reach origin) and the presented target lie along a \textit{progress} axis while perpendicular movement and force lie along an \textit{error} axis. Reach onset was detected as the moment the cursor's distance from the center of the previous target first exceeded 1 centimeter. Maximum perpendicular error for a trajectory was the largest error magnitude within 250 milliseconds of reach onset. A scalar stiffness, $k$, was calculated for the \textit{error} axis during this same 250 millisecond time span by linear regression:
+\begin{equation}
+F_e=m\ddot{e}+b\dot{e}+ke+F_O
+\end{equation}
+Force ($F_e$) and state ($\ddot{e}$, $\dot{e}$, $e$) were known. Mass ($m$), viscosity ($b$), and stiffness offset ($F_0$) terms were calculated, but discarded. While stiffness is better described as a matrix, a scalar was calculated to facilitate statistical comparison between treatments and blocks. The paired Wilcoxon signed rank test was used to detect differences in maximum perpendicular error and stiffness between blocks and treatments at the 5\% significance level using the MATLAB statistics toolbox package \cite{MATLAB:2014}.
+\end{methods}
 
 
 \section{Results}
+As expected, the model was able to deduce an intended trajectory and all subjects were able to utilize this estimate of their intent to perform targeted reaching while experiencing turbulent forces (Figure 1). The following sections address the quality of this reaching.
 
-Frontiers requires figures to be submitted individually, in the same order as they are referred to in the manuscript. Figures will then be automatically embedded at the bottom of the submitted manuscript. Kindly ensure that each table and figure is mentioned in the text and in numerical order. Permission must be obtained for use of copyrighted material from other sources (including the web). Please note that it is compulsory to follow figure instructions. Figures which are not according to the guidelines will cause substantial delay during the production process.
+\begin{figure}[!b]
+\centering
+\framebox{\parbox{3in}{\includegraphics{Yplots.eps}
+}}
+\caption{Typical subjects' made center-out targeted reaching motions under experimentally varied force and feedback conditions. Subjects used feedback of either hand motions (black lines) or estimated intent (red lines) to complete these reaches. While both were recorded under all conditions, only one was shown on screen at a time. Intent was estimated using either the stiffness model of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} (Experiment 1) or a reduced stiffness (Experiment 2) to explore any dependence of reaching stiffness or accuracy on this assumption. The force disturbance was designed to be turbulent and unpredictable to minimize any effect of learning.}
+\label{Yplots}
+\end{figure}
 
-\begin{table}[!t]
-\textbf{\refstepcounter{table}\label{Tab:02} Table \arabic{table}.}{ Resolution Requirements for the figures}
+\begin{figure}[t]
+\centering
+\framebox{\parbox{3in}{\includegraphics{error.eps}
+}}
+\caption{Subjects' reaching accuracy depended on the presence of force disturbance and the contents of visual feedback (A). Maximum deviation from straight-line reaching calculated during the first 250 milliseconds after the onset of movement revealed that turbulent force disturbance degraded reaching performance in both hand (B) and intent (C). Comparisons within treatment conditions revealed a significant advantage for the hand when force disturbance is not present and a significant advantage for intent when feedback of intent was used during exposure to turbulent forces. Performance using intent during turbulence was significantly better than performance using the hand (D). Significance among comparisons is denoted by an asterisk. Error did not signficantly depend on the choice between Shadmehr and Mussa-Ivaldi's\cite{shadmehr1994adaptive} stiffness model (experiment 1, blue) or a reduced stiffness (experiment 2, red) to determine intent.}
+\label{error}
+\end{figure}
 
-\processtable{}
-{\begin{tabular}{lllll}\toprule
-Image Type & Description & Format & Color Mode & Resolution\\\midrule
-Line Art & An image composed of lines and text,  & TIFF, JPEG & RGB, Bitmap & 900 - 1200 dpi\\
-           & which does not contain tonal or shaded areas.& & &\\
-           Halftone & A continuous tone photograph, which contains no text. & TIFF, EPS, JPEG & RGB, Grayscale & 300 dpi\\
-Combination & Image contains halftone + text or line art elements. & TIFF, JPEG & RGB,Grayscale & 600 - 900 dpi\\\botrule
-\end{tabular}}{}
-\end{table}
+\subsection*{Reaching Accuracy}
+Even if subjects were capable of performing a reaching task using their estimated intent, a poor estimate would have lead to poor performance. Indeed, the hand significantly outperformed our intent estimate when the force disturbance is not present in block 1 (Figure 2D). Model and sensor inaccuracies degrade performance and result in an error of approximately 5 millimetres. In the presence of a force disturbance in block 2, the hand loses its advantage as model and sensor inaccuracies are balanced by some degree of cancellation of the disturbance. In block 3 where visual feedback of the intent is given instead of hand, the intent significantly outperforms the hand. For this intent estimate to be useful, subjects should perform better when using feedback of the intent than when using feedback of the hand. Comparing the hand's performance in block 2 to the intent's performance in block 3, subjects performed significantly better using their estimated intent. Finally, no significant differences were present across the two experiments. Performance was relatively insensitive to this change in the stiffness model used to deduce the intent.
 
-\begin{equation}
-\sum x+ y =Z\label{eq:01}
-\end{equation}
+\subsection*{Endpoint Stiffness}
+While accuracy is desirable, it can be attained by cocontracting muscles to increase arm stiffness at the cost of metabolic effort \cite{gribble2003role}\cite{takahashi2001impedance}. Subjects stiffened significantly in response to white noise forces as seen by comparing stiffness in blocks 1 and 2 (Figure 3C). Subjects' stiffness significantly decreased when feedback of the deduced intent replaced feedback of the hand, as seen by comparing blocks 2 and 3. This decrease does not return stiffness to undisturbed levels, and it remains even after feedback of the hand resumes as seen by comparing blocks 3 and 4. Stiffness may have decreased with duration of exposure to uncertain disturbances\cite{takahashi2001impedance}. Subjects did not appear to have adjusted their stiffness to match the stiffness used in the estimation as subject and model stiffnesses were significantly different in experiment 2.
 
-\textbf{Table\ref{Tab:02}} shows the resolution requirements for the figures. The figures must be legible:
-\begin{enumerate}
-\item The smallest visible text is no less than 8 points in height, when viewed at actual size.
-\item Solid lines are not broken up.
-\item Image areas are not pixelated or stair stepped.
-\item Text is legible and of high quality.
-\item Any lines in the graphic are no smaller than 2 points width.
-\item The actual size of the figure must be of at least 8.5 cm.
-\end{enumerate}
+\begin{figure}[t]
+\centering
+\framebox{\parbox{3in}{\includegraphics{stiffness.eps}
+}}
+\caption{Subjects' arm stiffness depended on the presence of force disturbance and the contents of visual feedback (A). Arm stiffness calculated by linear regression during the first 250 milliseconds after the onset of movement revealed that turbulent force disturbance increased arm stiffness (B). Comparisons between treatment conditions revealed that exposure to turbulent forces caused by arm to stiffen significantly, but feedback of intent could significantly reduce this increase (C). Stiffness did not signficantly depend on the choice between Shadmehr and Mussa-Ivaldi's\cite{shadmehr1994adaptive} stiffness model (experiment 1, blue) or a reduced stiffness (experiment 2, red) to determine intent.}
+\label{stiffness}
+\end{figure}
+
 
 \section{Discussion}
+While other visual distortions typically degrade performance and require an adaptation period to overcome, IF immediately enhances performance. The simplest explanation for this is that IF approximates a signal already known to the brain: the path planned for the hand.
 
-Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text  Text Text Text Text Text Text Text Text Text Text.
-Additional Requirements:
-\subsection{Corrections}
+This is scientifically relevant as performance enhancement is an active of research. In addition, this finding supports the notion that a particular trajectory is calculated even when explict trajectory constraints are not present. 
 
-If you need to communicate important changes to a published article please submit a General Commentary. Submit the article with the title “Corrigendum: Original Title of Article”.
+Stiffness decreased, which provides secondary evidence of lower instability and unpredictability. Well, maybe it's just because of the numbers we chose. If we crank them down, can we get the stiffness even lower? Not so much. So clearly getting the stiffness right is very important.
 
-\subsection{Commentaries on Articles}
+While this is pretty awesome, getting the stiffness right is an enormous limitation. Moreover, the stiffness model breaks down in the vicinity of the target for reasons unknown. The nature of control might be changing there and if so, we don't really know the specifics, but Shapiro has something to say about this.
 
-At the beginning of your manuscript provide the citation of the article commented on.
-
-\subsection{Focused Reviews}
-
-For Tier 2 invited Focused Reviews the sections Introduction, Material and Methods, Results, and Discussion are recommended. In addition the authors must submit a short biography of the corresponding author(s). This short biography has a maximum of 600 characters, including spaces.
-
-A picture (5 x 5 cm, in *.tif or *.jpg, min 300 dpi) must be submitted along with the biography in the manuscript and separately during figure upload.
-Focused Reviews highlight and explain key concepts of your work. Please highlight a minimum of four and a maximum of ten key concepts in bold in your manuscript and provide the definitions/explanations at the end of your manuscript under “Key Concepts”. Each definition has a maximum of 400 characters, including spaces.
-
-\subsection{Human Search and Animal Research}
-
-All experiments on live vertebrates or higher invertebrates must be performed in accordance with relevant institutional and national guidelines and regulations. In the manuscript, authors must identify the committee approving the experiments and must confirm that all experiments conform to the relevant regulatory standards. For manuscripts reporting experiments on human subjects, authors must identify the committee approving the experiments and must also include a statement confirming that informed consent was obtained from all subjects. In Original Research Articles and Clinical Trial Articles these statements should appear in the Materials and Methods section.
-
-\subsection{Clinical Trial Registration}
-
-Clinical trials should be registered in a public trials registry in order to become the object of a publication at Frontiers. Trials must be registered at or before the start of patient enrollment. A clinical trial is defined as"any research study that prospectively assigns human participants or groups of humans to one or more health-related interventions to evaluate the effects on health outcomes."(\url{www.who.int/ictrp/en}). A list of acceptable registries can be found at \url{www.who.int/ictrp/en and www.icmje.org}.
-
-\subsection{Inclusion of Proteomics Data}
-
-Authors should provide relevant information relating to how the peptide/protein matches were undertaken, including methods used to process and analyze data, false discovery rates (FDR) for large-scale studies and threshold or cut-off rates for peptide and protein matches. Further information could include software used, mass spectrometer type, sequence database and version, number of sequences in database, processing methods, mass tolerances used for matching, variable/fixed modifications, allowable missed cleavages, etc.
-
-Authors should provide as supplementary material information used to identify proteins and/or peptides. This should include information such as accession numbers, observed mass (m/z), charge, delta mass, matched mass, peptide/protein scores, peptide modification, miscleavages, peptide sequence, match rank, matched species (for cross species matching), number of peptide matches, ambiguous protein/peptide matches should be indicated, etc.
-For quantitative proteomics analyses authors should provide information to justify the statistical significance including biological replicates, statistical methods, estimates of uncertainty and the methods used for calculating error.
-
-For peptide matches with biologically relevant post-translational modifications (PTM) and for any protein match that has occurred using a single mass spectrum, authors should include this information as raw data, annotated spectra or submit data to an online repository (recommended option).
-Authors are encouraged to submit raw or matched data and 2-DE images to public proteomics repositories. Submission codes and/or links to data should be provided within the manuscript.
-
-\subsection{Data Sharing}
-
-Frontiers supports the policy of data sharing, and authors are advised to make freely available any materials and information described in their article, and any data relevant to the article (while not compromising confidentiality in the context of human-subject research) that may be reasonably requested by others for the purpose of academic and non-commercial research. In regards to deposition of data and data sharing through databases, Frontiers urges authors to comply with the current best practices within their discipline.
+Overall, this is something of a breakthrough
 
 \section*{Disclosure/Conflict-of-Interest Statement}
 %Frontiers follows the recommendations by the International Committee of Medical Journal Editors (http://www.icmje.org/ethical_4conflicts.html) which require that all financial, commercial or other relationships that might be perceived by the academic community as representing a potential conflict of interest must be disclosed. If no such relationship exists, authors will be asked to declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest. When disclosing the potential conflict of interest, the authors need to address the following points:
