@@ -89,7 +89,7 @@ A new question that arises is whether seeing one’s own intent, rather that wha
 
 In contrast, displaying anything other than what truthfully happens is a distortion and a lie. Like many other visual distortion experiments \citep{miles1980long, pine1996learning}, intent feedback (IF) introduces a visuomotor discrepancy that may be confusing to the nervous system. Preplanning a specific route may not necessary, and instead the system might continuously react to the environmental disturbances until it reaches the goal. If people try to achieve a goal while minimizing some measure of cost, it is possible to compute a set of rules for reacting to the environment without a specific intended route using optimal feedback control\citep{todorov2002optimal}. While this modeling strategy has been very successful at explaining data, it fundamentally assumes that corrective actions will be taken in response to relevant disturbances. Goals can also be reached at minimal \textit{expected} cost by constructing -- and possibly updating -- a specific intended route. IF may be troublesome if the nervous system cannot recognize it because no particular trajectory was intended.
 
-While performance is the best indicator of IF's value, changes in arm stiffness can provide supporting evidence that subjects are actually getting what they want. Arm stiffness is known to increase during exposure to instability \cite{franklin2003adaptation} and uncertainty \cite{takahashi2001impedance}. We anticipated that these change might also be modulated by presentation of IF. Reducing the effects of environmental instability and presenting the subject with a signal already known to them should make the arm relax and become more compliant. We hypothesized that any elevated arm stiffness from noisy disturbances would decrease when subjects received IF.
+While performance is the best indicator of IF's value, changes in arm stiffness can provide supporting evidence that subjects are actually getting what they want. Arm stiffness is known to increase during exposure to instability \citep{franklin2003adaptation} and uncertainty \citep{takahashi2001impedance}. We anticipated that these changes might also be modulated by presentation of IF. Reducing the effects of environmental instability and presenting the subject with a signal already known to them should make the arm relax and become more compliant. We hypothesized that any elevated arm stiffness from noisy disturbances would decrease when subjects received IF.
 
 In this paper we describe our abridged method for real-time IF, and then expose subjects to IF in an unstable and unpredictable environment to compare their ability to perform goal-directed reaching using visual feedback of their hand position against visual feedback of their estimated intended position. We hypothesized that IF should lead to better performance in the presence of force-based disturbances. Accordingly, we hypothesized that during random disturbances, the intent trajectory should deviate less than the hand.
 
@@ -114,10 +114,10 @@ Hats ( $\hat{}$ ) denote the nervous system's best estimate of a physical quanti
 \begin{equation}
 \ddot{q}_d=\hat{M}^{-1} \{M\ddot{q}+G-\hat{G}+E-\hat{E}-\tau_{fb}\}
 \end{equation}
-In this form, a differential equation solver can determine $q_d$ as it evolves in time if a few assumptions are made and conditions are met. First, $\hat{E}$ must be modeled or assumed, so we choose $\hat{E}=0$. In the presence of a zero mean white noise force disturbance its mean should be zero, but it is unlikely to be exactly zero and may reflect an average of only the last few exposures\cite{scheidt2001learning}. Next, the matrix $\hat{M}(q_d)$ must be invertible, but we can ensure this through our choice of workspace. Finally, feedback torque requires a model of arm impedance, which is known to be task-dependent\cite{gomi1998task} and may vary over the course of a reach\cite{niu2010temporal}. With no prior knowledge of arm impedance for this task-disturbance combination, we presumed the feedback torque model of Shadmehr and Mussa-Ivaldi anticipating that it is sufficiently accurate or easy to learn (experiment 1). The experiment was repeated with a lower stiffness estimate (experiment 2) to explore any dependence on this assumption.
+In this form, a differential equation solver can determine $q_d$ as it evolves in time if a few assumptions are made and conditions are met. First, $\hat{E}$ must be modeled or assumed, so we choose $\hat{E}=0$. In the presence of a zero mean white noise force disturbance its mean should be zero, but it is unlikely to be exactly zero and may reflect an average of only the last few exposures\citep{scheidt2001learning}. Next, the matrix $\hat{M}(q_d)$ must be invertible, but we can ensure this through our choice of workspace. Finally, feedback torque requires a model of arm impedance, which is known to be task-dependent\citep{gomi1998task} and may vary over the course of a reach\citep{niu2010temporal}. With no prior knowledge of arm impedance for this task-disturbance combination, we presumed the feedback torque model of Shadmehr and Mussa-Ivaldi anticipating that it is sufficiently accurate or easy to learn (experiment 1). The experiment was repeated with a lower stiffness estimate (experiment 2) to explore any dependence on this assumption.
 
 \subsection{Apparatus}
-A planar manipulandum (described in Patton and Mussa-Ivaldi \cite{patton2004robot}) was programmed to compensate and minimize any friction or mass. The MATLAB XPC-TARGET package \cite{MATLAB:2008} was used to render this force environment at 1000 Hz and data were collected at 1000 Hz.  Visual feedback of cursor position was performed at 60 Hz using OpenGL. Closed-loop data transmission time (position measurement to completed rendering to recognition of rendering by the position measurement system) was less than 8 milliseconds, ensuring a visual delay less than one 60 Hz frame.
+A planar manipulandum (described in Patton and Mussa-Ivaldi \cite{patton2004robot}) was programmed to minimize any friction or mass. The MATLAB XPC-TARGET package \citep{MATLAB:2008} was used to render this force environment at 1000 Hz and data were collected at 1000 Hz.  Visual feedback of cursor position was performed at 60 Hz using OpenGL. Closed-loop data transmission time (position measurement to completed rendering to recognition of rendering by the position measurement system) was less than 8 milliseconds, ensuring a visual delay less than one 60 Hz frame. Numerical simulation was performed in real-time using the GNU Scientific Library's odeiv2 driver with Runge-Kutta-Fehlberg (4,5) stepping\cite{gough2009gnu}.
 
 \subsection{Human Subjects}
 The human data trajectories analyzed here are drawn from nine subjects who gave informed consent in accordance with Northwestern University Institutional Review Board, which specifically approved this study and follows the principles expressed in the Declaration of Helsinki. Seven male and one female right-handed subjects (ages 21 to 30) performed the reaches with their right arm and were not compensated. Subjects' arm segment lengths were directly measured \textit{in situ} while body mass was self-reported.
@@ -126,7 +126,7 @@ The human data trajectories analyzed here are drawn from nine subjects who gave 
 We chose 15 centimeters long, center-out reaches of the right arm to visually-presented targets chosen at 60 degree intervals about that central point. Target selection was carried out pseudorandomly such that each outer target was visited 16 times in each of 5 blocks of 96 reaches each. During blocks 2 through 4, subjects experienced filtered white noise forces drawn from a white noise generator at 1000 Hertz with flat power spectral density of 1 Newton, and then passed through a 4th order low-pass Butterworth filter with cutoff $10 \pi$ radians per second. During block 3, cursor position indicated deduced intent. During all other blocks, the cursor position indicated hand position (Figure 2A).
 
 \subsection{Dynamic simulation of arm and intended trajectories}
-Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} were used to estimate relationships between body mass and limb mass, limb length and limb center of mass, and limb mass and length and moment of inertia. Viscosity parameters were taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive}. Stiffness parameters were either taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} ($K_{P1}$, experiment 1) or estimated ($K_{P2}$, experiment 2). Expressed in Newton-Meters per Radian:
+Anatomical landmarks and values from Dempster \cite{dempster1955space} and Winter \cite{winter2009biomechanics} were used to estimate relationships between body mass and limb mass, limb length and limb center of mass, and limb mass and length and moment of inertia. Viscosity parameters, $K_d$, were taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive}. Stiffness parameters were either taken from Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} ($K_{P1}$, experiment 1) or estimated ($K_{P2}$, experiment 2). Expressed in Newton-Meters per Radian:
 \begin{equation}
 K_{P1}=
 \begin{bmatrix}
@@ -140,25 +140,29 @@ K_{P2}=
 2 & 5
 \end{bmatrix}
 \end{equation}
-Numerical simulation was performed in real time using the GNU Scientific Library's odeiv2 driver with Runge-Kutta-Fehlberg (4,5) stepping\cite{gough2009gnu}.
+To estimate this reduced stiffness, a pilot subject was asked to intend to remain still on the center target, $q_d$, while co-contracting as little as possible. $K_{P2}$ was then calculated from one minute of white noise forces, $E$, and joint angle traces, $q$ as the least squares solution to the system:
+\begin{equation}
+K_{P2}\big(q_d(t)-q(t)\big)=M\big(q(t)\big)\ddot{q}(t)+G(q(t),\dot{q}(t))+E(t)+K_D\dot{q}(t)
+\end{equation}
+where $K_{P2}$ is a 2-by-2 matrix while the state difference and torque are 2-by-60000 matrices.
 
 \subsection{Metrics and Statistical Analysis}
 Trajectories and forces were rotated such that movement and force parallel to the line connecting the previous target (the reach origin) and the presented target lie along a \textit{progress} axis while perpendicular movement and force lie along an \textit{error} axis. Reach onset was detected as the moment the cursor's distance from the center of the previous target first exceeded 1 centimeter. Maximum perpendicular error for a trajectory was the largest error magnitude within 250 milliseconds of reach onset. A scalar stiffness, $k$, was calculated for the \textit{error} axis during this same 250 millisecond time span by linear regression:
 \begin{equation}
 F_e=m\ddot{e}+b\dot{e}+ke+F_O
 \end{equation}
-Force ($F_e$) and state ($\ddot{e}$, $\dot{e}$, $e$) were known. Mass ($m$), viscosity ($b$), and stiffness offset ($F_0$) terms were calculated, but discarded. While stiffness is better described as a matrix, a scalar was calculated to facilitate statistical comparison between treatments and blocks. The paired Wilcoxon signed rank test was used to detect differences in maximum perpendicular error and stiffness between blocks and treatments at the 5\% significance level using the MATLAB statistics toolbox package \cite{MATLAB:2014}.
+Force ($F_e$) and state ($\ddot{e}$, $\dot{e}$, $e$) were known. Mass ($m$), viscosity ($b$), and stiffness offset ($F_0$) terms were calculated, but discarded. While joint stiffness is usually described as a matrix, instantaneous endpoint stiffness in only the error direction is a scalar. This metric isolates stiffness in the error direction and facilitates statistical comparison between treatments and blocks. The paired Wilcoxon signed rank test was used to detect differences in maximum perpendicular error and stiffness between blocks and treatments at the 5\% significance level using the MATLAB statistics toolbox package \cite{MATLAB:2014}.
 \end{methods}
 
 
 \section{Results}
 As expected, the model was able to deduce an intended trajectory and all subjects were able to utilize this estimate of their intent to perform targeted reaching while experiencing turbulent forces (Figure 1). The following sections address the quality of this reaching.
 
-\begin{figure}[!b]
+\begin{figure}[h]
 \centering
 \framebox{\parbox{3in}{\includegraphics{Yplots.eps}
 }}
-\caption{Typical subjects' made center-out targeted reaching motions under experimentally varied force and feedback conditions. Subjects used feedback of either hand motions (black lines) or estimated intent (red lines) to complete these reaches. While both were recorded under all conditions, only one was shown on screen at a time. Intent was estimated using either the stiffness model of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} (Experiment 1) or a reduced stiffness (Experiment 2) to explore any dependence of reaching stiffness or accuracy on this assumption. The force disturbance was designed to be turbulent and unpredictable to minimize any effect of learning.}
+\caption{Typical subjects made center-out targeted reaching motions under experimentally varied force and feedback conditions. Subjects used feedback of either hand motions (black lines) or estimated intent (red lines) to complete these reaches. Intent was estimated using either the stiffness model of Shadmehr and Mussa-Ivaldi\cite{shadmehr1994adaptive} (Experiment 1) or a reduced stiffness (Experiment 2) to explore any dependence of reaching stiffness or accuracy on this assumption. The white noise force disturbance was designed to be unpredictable in order to minimize any effect of learning.}
 \label{Yplots}
 \end{figure}
 
@@ -174,7 +178,7 @@ As expected, the model was able to deduce an intended trajectory and all subject
 Even if subjects were capable of performing a reaching task using their estimated intent, a poor estimate would have lead to poor performance. Indeed, the hand significantly outperformed our intent estimate when the force disturbance is not present in block 1 (Figure 2D). Model and sensor inaccuracies degrade performance and result in an error of approximately 5 millimetres. In the presence of a force disturbance in block 2, the hand loses its advantage as model and sensor inaccuracies are balanced by some degree of cancellation of the disturbance. In block 3 where visual feedback of the intent is given instead of hand, the intent significantly outperforms the hand. For this intent estimate to be useful, subjects should perform better when using feedback of the intent than when using feedback of the hand. Comparing the hand's performance in block 2 to the intent's performance in block 3, subjects performed significantly better using their estimated intent. Finally, no significant differences were present across the two experiments. Performance was relatively insensitive to this change in the stiffness model used to deduce the intent.
 
 \subsection*{Endpoint Stiffness}
-While accuracy is desirable, it can be attained by cocontracting muscles to increase arm stiffness at the cost of metabolic effort \cite{gribble2003role}\cite{takahashi2001impedance}. Subjects stiffened significantly in response to white noise forces as seen by comparing stiffness in blocks 1 and 2 (Figure 3C). Subjects' stiffness significantly decreased when feedback of the deduced intent replaced feedback of the hand, as seen by comparing blocks 2 and 3. This decrease does not return stiffness to undisturbed levels, and it remains even after feedback of the hand resumes as seen by comparing blocks 3 and 4. Stiffness may have decreased with duration of exposure to uncertain disturbances\cite{takahashi2001impedance}. Subjects did not appear to have adjusted their stiffness to match the stiffness used in the estimation as subject and model stiffnesses were significantly different in experiment 2.
+While accuracy is desirable, it can be attained by co-contracting muscles to increase arm stiffness at the cost of metabolic effort \citep{gribble2003role, takahashi2001impedance}. Subjects stiffened significantly in response to white noise forces as seen by comparing stiffness in blocks 1 and 2 (Figure 3C). Subjects' stiffness significantly decreased when feedback of the deduced intent replaced feedback of the hand, as seen by comparing blocks 2 and 3. This decrease does not return stiffness to undisturbed levels, and it remains even after feedback of the hand resumes as seen by comparing blocks 3 and 4. Stiffness may have decreased with duration of exposure to uncertain disturbances\citep{takahashi2001impedance}. Subjects did not appear to have adjusted their stiffness to match the stiffness used in the estimation as subject and model stiffnesses were significantly different in experiment 2.
 
 \begin{figure}[t]
 \centering
@@ -186,11 +190,27 @@ While accuracy is desirable, it can be attained by cocontracting muscles to incr
 
 
 \section{Discussion}
-While other visual distortions typically degrade performance and require an adaptation period to overcome, IF immediately enhances performance. The simplest explanation for this is that IF approximates a signal already known to the brain: the path planned for the hand.
 
-This is scientifically relevant as performance enhancement is an active of research. In addition, this finding supports the notion that a particular trajectory is calculated even when explict trajectory constraints are not present. 
+Although exposure to random forces damaged subjects’ reaching accuracy and increased their arm stiffness, replacing the veridical feedback with IF alleviated accuracy and stiffness. While other visual distortions typically degrade performance and require an adaptation period to overcome, IF immediately enhances performance. The simplest explanation for this is that IF approximates a signal already known to the brain: the path planned for the hand. In addition to its promise in performance enhancement, IF represents a novel means of revealing and studying the mechanisms of planning and control.
+
+While IF alleviated the increased stiffness caused by exposure to random forces, stiffness remained significantly above baseline levels. Many explanations are reasonable. In particular, we might have hypothesized that the stiffness model used to determine intent might bias a person's arm stiffness, but the data did not support this conclusion. Alternatively, we might hypothesize that inaccuracy and incompleteness of the models used results in an estimate of intent that less accurate than subjects might desire. Since noise and performance inaccuracy can both be addressed by co-contraction, this may account for the remaining additional stiffness. Finally, it is possible that subjects co-contracted simply to counteract any residual perceived instability due to our slight lag in processing and presenting feedback.
+
+
+
+Specific planned state trajectory even in the absence of explicit kinematic constraints.
+
+Of particular scientific interest, "strict invariant" which has been described as opposite optimal feedback control.
+
 
 Stiffness decreased, which provides secondary evidence of lower instability and unpredictability. Well, maybe it's just because of the numbers we chose. If we crank them down, can we get the stiffness even lower? Not so much. So clearly getting the stiffness right is very important.
+In the absence of disturbing forces, estimated intent accuracy was lower than
+that of the hand, which suggests the need for model improvements.
+
+ The simplest explanation for this is that IF approximates a signal already known to the brain: the path planned for the hand. If so, IF r Moreover, this immediate performance enhancement during human-machine interaction implies a means by which robots can productively interact with a human without impeding them.
+
+
+
+
 
 While this is pretty awesome, getting the stiffness right is an enormous limitation. Moreover, the stiffness model breaks down in the vicinity of the target for reasons unknown. The nature of control might be changing there and if so, we don't really know the specifics, but Shapiro has something to say about this.
 
