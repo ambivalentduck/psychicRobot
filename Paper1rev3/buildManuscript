@@ -1,0 +1,6 @@
+latex -interaction=nonstopmode paper1rev3.tex
+bibtex paper1rev3.aux
+latex -interaction=nonstopmode paper1rev3.tex
+latex -interaction=nonstopmode paper1rev3.tex
+dvips -o paper1rev3.ps paper1rev3.dvi
+ps2pdf paper1rev3.ps
