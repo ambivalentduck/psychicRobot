@@ -271,7 +271,7 @@ for each subject as the sum of all torques acting on the joints should ideally b
 \begin{equation}
 \ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+c\tau_{fb}]\right\}
 \end{equation}
-and integrated numerically as described. By scaling an established model using a force disturbance other than our disturbance of interest, we avoided presuming the intent trajectory we hoped to recover. This also serves as a test of model generalization since the training and testing data are drawn from different force disturbances. If the structure of the model is sufficiently accurate, the value of $c$ fit using data from the white noise forces will also be effective, at least initially, for the pulse force disturbances. 
+and integrated numerically as described. By scaling an established model using a force disturbance other than our disturbance of interest, we avoided presuming the intent trajectory we hoped to recover. This also serves as a test of model generalization since the training and testing data are drawn from different force disturbances. If the structure of the model is not sufficiently accurate, the value of $c$ fit using data from the white noise forces will be ineffective for the pulse force disturbances. 
 
 
 \subsection*{Indices of variance-based sensitivity}
