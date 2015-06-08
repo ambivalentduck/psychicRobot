@@ -271,7 +271,7 @@ for each subject as the sum of all torques acting on the joints should ideally b
 \begin{equation}
 \ddot{q}_d=\hat{M}(q_d)^{-1}\left\{M(q)\ddot{q}+G(q,\dot{q})+E-[\hat{G}(q_d,\dot{q}_d)+c\tau_{fb}]\right\}
 \end{equation}
-and integrated numerically as described. By scaling an established model using a force disturbance other than our disturbance of interest, we avoided presuming the intent trajectory we hoped to recover. This also serves as a test of model generalization since the training and testing data are drawn from different force disturbances. If the structure of the model is not sufficiently accurate, the value of $c$ fit using data from the white noise forces will be ineffective for the pulse force disturbances. 
+and integrated numerically as described. By scaling an established model using a force disturbance other than our disturbance of interest, we avoided presuming the intent trajectory we hoped to recover.
 
 
 \subsection*{Indices of variance-based sensitivity}
@@ -323,10 +323,12 @@ The process model does not need to be explicitly formulated. Dynamic models that
 
 Nevertheless, there are some limitations to these methods. Accurate interface force measurement (within a few tenths of a newton) is needed. Such instrumentation is available, but must be used with great care in order to preserve the accuracy of the estimate. Our sensitivity analysis on synthetic data revealed that slight error can lead to a trajectory that accumulates a drift due to bias caused by the force term. More importantly, while modern force sensors can be highly accurate with very high signal to noise ratios, they tend to drift over time, leading to error that can grow if the device is not periodically tared. Our empirical approach used several methods to mitigate these effects, and hence the errors became small. It remains to be seen if there are methods to further reduce the mis-estimation due to force error or eliminate the need for force estimation altogether. It will be also interesting to determine whether relaxing constraints and operating in 3D would produce the same levels of accuracy found here.
 
+Since trajectories were not controlled experimentally, our tests rely heavily on the assumption that disturbed intentions initially mirror undisturbed intentions. Therefore, it is not completely certain that subjects intended to move along a straight line to the target. However, this study examined straight line motions because it is well understood that people tend to repetitively attempt to reach in a straight line towards a target \cite{hodgson2000model}. Also, even when subjects are persistently perturbed by a force field, they recover their motions to a straight line with repetitive experience \cite{shadmehr1994adaptive}. Nevertheless, it may be better to employ tasks with a more specific trajectory in order to validate the intended path. Unfortunately, even such an intended trajectory may not be strictly invariant during external disturbance because some displacements may cause intent to be recalculated by the nervous system. 
+
 
 A key assumption in this study is that the joint impedance (stiffness) is linearly related to torque. While other approaches tend to construct paradigms that indicate or presume that the intention is static in order to derive impedance -- the so called family of system identification applications, this study makes a constrained assumption of stiffness in order to determine intent. In a sense, this approach widens the scope to include movement. Sensitivity analyses showed that approximation of stiffness is the most critical factor to accuracy in estimating intent. While serious trial-to-trial stiffness mis-estimation is unlikely, co-contraction in response to disturbance might plausibly double stiffness mid-reach. Even as the model is insensitive to normal variations, a human can halve or double their stiffness \cite{franklin2007endpoint} significantly reducing determination accuracy. This stiffening may even explain the reported deviation of intent from the baseline trajectories. Of particular concern are the large hooks at the end of the motions. These limitations may be overcome by detecting muscle co-contraction or using additional modeling assumptions to allow real-time estimation of stiffness.
 
-The simple linear scaling of Burdet et al.'s stiffness model \cite{burdet2006stability} facilitated hypothesis testing, but was inherently limiting. More accurate approaches would provide us with many free parameters through which to determine the outcome of the eventual extraction and obtain a spurious favorable result. Our results point to the possibility of the impedance changing during motion, perhaps as a function of time. 
+The simple linear scaling of Burdet et al.'s stiffness model \cite{burdet2006stability} facilitated hypothesis testing, but was inherently limiting. More accurate approaches would provide us with many free parameters through which to determine the outcome of the eventual extraction and obtain a spurious favorable result. Like others who have examined large force disturbances, we find lower stiffnesses (our $c$ parameter) than might be expected \cite{crevecoeur2014beyond} (Table in S1 Table). This may be due to differences in tasks \cite{gomi1998task} and/or the dependency of muscle impedance on perturbation size \cite{van2010vivo}. Our results also point to the possibility of the impedance changing during motion, perhaps as a function of time. 
 
 The words \textit{intent} and \textit{equilibrium} are contentious because of the various definitions that exist in the literature. Our simple definition here is that the intent is the path that would have been taken had there been no external disturbances. A rich history of research has suggested many ways that an equilibrium trajectory can explain action through feedback responses \cite{feldman1995origin} and/or pre-planned elements \cite{shadmehr1994adaptive}. Here we suggest that one should directly define intent in the context of a hypothesized control model. Our work here assumed the model of Burdet \cite{burdet2006stability}. However, other, more sophisticated, models may be deemed more appropriate in the future. What is clear is that given some model of control, this intent extraction approach is able to invert the process to estimate intent. 
                                   
@@ -582,15 +584,11 @@ $\text{sec}^{-1}$ &
 \label{tab:parameters}
 \end{table}
 
-%\section*{Supporting Information Legends}
-%
-% Please enter your Supporting Information captions below in the following format:
-%\item{\bf Figure SX. Enter mandatory title here.} Enter optional descriptive information here.
-% 
-%\begin{description}
-%\item {\bf}
-%\item {\bf}
-%\end{description}
+\section*{Supporting Information Legends}
+
+\begin{description}
+\item{\bf Table S1. Subject-specific parameters.} Gross body mass was self-reported. Upper arm length, forearm length, and shoulder position in the robot's coordinate system were measured \textit{in situ}. Feedback torque gain was fit as described in our methods section using the intermittently presented white noise force disturbance. This gain is relative to the total feedback torque output (stiffness, damping, and reflexes) of the model of Burdet et al.\cite{burdet2006stability}.
+\end{description}
 
 \end{document}
 
