@@ -26,7 +26,7 @@ set(gcf,'position',[4,8,figmargin+lmargin+width,figmargin+bmargin+height])
 
 %% Compute everything we'll need later
 
-if ~exist('fig4dotsNmeans.mat','file')
+if ~exist('fig4dotsNmeans.mat','file')|1
     for k=SUBS
         load(['../Data/Data_pulse/pulse',num2str(k),'W.mat'])
         load(['../Data/Data_pulse/pulse',num2str(k),'Y.mat'])

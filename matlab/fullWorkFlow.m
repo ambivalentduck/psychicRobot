@@ -2,7 +2,7 @@ clc
 clear all
 
 n=1:8;
-
+return
 %Add differential optimization just in case it's needed
 addpath ../../DeOpt/
 

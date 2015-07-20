@@ -2,7 +2,7 @@ clc
 clear all
 
 figure(37)
-set(gcf,'position',[8.8268    3.2713   26.8753   20.0790])
+%set(gcf,'position',[8.8268    3.2713   26.8753   20.0790])
 clf
 hold on
 
@@ -24,7 +24,8 @@ black=[0 0 0];
 
 yoff=[2 4; 1 3]*.1;
 xbase=[0 -.4];
-leftright=[6 8];
+%leftright=[6 8];
+leftright=[8 4];
 
 for LR=1:2
     specialestsub=leftright(LR);
@@ -194,7 +195,8 @@ rangemids=tnorm*plotMids;
 
 %plot(onset+[0 0],lscale*mP*[-1 1]+yoff,'color',[1 0 0],'linewidth',1.5)
 %plot(handonset+[0 0],lscale*mP*[-1 1]+yoff,'color',[0 1 0],'linewidth',1.5)
-lineorder={[6 1:4],[8 5 7]};
+%lineorder={[6 1:4],[8 5 7]};
+lineorder={[8 1:3 5:6],[4 7]};
 
 for LR=1:2
     specialestsub=leftright(LR);

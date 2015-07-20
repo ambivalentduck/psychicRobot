@@ -1,6 +1,13 @@
 function extractPulses(k)
 
-global kpgain massgain
+global kpgain massgain reflexcontrib
+
+massgain=1;
+ 
+kg=[.18];
+rc=[.07 .1 .1 .1 .1 .1 .1 .1];
+kpgain=kg(k);
+reflexcontrib=rc(k);
 
 figure(k)
 clf
@@ -25,9 +32,6 @@ for c=1:length(F)
     
     t=[trials(kk).t(start:end); trials(kk+1).t(1:onset2)]';
     xvaf=[xvaf1(start:end,:); xvaf2(1:onset2,:)];
-    
-    kpgain=kpgains(1); %(trialInfo(kk).startcat);
-    massgain=1; %massgains(1); %(trialInfo(kk).startcat);
     
     y=extract(t,xvaf,'reflex');
     trials(kk).y=y;
