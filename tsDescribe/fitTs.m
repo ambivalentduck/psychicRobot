@@ -2,6 +2,8 @@ function fitTs(k)
 
 k=1
 
+global xdot tfit
+
 load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
 
 %% Categorize by start/end pair
@@ -54,8 +56,18 @@ end
 
 %% For each trial, fit a 5th order poly to velocity
 
-for t=1:length(trials)
+for t=2:length(trials)
     if trialInfo(t).clean
-        P0=[;means(trials(t).t);trials(t).t(end)-trials.t(1)]
+        P0=[trialInfo(t).xf-trialInfo(t).x0;0;mean(trials(t).t);trials(t).t(end)-trials(t).t(1)];
+        P=fminunc(@supMJ5Pgrad,0,optimset('GradObj','on'));
+        if rand>.95
+            figure(t)
+            clf
+            v=supMJ5P(P(1:2),P(3),P(4),trials(t).t);
+            plot(trials(t).t-trials(t).t(1),vecmag(trials(t).v.^2,'k'))
+            plot(trials(t).t-trials(t).t(1),vecmag(v),'r.')
+        end
+    end
+end
         
 
