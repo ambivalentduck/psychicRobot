@@ -1,5 +1,6 @@
-function fitTs(k)
-
+%function fitTs(k)
+clc
+clear all
 k=1
 
 global xdot tfit
@@ -56,18 +57,47 @@ end
 
 %% For each trial, fit a 5th order poly to velocity
 
+tesses=-1*ones(size(trials));
+
 for t=2:length(trials)
     if trialInfo(t).clean
-        P0=[trialInfo(t).xf-trialInfo(t).x0;0;mean(trials(t).t);trials(t).t(end)-trials(t).t(1)];
-        P=fminunc(@supMJ5Pgrad,0,optimset('GradObj','on'));
-        if rand>.95
+        xdot=trials(t).v;
+        tfit=trials(t).t;
+        P0=[trialInfo(t).xf-trialInfo(t).x0;0;mean(trials(t).t);1];
+        P=fminunc(@supMJ5Pgrad,P0,optimset('GradObj','on','TolFun',1e-8,'Display','off'));
+        tesses(t)=P(4);
+        cost=supMJ5Pgrad(P0)-supMJ5Pgrad(P)
+        if rand>2
             figure(t)
             clf
-            v=supMJ5P(P(1:2),P(3),P(4),trials(t).t);
-            plot(trials(t).t-trials(t).t(1),vecmag(trials(t).v.^2,'k'))
-            plot(trials(t).t-trials(t).t(1),vecmag(v),'r.')
+            hold on
+            v=supMJ5P(P(1:2)',P(3),P(4),tfit);
+            plot(trials(t).t-trials(t).t(1),trials(t).v(:,1),'k')
+            plot(trials(t).t-trials(t).t(1),v(:,1),'r.')
         end
     end
 end
         
+figure(2)
+clf
+subplot(1,2,1)
+hold on
+tessesfixed=abs(tesses(tesses~=-1));
+tessesfixed=tessesfixed(tessesfixed>.5);
+qoi=tessesfixed.^-2;
+gapba=min(qoi)-.000001;
+qoi=qoi-gapba;
+[N,X]=hist(qoi,20);
+bar(X+gapba,N/sum(N))
+gp=gamfit(qoi);
+gcx=gamcdf(X,gp(1),gp(2));
+plot(gapba+(X(2:end)+X(1:end-1))/2,gcx(2:end)-gcx(1:end-1),'r')
+ylabel('Normalized Frequency')
+xlabel('t_s^{-2}')
+title('Histogram of t_s^{-2}')
+subplot(1,2,2)
+hold on
+ecdf(qoi+gapba,'bounds','on')
+U=sort(qoi);
+plot(U+gapba,gamcdf(U,gp(1),gp(2)),'r')
 

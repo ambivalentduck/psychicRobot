@@ -23,7 +23,7 @@ tinds=tfit(inds);
 
 [ydot,kerns]=supMJ5P(w,tc,ts,tinds);
 
-fit_error=ydot-xdot(:,inds)';
+fit_error=ydot-xdot(inds,:);
 gradw=zeros(lPD,datadim);
 gradtc=zeros(lPD,1);
 gradts=zeros(lPD,1);
@@ -33,12 +33,12 @@ for k=1:lPD
     tcdiff=-(60*ta-180*ta.^2+120*ta.^3)/(ts(k)^2);
     
     td=(tinds-tc(k))/(ts(k)^2);
-    tsdiff=-(kerns(:,k)'+td.*(60*ta-180*ta.^2+120*ta.^3))/ts(k);
+    tsdiff=-(kerns(:,k)+td.*(60*ta-180*ta.^2+120*ta.^3))/ts(k);
    
     for kk=1:datadim
         gradw(k,kk)=sum(fit_error(:,kk).*kerns(:,k));
-        gradtc(k)=gradtc(k)+sum(w(k,kk)*fit_error(:,kk).*tcdiff');
-        gradts(k)=gradts(k)+sum(w(k,kk)*fit_error(:,kk).*tsdiff');
+        gradtc(k)=gradtc(k)+sum(w(k,kk)*fit_error(:,kk).*tcdiff);
+        gradts(k)=gradts(k)+sum(w(k,kk)*fit_error(:,kk).*tsdiff);
     end
 end
 
