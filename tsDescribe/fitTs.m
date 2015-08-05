@@ -1,27 +1,16 @@
-%function fitTs(k)
-clc
-clear all
-k=1
+function fitTs(SUB)
 
-global xdot tfit
-
-load(['../Data/Data_pulse/pulse',num2str(k),'.mat'])
+load(['../Data/Data_pulse/pulse',num2str(SUB),'.mat'])
 
 %% Categorize by start/end pair
-figure(1)
-clf
-hold on
 clustermeS=zeros(length(trials)-1,1); %#ok<NODEF>
 clustermeE=clustermeS;
 for t=1:length(trials)-1
-    plot(trials(t+1).x([1 end],1),trials(t+1).x([1 end],2),'.')
     clustermeS(t)=trials(t+1).x(1,1);
     clustermeE(t)=trials(t+1).x(end,1);
 end
 [trash,means]=kmeans([clustermeE; clustermeE],3,'emptyaction','singleton','start',[-0.175;-0.026;0.125]);
 means=sort(means);
-plot(means,.5*[1 1 1],'rx')
-axis equal
 
 starts=zeros(length(trials),1);
 ends=starts;
@@ -43,7 +32,7 @@ urc=urc(2:end);
 %% Use undisturbed examples only
 dcats=[trials.disturbcat];
 
-nclean=3;
+nclean=4;
 clean=0*dcats;
 for kk=1:nclean
     clean=clean+[zeros(1,kk-1) dcats(1:end-(kk-1))];
@@ -61,29 +50,16 @@ tesses=-1*ones(size(trials));
 
 for t=2:length(trials)
     if trialInfo(t).clean
-        xdot=trials(t).v;
-        tfit=trials(t).t;
-        P0=[trialInfo(t).xf-trialInfo(t).x0;0;mean(trials(t).t);1];
-        P=fminunc(@supMJ5Pgrad,P0,optimset('GradObj','on','TolFun',1e-8,'Display','off'));
-        tesses(t)=P(4);
-        cost=supMJ5Pgrad(P0)-supMJ5Pgrad(P)
-        if rand>2
-            figure(t)
-            clf
-            hold on
-            v=supMJ5P(P(1:2)',P(3),P(4),tfit);
-            plot(trials(t).t-trials(t).t(1),trials(t).v(:,1),'k')
-            plot(trials(t).t-trials(t).t(1),v(:,1),'r.')
-        end
+        tesses(t)=getTsMetric(trials(t).x,trials(t).t,[means(starts(t)) .5],[means(ends(t)) .5]);
     end
 end
-        
-figure(2)
+
+figure(SUB)
 clf
 subplot(1,2,1)
 hold on
 tessesfixed=abs(tesses(tesses~=-1));
-tessesfixed=tessesfixed(tessesfixed>.5);
+%tessesfixed=tessesfixed(tessesfixed>.1);
 qoi=tessesfixed.^-2;
 gapba=min(qoi)-.000001;
 qoi=qoi-gapba;
