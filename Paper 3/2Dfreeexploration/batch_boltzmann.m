@@ -11,6 +11,13 @@ hold on
 subplot(2,1,2)
 hold on
 
+figure(4000)
+clf
+subplot(2,1,1)
+hold on
+subplot(2,1,2)
+hold on
+
 for k=1:length(sublets)
     fname=['free_exp_',sublets{k},'.mat'];
     

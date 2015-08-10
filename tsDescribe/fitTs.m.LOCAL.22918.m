@@ -1,4 +1,4 @@
-function [shift,n,T]=fitTs(SUB)
+function fitTs(SUB)
 
 load(['../Data/Data_pulse/pulse',num2str(SUB),'.mat'])
 
@@ -59,29 +59,20 @@ clf
 subplot(1,2,1)
 hold on
 tessesfixed=abs(tesses(tesses~=-1));
-[shift,n,T]=fitShiftedGam(tessesfixed);
-x=tessesfixed.^-2;
-x=x(x<35); %Not censoring, just visibility for plotting
-
-nbins=25;
-edges=linspace(min(x),max(x),nbins+1)';
-counts=zeros(nbins,1);
-for k=2:length(edges)
-    counts(k-1)=sum((x>=edges(k-1))&(x<=edges(k)));
-end
-counts=counts/sum(counts);
-
-centers=(edges(2:end)+edges(1:end-1))/2;
-bar(centers,counts)
-gcx=gamcdf(edges-shift,n,T);
-plot(centers,gcx(2:end)-gcx(1:end-1),'r')
+tessesfixed=tessesfixed(tessesfixed>.1);
+qoi=tessesfixed.^-2;
+gapba=min(qoi)-.000001;
+qoi=qoi-gapba;
+[N,X]=hist(qoi,20);
+bar(X+gapba,N/sum(N))
+gp=gamfit(qoi);
+gcx=gamcdf(X,gp(1),gp(2));
+plot(gapba+(X(2:end)+X(1:end-1))/2,gcx(2:end)-gcx(1:end-1),'r')
 ylabel('Normalized Frequency')
 xlabel('t_s^{-2}')
 title('Histogram of t_s^{-2}')
 subplot(1,2,2)
 hold on
-ecdf(x,'bounds','on')
-sortX=sort(x);
-plot(sortX,gamcdf(sortX-shift,n,T),'r')
-title(['U=',num2str(shift),' n=',num2str(n),' T=',num2str(T)])
-
+ecdf(qoi+gapba,'bounds','on')
+U=sort(qoi);
+plot(U+gapba,gamcdf(U,gp(1),gp(2)),'r')

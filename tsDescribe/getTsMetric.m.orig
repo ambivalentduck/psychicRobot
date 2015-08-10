@@ -19,4 +19,8 @@ st=sin(theta);
 rotmat=[ct st;-st ct];
 
 out=x*rotmat;
+<<<<<<< HEAD
 out(:,1)=out(:,1)/norm(xdiff);
+=======
+out(:,1)=out(:,1)/norm(xdiff);
+>>>>>>> origin/master
