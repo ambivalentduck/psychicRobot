@@ -1,6 +1,6 @@
 function addSubjectPulse(k)
 
-subnums=[324 789 300 301];
+subnums=[324 789 300 301 5:8];
 
 name=num2str(subnums(k));
 input=load(['../Data/Data_pulse/input',name,'.dat']);

@@ -1,4 +1,4 @@
-function ofinterest=boltzmannsubjectplots(t,x,v,a)
+function [ofinterest,Pnormecdf,Enormecdf]=boltzmannsubjectplots(t,x,v,a)
 
 global fitmecounts fitmebins
 
@@ -36,9 +36,11 @@ bar(centers,counts)
 fitmecounts=counts;
 fitmebins=edges;
 
-W=expfit(abs(Pt));
+W=fminbnd(@fitexpcdf,0,10);
 
 ofinterest.W=W;
+
+Pnormecdf=[counts centers/W];
 
 cdf=expcdf(fitmebins,W);
 fit=cdf(2:end)-cdf(1:end-1);
@@ -92,9 +94,7 @@ bar(centers,counts)
 
 fitmecounts=counts;
 fitmebins=edges;
-nT=gamfit(Tt);
-ofinterest.n=nT(1);
-ofinterest.T=nT(2);
+nT=fmincon(@fitgamcdf,[1.5; 1],-eye(2),-[1; 0.01]);
 
 cdf=gamcdf(fitmebins,nT(1),nT(2));
 fit=cdf(2:end)-cdf(1:end-1);
@@ -130,9 +130,18 @@ bar(centers,counts)
 fitmecounts=counts;
 fitmebins=.5*m*edges.^2;
 
+nT=fmincon(@fitgamcdf,[1.5; 1],-eye(2),-[1; 0.01]);
 cdf=gamcdf(fitmebins,nT(1),nT(2));
 fit=cdf(2:end)-cdf(1:end-1);
+ofinterest.n=nT(1);
+ofinterest.T=nT(2);
 ofinterest.speed_rmse=sqrt(mean((fit-counts).^2));
+
+Enormecdf=[counts centers/nT(2)];
+
+cdf=gamcdf(fitmebins,nT(1),nT(2));
+fit=cdf(2:end)-cdf(1:end-1);
+
 plot(centers,fit,'r','linewidth',3)
 
 title(['RMS Error = ',num2str(ofinterest.speed_rmse,3)])

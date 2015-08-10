@@ -1,0 +1,162 @@
+% Template for PLoS
+% Version 2.0 July 2014
+%
+% To compile to pdf, run:
+% latex plos.template
+% bibtex plos.template
+% latex plos.template
+% latex plos.template
+% dvipdf plos.template
+%
+% % % % % % % % % % % % % % % % % % % % % %
+%
+% -- IMPORTANT NOTE
+%
+% Be advised that this is merely a template 
+% designed to facilitate accurate translation of manuscript content 
+% into our production files. 
+%
+% This template contains extensive comments intended 
+% to minimize problems and delays during our production 
+% process. Please follow the template 
+% whenever possible.
+%
+% % % % % % % % % % % % % % % % % % % % % % % 
+%
+% Once your paper is accepted for publication and enters production, 
+% PLEASE REMOVE ALL TRACKED CHANGES in this file and leave only
+% the final text of your manuscript.
+%
+% DO NOT ADD EXTRA PACKAGES TO THIS TEMPLATE unless absolutely necessary.
+% Packages included in this template are intentionally
+% limited and basic in order to reduce the possibility
+% of issues during our production process.
+%
+% % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- FIGURES AND TABLES
+%
+% DO NOT INCLUDE GRAPHICS IN YOUR MANUSCRIPT
+% - Figures should be uploaded separately from your manuscript file. 
+% - Figures generated using LaTeX should be extracted and removed from the PDF before submission. 
+% - Figures containing multiple panels/subfigures must be combined into one image file before submission.
+% See http://www.plosone.org/static/figureGuidelines for PLOS figure guidelines.
+%
+% Tables should be cell-based and may not contain:
+% - tabs/spacing/line breaks within cells to alter layout
+% - vertically-merged cells (no tabular environments within tabular environments, do not use \multirow)
+% - colors, shading, or graphic objects
+% See http://www.plosone.org/static/figureGuidelines#tables for table guidelines.
+%
+% For sideways tables, use the {rotating} package and use \begin{sidewaystable} instead of \begin{table} in the appropriate section. PLOS guidelines do not accomodate sideways figures.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- EQUATIONS, MATH SYMBOLS, SUBSCRIPTS, AND SUPERSCRIPTS
+%
+% IMPORTANT
+% Below are a few tips to help format your equations and other special characters according to our specifications. For more tips to help reduce the possibility of formatting errors during conversion, please see our LaTeX guidelines at http://www.plosone.org/static/latexGuidelines
+%
+% Please be sure to include all portions of an equation in the math environment, and for any superscripts or subscripts also include the base number/text. For example, use $mathrm{mm}^2$ instead of mm$^2$ (do not use \textsuperscript command).
+%
+% DO NOT USE the \rm command to render mathmode characters in roman font, instead use $\mathrm{}$
+% For bolding characters in mathmode, please use $\mathbf{}$ 
+%
+% Please add line breaks to long equations when possible in order to fit our 2-column layout. 
+%
+% For inline equations, please do not include punctuation within the math environment unless this is part of the equation.
+%
+% For spaces within the math environment please use the \; or \: commands, even within \text{} (do not use smaller spacing as this does not convert well).
+%
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+
+
+
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+\usepackage{hyperref}
+
+% line numbers
+\usepackage{lineno}
+
+% ligatures disabled
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+% rotating package for sideways tables
+%\usepackage{rotating}
+
+% If you wish to include algorithms, please use one of the packages below. Also, please see the algorithm section of our LaTeX guidelines (http://www.plosone.org/static/latexGuidelines) for important information about required formatting.
+%\usepackage{algorithmic}
+%\usepackage{algorithmicx}
+
+% Use doublespacing - comment out for single spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+% Use the PLoS provided BiBTeX style
+\bibliographystyle{plos2009}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+
+% Leave date blank
+\date{}
+
+\pagestyle{myheadings}
+
+\usepackage[section]{placeins}
+\usepackage{graphics} % for pdf, bitmapped graphics files
+
+%% Include all macros below. Please limit the use of macros.
+
+%% END MACROS SECTION
+
+\begin{document}
+\pagestyle{empty}
+\setcounter{table}{0}
+\makeatletter
+\renewcommand{\thetable}{S\arabic{table}}
+\begin{table}[!ht]
+\caption{
+\bf{Subject-Specific Measured and Fit Parameters}}
+\begin{tabular}{|l|c c c c c c c c|}
+\hline
+Subject Number &1 &2 &3 &4 &5 &6 &7 &8\\ \hline
+Gross Body Mass (kg), $m_g$ &86.18 &54.43 &95.25 &86.18 &94.35 &86.18 &63.50 &72.57\\
+Upper Arm Length (cm), $L_1$ &28 &28 &31 &33 &34 &37 &28 &29\\
+Forearm Length (cm), $L_2$ &32 &30 &34 &34.5 &34 &38 &31 &33\\ \hline
+Shoulder Parallel Coordinate (cm) &0 &-3 &0 &0 &-2 &-3 &-5 &0\\
+Shoulder Perpendicular Coordinate (cm) &53 &48 &51 &49 &55 &51 &48 &50\\ \hline
+Feedback Torque Gain, $c$ &0.15 &0.15 &0.36 &0.15 &0.94 &0.77 &0.48 &0.86 \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}
+
+
+

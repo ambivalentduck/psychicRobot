@@ -1,0 +1,7 @@
+latexdiff paper1BSubmitted.tex paper1Beditted.tex > changes.tex
+latex -interaction=nonstopmode changes.tex
+bibtex changes.aux
+latex -interaction=nonstopmode changes.tex
+latex -interaction=nonstopmode changes.tex
+dvips -o changes.ps changes.dvi
+ps2pdf changes.ps

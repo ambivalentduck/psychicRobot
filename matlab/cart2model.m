@@ -1,59 +1,49 @@
-function [SNE,OUT,BOUT,oT]=cart2model(X,Y)
+function [TBMP,TSP,TNP]=cart2model(X,Y)
 
 % Assume that forces perpendicular to the direction of movement don't
 % *quickly* effect parallel progress
 % (X is x,y and derivatives measured; Y is y-component desired/typical)
 
-% SNE=sum of non-error-dependent terms
-% Ep=position error
-% Ev=velocity error
-% Tm=muscle torque magnitude vector, needed for Perrault-Franklin style fitting
-% BOUT=[Kp0*(Ep+Ev/12) Kp1*(Tm.*(Ep+Ev/12))]
-% OUT=[Ep Ev Ep.*Tm Ev.*Tm]
-% In theory, Kp_burdet = BOUT\SNE, Kp_burdet = [Kp0 Kp1]
+% TBMP=Body Mass Proportional Torque
+% TSP=Stiffness Proportional Torque
+% TNP=Torque Proportional to Neither of the above
 
 global fJ getAlpha
 
-SNE=zeros(2,size(X,1));
-oT=zeros(6,size(X,1));
-Ep=SNE;
-Ev=SNE;
-Tm=SNE;
+TBMP=zeros(size(X,1),2);
+TSP=zeros(size(X,1),2);
+TNP=zeros(size(X,1),2);
 
 kp0=[10.8 2.83; 2.51 8.67];
 kp1=[3.18 2.15; 2.34 6.18];
 
 for k=1:size(X,1)
+    %Compute real q and tau
     q=ikin(X(k,1:2));
     fJq=fJ(q);
     qdot=fJq\X(k,3:4)';
     qddot=getAlpha(q,qdot,X(k,5:6)');
-    torque=-fJq'*X(k,7:8)'; %This line could scrooge it... with the -sign
+    torque=-fJq'*X(k,7:8)'; %Negative sign is consistent with extract.m
     qreal=[q; qdot; qddot];
     [D_real,C_real]=computeDC(qreal(1:2),qreal(3:4));
 
-    q=ikin([X(k,1) Y(k,1)]);
+    %Compute desired q and tau
+    q=ikin(Y(k,1:2));
     fJq=fJ(q);
-    qdot=fJq\[X(k,3) Y(k,2)]';
-    qddot=getAlpha(q,qdot,[X(k,5) Y(k,3)]');
+    qdot=fJq\Y(k,3:4)';
+    qddot=getAlpha(q,qdot,Y(k,5:6)');
     qdes=[q; qdot; qddot];
     [D_des,C_des]=computeDC(qdes(1:2),qdes(3:4));
     
+    %Find bodymass-proportional, stiffness-proportional, and neither-proportional terms
     Tff=D_des*qdes(5:6)+C_des;
     Tinertial=D_real*qreal(5:6)+C_real;
-    SNE(:,k)=Tff-Tinertial-torque;
-    oT(:,k)=[Tff; Tinertial; torque];
+    Tmuscle=abs(Tinertial+torque);
+    Ep=qreal(1:2)-qdes(1:2);
+    Ev=qreal(3:4)-qdes(3:4);
     
-    Ep(:,k)=qreal(1:2)-qdes(1:2);
-    Ev(:,k)=qreal(3:4)-qdes(3:4);
-    Tm(:,k)=abs(Tinertial+torque);
+    %TNP=m(TBMP)+kTSP
+    TNP(k,:)=torque';
+    TBMP(k,:)=(Tff-Tinertial)';
+    TSP(k,:)=-((kp0+kp1*diag(Tmuscle))*(Ep+Ev/12))';
 end
-
-SNE=SNE';
-Ep=Ep';
-Ev=Ev';
-Tm=Tm';
-oT=oT';
-
-OUT=[Ep Ev Ep.*Tm Ev.*Tm]; %Triple-checked, these are accurate and should allow proper fitting.
-BOUT=[(Ep+Ev/12)*kp0' (Tm.*(Ep+Ev/12))*kp1']; 

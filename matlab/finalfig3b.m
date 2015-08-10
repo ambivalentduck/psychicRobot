@@ -23,10 +23,10 @@ figure(37)
 clf
 hold on
 
-S=4;
+S=5;
 load(['../Data/Data_pulse/pulse',num2str(S),'W.mat'])
 load(['../Data/Data_pulse/pulse',num2str(S),'Y.mat'])
-load(['../Data/Data_pulse/pulse',num2str(S),'U.mat'])
+%load(['../Data/Data_pulse/pulse',num2str(S),'U.mat'])
 
 starts=[trialInfo.startcat];
 ends=[trialInfo.endcat];

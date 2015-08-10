@@ -1,6 +1,6 @@
 function [dqi,torque_outside]=armdynamicsInvertedBurdet(t,qi)
 
-global measuredVals measuredTime
+global measuredVals measuredTime massgain kpgain
 
 lqi=length(qi);
 
@@ -23,10 +23,10 @@ joint_torques=abs(D_real*alpha_real+C_real+torque_outside);
 kp1=[3.18 2.15; 2.34 6.18];
 kp=kp0+kp1*diag(joint_torques);
 
-torque_fb=kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired));
+torque_fb=kpgain*kp*((theta_real-theta_desired) + (1/12)*(omega_real-omega_desired));
 
 %Update the change in desired state
 dqi=[omega_desired;
-    D_expected\(D_real*alpha_real+torque_fb+torque_outside+C_real-C_expected);];  %If torque_fb and torque_outside=0, and c_real ~ c_expected, alpha = alpha desired.
+    D_expected\(D_real*alpha_real+(torque_fb+torque_outside)/massgain+C_real-C_expected);];  %If torque_fb and torque_outside=0, and c_real ~ c_expected, alpha = alpha desired.
 
 end

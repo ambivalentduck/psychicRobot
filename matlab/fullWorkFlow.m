@@ -1,7 +1,10 @@
 clc
 clear all
 
-n=1:4;
+n=1:8;
+return
+%Add differential optimization just in case it's needed
+addpath ../../DeOpt/
 
 % workflow={'','addSubjectPulse';
 %     'W','findKpGain';
@@ -11,13 +14,14 @@ n=1:4;
 %     'NEVERMATCH','finalfig4'
 %     };
 
-workflow={'','addSubjectPulse';
-    'W','findKpGain';
-    'Y','extractPulses';
-    'U','extractUndisturbed';
+% workflow={'','addSubjectPulse';
+%     'W','findWhiteKpGain';
+%     'Y','extractPulses'
+%     };
+
+workflow={'W','findWhiteKpGain';
+    'Y','extractPulses'
     };
-
-
 
 mfiles=dir('.');
 datafiles=dir('../Data/Data_pulse/');

@@ -1,50 +1,59 @@
 function params=getSubjectParams(num)
 
 switch num
-    case {'1', '500', '21', '31','32','55','729'} %me
-        l1=.33;
-        l2=.34;
-        mass=175;
-        shoulder=[0 .45];
-    case {'300'} %Yazan
+    case '300'
         l1=.31;
         l2=.34;
         mass=210;
         shoulder=[0 .51];
-    case {'301'} %Guy
+        origin=[-0.0095, 0.4250];
+    case '301'
         l1=.33;
         l2=.345;
         mass=183;
         shoulder=[0 .49];
-    case {'3','9','10'} %Jim
-        l1=.36;
-        l2=.31;
-        mass=225;
-        shoulder=[0 .55];
-    case {'11','12'} %Tes
-        l1=.3;
-        l2=.32;
-        mass=213;
-        shoulder=[0 .52];
-    case {'324'}
+        origin=[-0.0095, 0.4250];
+    case '324'
         l1=.28;
         l2=.32;
         shoulder=[0 .53];
         mass=213;
-    case {'789'}
+        origin=[-0.0095, 0.4250];
+    case '789'
         l1=.28;
         l2=.3;
         shoulder=[-.03 .48];
         mass=120;
+        origin=[-0.0095, 0.4250];
+    case '5'
+        l1=.34;
+        l2=.34;
+        shoulder=[-0.02, .55];
+        mass=208;
+        origin=[0, .44];
+    case '6'
+        l1=.37;
+        l2=.38;
+        shoulder=[-0.03, .51];
+        mass=190;
+        origin=[0, .44];
+    case '7'
+        l1=.28;
+        l2=.31;
+        shoulder=[-.05, .48];
+        mass=140;
+        origin=[0, .44];
+    case '8'
+        l1=.29;
+        l2=.33;
+        shoulder=[0, .5];
+        mass=160;
+        origin=[0, .44];
 end
 
 params.l1=l1;
 params.l2=l2;
 params.shoulder=shoulder;
-params.origin=[-0.0095, 0.4250];
+params.origin=origin;
 
-if exist('mass','var')
-    params.mass=0.453592*mass;
-else
-    params.mass=((l1+l2)/.77)*91; %Shitty locally linear scaling of weight with height, remember that 200 lbs = 91 kg.
-end
+params.mass=0.453592*mass; %Kg vs lbs
