@@ -1,4 +1,4 @@
-function [shift,n,T]=fitTs(SUB)
+function [shift,n,T,cost]=fitTs(SUB)
 
 load(['../Data/Data_pulse/pulse',num2str(SUB),'.mat'])
 
@@ -61,6 +61,7 @@ hold on
 tessesfixed=abs(tesses(tesses~=-1));
 [shift,n,T]=fitShiftedGam(tessesfixed);
 x=tessesfixed.^-2;
+cost=gamlike([n T],x-shift);
 x=x(x<35); %Not censoring, just visibility for plotting
 
 nbins=25;

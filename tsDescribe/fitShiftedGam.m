@@ -8,6 +8,7 @@ end
 
 global x
 
+ts=ts(ts>0);
 x=ts.^-2;
 
 minx=min(x);
