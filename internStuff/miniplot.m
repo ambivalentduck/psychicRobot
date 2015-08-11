@@ -1,25 +1,12 @@
-function miniplot(x1,y1,x2,y2,msize,xl,rn)
+function p=miniplot(x,y,xoff,marker,msize,rn,hh,hsize)
 
-hold on
-plot(1+rn,x1-y1,'r.','markersize',msize)
-plot(2+rn,x2-y2,'b.','markersize',msize)
+plot(xoff+rn,x-y,marker,'markersize',msize)
 
-yl=ylim;
-a=.95;
-asty=a*yl(2)+(1-a)*yl(1);
-
-[~,h]=signrank(x1,y1);
+%[p,h]=signrank(x,y);
+[h,p]=ttest(x,y);
 if h
-    plot(1,asty,'k*','markersize',msize)
+    plot(xoff,hh,'k*','markersize',hsize)
 end
 
-[~,h]=signrank(x2,y2);
-if h
-    plot(2,asty,'k*','markersize',msize)
-end
-
-set(gca,'xtick',[1 2])
-xlim(xl)
-ylim(yl)
 
 

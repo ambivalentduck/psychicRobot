@@ -2,7 +2,14 @@ clc
 clear all
 close all
 
-sublets={'JL','JT','LP','MF','YM'};
+sublets={'JL'} %,'JT','LP','MF','YM'};
+
+figure(4000)
+clf
+subplot(2,1,1)
+hold on
+subplot(2,1,2)
+hold on
 
 figure(4000)
 clf

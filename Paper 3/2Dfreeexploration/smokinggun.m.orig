@@ -16,10 +16,13 @@ mu=expfit(en);
 figure(75)
 clf
 <<<<<<< HEAD
+<<<<<<< HEAD
 sx1=size(x,1);
 ds=1:150:sx1;
 plot3(x(ds,1),x(ds,2),en(ds),'.')
 =======
+=======
+>>>>>>> origin/master
 
 lower=min(x);
 upper=max(x);
@@ -82,4 +85,7 @@ plot(linspace(0,1,nbins^2),sun,'r-')
 set(gca,'xtick',[])
 xlabel('Potential Rank')
 ylabel('Total Energy, J')
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master

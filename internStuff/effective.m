@@ -30,6 +30,7 @@ for S=subs
     fName=['fJ',hash];
     if ~exist([fName,'.m'],'file')
         makeJacobians(aName,fName);
+        continue
     end
     fJ=str2func(fName);
     
