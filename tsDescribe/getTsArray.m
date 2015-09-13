@@ -1,17 +1,25 @@
-function [ts,offsetVec]=getTsArray(x,t,x0,xf,N)
+function [Rx,Tx,RoTx,xVec]=getTsArray(x,t,x0,xf,N)
 
 buffer=.1;
-offsetVec=linspace(buffer,1-buffer,N+2);
-offsetVec=offsetVec(2:end-1);
+xVec=linspace(buffer,1-buffer,N+2);
+xVec=xVec(2:end-1)';
 
 p=rotateProgressError(x,x0,xf);
+gT=gradient(t);
+v=gradient(p(:,1))./gT;
+R=.5*[0;cumsum(diff(v).^2)];
+
 onset=find(p(:,1)>=buffer,1,'first');
 offsets=zeros(N,1);
 for k=1:N
-    offsets(k)=find(p(:,1)>=offsetVec(k),1,'first');
+    offsets(k)=find(p(:,1)>=xVec(k),1,'first');
 end
 
-ts=t(offsets)-t(onset);
+Rx=R(offsets)-R(onset);
+Tx=t(offsets)-t(onset);
+RoTx=Rx./(Tx.^2); %In theory, this is the point mass since L is constant.
+
+
 
 function out=rotateProgressError(x,x0,x1)
 

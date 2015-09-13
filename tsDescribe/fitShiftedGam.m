@@ -1,15 +1,10 @@
-function [shift,n,T]=fitShiftedGam(ts,varargin)
+function [shift,n,T]=fitShiftedGam(x,varargin)
 
 if nargin<2
     doPlotting=0;
 else
     doPlotting=varargin{1};
 end
-
-global x
-
-ts=ts(ts>0);
-x=ts.^-2;
 
 minx=min(x);
 shiftEst=minx-.000001; %gamfit is weird about zeroes in the data, so use an epsilon
@@ -31,8 +26,9 @@ if doPlotting
     title(['U=',num2str(shift),' n=',num2str(n),' T=',num2str(T)])
 end
 
-function cost=shiftedGamObj(params)
+    %Nesting the function allows sharing of x without using a global
+    function cost=shiftedGamObj(params)
+        cost=gamlike(params(2:3),x-params(1));
+    end
 
-global x
-
-cost=gamlike(params(2:3),x-params(1));
+end
