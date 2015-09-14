@@ -7,7 +7,7 @@ xVec=xVec(2:end-1)';
 p=rotateProgressError(x,x0,xf);
 gT=gradient(t);
 v=gradient(p(:,1))./gT;
-R=.5*[0;cumsum(diff(v).^2)];
+R=.5*[0;cumsum(abs(diff(v.^2)))];
 
 onset=find(p(:,1)>=buffer,1,'first');
 offsets=zeros(N,1);

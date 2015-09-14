@@ -1,4 +1,4 @@
-function [shift,n,T,cost]=fitTsArray(reachStruct)
+function [shift,n,A]=fitTsArray(reachStruct)
 
 M=length(reachStruct);
 
@@ -8,7 +8,7 @@ Rx=zeros(M,N);
 RoTx=zeros(M,N);
 
 for t=1:M
-    [Tx(t,:),Rx(t,:),RoTx(t,:),offvec]=getTsArray(reachStruct(t).x,reachStruct(t).t,reachStruct(t).x0,reachStruct(t).xf,N);
+    [Rx(t,:),Tx(t,:),RoTx(t,:),offvec]=getTsArray(reachStruct(t).x,reachStruct(t).t,reachStruct(t).x0,reachStruct(t).xf,N);
 end
 
 oVec=mean([offvec(1:end-1) offvec(2:end)],2);
@@ -17,48 +17,63 @@ Rxd=diff(Rx,1,2);
 
 shift=zeros(N-1,1);
 n=zeros(N-1,1);
-T=zeros(N-1,1);
-shiftCum=zeros(N,1);
-nCum=zeros(N,1);
-TCum=zeros(N,1);
+A=zeros(N-1,1);
+shiftCumR=zeros(N,1);
+nCumR=zeros(N,1);
+ACumR=zeros(N,1);
+
+shiftCumT=zeros(N,1);
+nCumT=zeros(N,1);
+ACumT=zeros(N,1);
+
 for k=1:N-1
-    [shift(k),n(k),T(k)]=fitShiftedGam(Rxd(:,k).*(Txd(:,k).^-2));
-    [shiftCum(k),nCum(k),TCum(k)]=fitShiftedGam(Tx(:,k).^-2);
+    %[shift(k),n(k),A(k)]=fitShiftedGam(Rxd(:,k));
+    [shiftCumR(k),nCumR(k),ACumR(k)]=fitShiftedGam(Rx(:,k));
+    [shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2);
 end
 k=N;
 figure(2)
 clf
-Tx(:,k)
-[shiftCum(k),nCum(k),TCum(k)]=fitShiftedGam(Tx(:,k).^-2,1);
+subplot(2,1,1)
+[shiftCumR(k),nCumR(k),TCumR(k)]=fitShiftedGam(Rx(:,k),1);
+subplot(2,1,2)
+[shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2,1);
+
+k=5;
+figure(5)
+clf
+subplot(2,1,1)
+[shiftCumR(k),nCumR(k),TCumR(k)]=fitShiftedGam(Rx(:,k),1);
+subplot(2,1,2)
+[shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2,1);
 
 
 figure(1)
 clf
-subplot(1,3,1)
+Ny=2;
+Nx=3;
+subplot(Ny,Nx,1)
 hold on
-plot(oVec,shift,'b-')
-plot(offvec,shiftCum,'g-')
+plot(offvec,shiftCumR,'b-')
 ylabel('Param value')
-subplot(1,3,2)
+subplot(Ny,Nx,2)
 hold on
-plot(oVec,n)
-plot(offvec,nCum,'g-')
-subplot(1,3,3)
+plot(offvec,nCumR,'b-')
+subplot(Ny,Nx,3)
 hold on
-plot(oVec,T)
-plot(offvec,TCum,'g-')
+plot(offvec,ACumR,'b-')
+subplot(Ny,Nx,4)
+hold on
+plot(offvec,shiftCumT,'g-')
+ylabel('Param value')
+subplot(Ny,Nx,5)
+hold on
+plot(offvec,nCumT,'g-')
+subplot(Ny,Nx,6)
+hold on
+plot(offvec,ACumT,'g-')
 
 return
-subplot(2,3,4)
-loglog(offvec,gradient(shift)./gradient(offvec))
-xlabel('Shift')
-ylabel('Spatial Gradient')
-subplot(2,3,5)
-plot(offvec,gradient(n)./gradient(offvec))
-xlabel('n')
-subplot(2,3,6)
-plot(offvec,gradient(T)./gradient(offvec))
-xlabel('T')
 
 
 figure(SUB)
