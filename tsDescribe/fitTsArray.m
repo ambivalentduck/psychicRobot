@@ -39,7 +39,7 @@ subplot(2,1,1)
 subplot(2,1,2)
 [shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2,1);
 
-k=5;
+k=7;
 figure(5)
 clf
 subplot(2,1,1)
@@ -72,6 +72,21 @@ plot(offvec,nCumT,'g-')
 subplot(Ny,Nx,6)
 hold on
 plot(offvec,ACumT,'g-')
+
+% Xl=[offvec ones(size(offvec))];
+% Xl=Xl(1:end-1,:);
+% varofint=shiftCumT;
+% mv=min(varofint)-1e-10
+% yl=log(varofint-mv);
+% yl=yl(1:end-1);
+% b=Xl\yl
+% figure(17)
+% clf
+% plot(Xl(:,1),yl,'b.',Xl(:,1),Xl*b,'r')
+% A=exp(b(2))
+% B=b(1)
+% C=mv
+% error
 
 return
 
