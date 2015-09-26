@@ -55,23 +55,34 @@ Nx=3;
 subplot(Ny,Nx,1)
 hold on
 plot(offvec,shiftCumR,'b-')
-ylabel('Param value')
+ylabel('Shift, R')
+xlabel('x, unitless')
 subplot(Ny,Nx,2)
 hold on
 plot(offvec,nCumR,'b-')
+ylabel('n, R')
+xlabel('x, unitless')
 subplot(Ny,Nx,3)
 hold on
 plot(offvec,ACumR,'b-')
+ylabel('Average Work, R')
+xlabel('x, unitless')
 subplot(Ny,Nx,4)
 hold on
 plot(offvec,shiftCumT,'g-')
-ylabel('Param value')
+ylabel('Shift T')
+xlabel('x, unitless')
 subplot(Ny,Nx,5)
 hold on
 plot(offvec,nCumT,'g-')
+ylabel('n, T')
+xlabel('x, unitless')
 subplot(Ny,Nx,6)
 hold on
 plot(offvec,ACumT,'g-')
+ylabel('Average Work, T')
+xlabel('x, unitless')
+
 
 % Xl=[offvec ones(size(offvec))];
 % Xl=Xl(1:end-1,:);

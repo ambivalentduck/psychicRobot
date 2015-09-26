@@ -18,6 +18,7 @@ for t=1:length(trials)
     [trash,starts(t)]=min(abs(trials(t).x(1,1)-means));
     [trash,ends(t)]=min(abs(trials(t).x(end,1)-means));
     reachStruct(t).x=trials(t).x;
+    reachStruct(t).v=trials(t).v;
     reachStruct(t).t=trials(t).t;
     reachStruct(t).startcat=starts(t);
     reachStruct(t).endcat=ends(t);
@@ -49,6 +50,11 @@ end
 
 reachStruct=reachStruct([reachStruct.clean]);
 
+figure(57)
+clf
+hold on
+for t=1:length(reachStruct)
+    plot(reachStruct(t).x(:,1),reachStruct(t).v(:,1),'linewidth',.1)
+end
+
 fitTsArray(reachStruct)
-
-

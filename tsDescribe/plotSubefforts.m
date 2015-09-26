@@ -1,4 +1,6 @@
-function plotSubefforts(t1,t2,x1,x2)
+function plotSubefforts
+
+[x1,x2,t1,t2]=makeSpaghetti;
 
 t=linspace(min(t1),max(t2),200);
 figure(1)
