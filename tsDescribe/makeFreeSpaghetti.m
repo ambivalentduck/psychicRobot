@@ -1,4 +1,4 @@
-function [x1,x2,t1,t2]=makeSpaghetti
+function [x1,x2,t1,t2]=makeFreeSpaghetti
 
 Ncand = 500;
 
@@ -16,15 +16,15 @@ massfudge=.5;
 
 while (xn<(1-targAccuracy))&&(subnum<20)
     subnum = subnum + 1;
-    xnp1 = linspace(xn,1+targAccuracy,Ncand)';
+    xnp1 = linspace(xn,xn+.5,Ncand)';
     
-    Un = 506*exp(-10.18*xn)+1.1;
-    Unp1 = 506*exp(-10.18*xnp1)+1.1;
+    Un = 506*exp(-10.18*.5)+1.1;
+    Unp1 = 506*exp(-10.18*.5)+1.1;
     
     Vn=interp1(xref,Uref,xn,'nearest','extrap');
     Vnp1=interp1(xref,Uref,xnp1,'nearest','extrap');
     
-    Anp1 = 589*exp(-9.37*xnp1)+1.65;
+    Anp1 = 589*exp(-9.37*.5)+1.65;
     Tm2np1 = Unp1+expinv(rand(Ncand,1),Anp1);
     %Tm2np1(Tm2np1> 0.05^-2)=0.05^-2;
     

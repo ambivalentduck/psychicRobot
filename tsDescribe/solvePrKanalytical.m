@@ -52,7 +52,7 @@ fk=inline(vectorize(K))
 assumeAlso(y<fk(1/2 - 7^(1/2)/14))
 assumeAlso(y>0)
 assumeAlso(t>0)
-assumeAlso(t<1/2 - 7^(1/2)/14)
+assumeAlso(t<16)
 
 s=solve(K-y,t,'MaxDegree',4)
 
