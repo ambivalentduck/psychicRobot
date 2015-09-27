@@ -45,5 +45,5 @@ set(gca,'xtick',[0 1 2])
 ylabel('CDF')
 xlabel('Power, Watts')
 legend([ph nh fh],{'+','-','Fit'},'Location','East')
-%set(gca,'color','k')
+set(gca,'linewidth',2,'ticklength',[0;0])
 
