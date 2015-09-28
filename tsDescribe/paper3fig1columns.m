@@ -1,11 +1,20 @@
 clc
 clear all
 
+font='Arial';
+fontsize=12;
+axlabsize=10;
+interpreter='tex';
+textInvariant=['\fontname{',font,'} \fontsize{',num2str(fontsize),'} '];
+axlabInvariant=['\fontname{',font,'} \fontsize{',num2str(axlabsize),'} '];
+
 figure(1)
 clf
 set(gcf,'color','w')
 Nsub=3;
 Msub=2;
+
+spHandles=zeros(Nsub*Msub,1);
 
 load free_exp_LP.mat
 
@@ -18,7 +27,7 @@ fitcolor=[.2 .8 .2];
 linewidth=.5;
 
 %Power
-subplot(Nsub,Msub,1)
+spHandles(1)=subplot(Nsub,Msub,1);
 hold on
 empiricalP=mass*dot(a',v')';
 
@@ -47,7 +56,7 @@ xlabel('Power, Watts')
 legend([ph nh fh],{'+','-','Fit'},'Location','East')
 
 %Energy
-subplot(Nsub,Msub,2)
+spHandles(2)=subplot(Nsub,Msub,2);
 hold on
 empiricalE=mass*dot(v',v');
 [Fe,xe,le,ue]=ecdf(empiricalE);
@@ -126,13 +135,13 @@ residSize=.4;
 totalWidth=2;
 
 %Power
-subplot(Nsub,Msub,3)
+spHandles(3)=subplot(Nsub,Msub,3);
 hold on
-plot(t,cartP,'-','color',cartColor,'linewidth',totalWidth)
-plot(t,energyP,'-','color',energyColor,'linewidth',totalWidth)
+hcart=plot(t,cartP,'-','color',cartColor,'linewidth',totalWidth);
+henergy=plot(t,energyP,'-','color',energyColor,'linewidth',totalWidth);
 resid=cartP;
 for k=1:length(subs)
-    plot(subs(k).t,mass*subs(k).a.*subs(k).v,'-','color',subColor)
+    hlump=plot(subs(k).t,mass*subs(k).a.*subs(k).v,'-','color',subColor);
     resid(subs(k).inds)=resid(subs(k).inds)-mass*subs(k).a.*subs(k).v;
 end
 plot(t,resid,'.','color',cartColor,'markersize',residSize)
@@ -140,11 +149,15 @@ ylim([-2 2])
 set(gca,'ytick',[-2 0 2])
 set(gca,'xtick',[0 1])
 ylabel('Power, Watts')
-text(.1,1,'\{','rotation',-90,'verticalalignment','middle','fontsize',24)
-text(.115,1.05,'1','horizontalalignment','center','fontsize',12)
+text(.13,.8,'\{','rotation',-90,'horizontalalignment','center','verticalalignment','middle','fontsize',24)
+text(.128,1.15,'1','horizontalalignment','center','fontsize',12)
+text(.27,-.9,'\{','rotation',90,'horizontalalignment','center','verticalalignment','middle','fontsize',24)
+text(.28,-1.3,'2','horizontalalignment','center','fontsize',12)
+legend([hlump,henergy,hcart],{'Subunit','$\sum$ Energy','$\sum$ Cartesian'},'interpreter','latex')
+
 
 %Energy
-subplot(Nsub,Msub,4)
+spHandles(4)=subplot(Nsub,Msub,4);
 hold on
 plot(t,cartE,'-','color',cartColor,'linewidth',totalWidth)
 plot(t,energyE,'-','color',energyColor,'linewidth',totalWidth)
@@ -163,3 +176,26 @@ xlabel('Time, seconds')
 %% Cleanup at the end
 allaxes=findobj(gcf,'type','axes');
 set(allaxes,'linewidth',2,'ticklength',[0;0])
+set(gcf,'units','inches')
+figW=8.5;
+figH=11;
+set(gcf,'position',[8 5 figW figH])
+
+lmargin=.08;
+rmargin=.02;
+tmargin=.02;
+bmargin=.02;
+rowHeights=[.2 .6 .2];
+rowMargins=[0 .1 .1];
+rowBottoms=1-tmargin-cumsum(rowHeights+rowMargins);
+colWidth=.38;
+colX=[lmargin 1-rmargin-colWidth];
+for k=1:length(spHandles)
+    if spHandles(k)==0
+        continue
+    end
+    column=2-mod(k,2);
+    row=floor((k-1)/2)+1;
+    set(spHandles(k),'position',[colX(column) rowBottoms(row) colWidth rowHeights(row)])
+    
+end
