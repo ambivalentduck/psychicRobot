@@ -60,8 +60,12 @@ set(gca,'xtick',[0 .5])
 ylabel('CDF')
 xlabel('Energy, Joules')
 set(gca,'linewidth',2,'ticklength',[0;0])
-nA=gamfit(empiricalE);
-plot(xe,gamcdf(xe,nA(1),nA(2)),'color',fitcolor)
+%nA=gamfit(empiricalE);
+%n=nA(1);
+%A=nA(2);
+%shift=0;
+[shift,n,A]=fitShiftedGam(xe);
+plot(xe,gamcdf(xe-shift,n,A),'color',fitcolor)
 
 %% Cartoon hypotheses
 
