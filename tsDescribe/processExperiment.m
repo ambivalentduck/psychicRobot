@@ -6,14 +6,17 @@ load wei_2010_1
 
 figure(1)
 clf
-subplot(1,3,1)
+subplot(1,4,1)
 boxplot(n)
+ylabel('N')
 
-subplot(1,3,2)
+subplot(1,4,2)
 boxplot(shift)
+ylabel('U')
 
-subplot(1,3,3)
+subplot(1,4,3)
 boxplot(T)
+ylabel('A')
 
 for k=1:length(n)
     X=ts{k}.^-2;
@@ -29,15 +32,11 @@ for k=1:length(n)
     [F,x]=ecdf(test);
     Stest(k)=std(F-sgc(x))/sqrt(length(x));
 end
-figure(1)
-clf
-hold on
-[F,x,Fl,Fu]=ecdf(train);
-h=fill([x(~isnan(Fl)); wrev(x(~isnan(Fu)))],[Fl(~isnan(Fl)); wrev(Fu(~isnan(Fu)))],'k');
-set(h,'edgealpha',0,'facealpha',.5)
-plot(x,F,'k')
-plot(x,sgc(x),'r')
 
-[Strain' Stest']*100
+
+serror=[Strain' Stest']*100
+
+subplot(1,4,4)
+boxplot(serror,'labels',{'Train','Test'})
 
 
