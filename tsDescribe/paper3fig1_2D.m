@@ -128,7 +128,7 @@ energyV=sqrt(2*etotal/mass);
 cartColor='r';
 energyColor='g';
 subColor='k';
-residSize=1;
+residSize=.4;
 totalWidth=2;
 
 %Power
@@ -185,45 +185,47 @@ xlabel('Time, seconds')
 
 %% Quick sim
 N=floor(10*60/.3);
-L2Tn2=exprnd(.09,N,1);
-Tn2=1*ones(N,1); %4.6+exprnd(7,N,1);
+
+xp=.5; %.4396;
+L2Tn2=exprnd(.1447,N,1);
+Tn2=1.4*ones(N,1); %1+exprnd(1.6,N,1);
 dx=sqrt(L2Tn2./Tn2);
 t1=zeros(N,1);
 t2=t1;
 for k=1:N
-   t2(k)=t1(k)+1/sqrt(Tn2(k));
-   xp=.3; %This works
-   if xp>1
-       xp=1;
-   end
+   t2(k)=t1(k)+sqrt(1/Tn2(k));
+   
    if k~=N
        t1(k+1)=t1(k)+xp*(t2(k)-t1(k));
    end
 end
 t=0:.005:t2(end);
-vtotal=zeros(size(t));
-atotal=zeros(size(t));
-etotal=zeros(size(t));
-ptotal=zeros(size(t));
-
+vtotal=zeros(length(t),2);
+atotal=zeros(length(t),2);
+etotal=zeros(length(t),1);
+ptotal=zeros(length(t),1);
+lastTheta=0;
 for k=1:N
     inds=find((t>=t1(k))&(t<=t2(k)));
     tc=(t1(k)+t2(k))/2;
     ts=t2(k)-t1(k);
     ta=((t(inds)-tc))/ts+.5;
-    kern=dx(k)*(30*ta.^2-60*ta.^3+30*ta.^4)/ts;
-    acc=dx(k)*(60*ta-180*ta.^2+120*ta.^3)/(ts^2);
+    theta=.54*randn+lastTheta;
+    lastTheta=theta;
+    ux=[cos(theta); sin(theta)];
+    kern=ux*dx(k)*(30*ta.^2-60*ta.^3+30*ta.^4)/ts;
+    acc=ux*dx(k)*(60*ta-180*ta.^2+120*ta.^3)/(ts^2);
     
     % Cartesian superposition
-    vtotal(inds)=vtotal(inds)+kern;
-    atotal(inds)=atotal(inds)+acc;
+    vtotal(inds,:)=vtotal(inds,:)+kern';
+    atotal(inds,:)=atotal(inds,:)+acc';
     
     % Energy superposition
-    ptotal(inds)=ptotal(inds)+mass*kern.*acc;
-    etotal(inds)=etotal(inds)+.5*mass*kern.^2;
+    ptotal(inds)=ptotal(inds)+mass*dot(kern,acc)';
+    etotal(inds)=etotal(inds)+.5*mass*dot(kern,kern)';
 end
-cartPm=mass*atotal.*vtotal;
-cartEm=.5*mass*vtotal.^2;
+cartPm=mass*dot(atotal',vtotal')';
+cartEm=.5*mass*dot(vtotal',vtotal')';
 cartVm=vtotal;
 
 energyPm=ptotal;
@@ -241,10 +243,11 @@ plot(xem,Fem,'g')
 plot(xcm,Fcm,'r')
 xlim([-.1 .5])
 
-expfit(abs(empiricalP))
-gamfit(empiricalE)
+empPexp=expfit(abs(empiricalP))
+empEGam=gamfit(empiricalE)
 expfit(abs(energyPm))
 gamfit(energyEm)
+save('fitme.mat','empPexp','empEGam')
 
 %% Cleanup at the end
 
@@ -262,7 +265,7 @@ tmargin=.02;
 bmargin=.02;
 rowHeights=[.25 .25 .25];
 rowMargins=[0 .08 .08];
-rowBottoms=1-cumsum(rowHeights+rowMargins)-tmargin;
+rowBottoms=1-cumsum(rowHeights+rowMargins);
 colWidth=.38;
 colX=[lmargin 1-rmargin-colWidth];
 for k=1:length(spHandles)
@@ -283,4 +286,47 @@ for k=1:length(alltext)
     set(alltext(k),'string',[textInvariant, string],'interpreter',interpreter);
 end
 
+%% Figure 2
+figure(2)
+clf
+subplot(1,2,1)
+hold on
+empcolor='k';
+cartcolor='b';
+energycolor='g';
+lw=1;
+[F,p,lF,uF]=ecdf(abs(empiricalP));
+[Fc,pc,lFc,uFc]=ecdf(abs(cartPm));
+[Fe,pe,lFe,uFe]=ecdf(abs(energyPm));
+h=fill([p(~isnan(lF)); wrev(p(~isnan(uF)))],[lF(~isnan(lF)); wrev(uF(~isnan(uF)))],empcolor);
+set(h,'edgealpha',0,'facealpha',.5)
+h=fill([pc(~isnan(lFc)); wrev(pc(~isnan(uFc)))],[lFc(~isnan(lFc)); wrev(uFc(~isnan(uFc)))],cartcolor);
+set(h,'edgealpha',0,'facealpha',.5)
+h=fill([pe(~isnan(lFe)); wrev(pe(~isnan(uFe)))],[lFe(~isnan(lFe)); wrev(uFe(~isnan(uFe)))],energycolor);
+set(h,'edgealpha',0,'facealpha',.5)
+plot(p,F,'color',empcolor,'linewidth',lw)
+plot(pc,Fc,'color',cartcolor,'linewidth',lw)
+plot(pe,Fe,'color',energycolor,'linewidth',lw)
+ylabel('CDF')
+xlabel('Power, Watts')
 
+subplot(1,2,2)
+hold on
+empcolor='k';
+cartcolor='b';
+energycolor='g';
+lw=1;
+[F,p,lF,uF]=ecdf(empiricalE);
+[Fc,pc,lFc,uFc]=ecdf(cartEm);
+[Fe,pe,lFe,uFe]=ecdf(energyEm);
+h=fill([p(~isnan(lF)); wrev(p(~isnan(uF)))],[lF(~isnan(lF)); wrev(uF(~isnan(uF)))],empcolor);
+set(h,'edgealpha',0,'facealpha',.5)
+h=fill([pc(~isnan(lFc)); wrev(pc(~isnan(uFc)))],[lFc(~isnan(lFc)); wrev(uFc(~isnan(uFc)))],cartcolor);
+set(h,'edgealpha',0,'facealpha',.5)
+h=fill([pe(~isnan(lFe)); wrev(pe(~isnan(uFe)))],[lFe(~isnan(lFe)); wrev(uFe(~isnan(uFe)))],energycolor);
+set(h,'edgealpha',0,'facealpha',.5)
+emp=plot(p,F,'color',empcolor,'linewidth',lw);
+cart=plot(pc,Fc,'color',cartcolor,'linewidth',lw);
+energy=plot(pe,Fe,'color',energycolor,'linewidth',lw);
+legend([emp,cart,energy],{'Empirical','Velocity','Energy'})
+xlabel('Energy, Joules')

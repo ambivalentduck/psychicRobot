@@ -39,7 +39,7 @@ subplot(2,1,1)
 subplot(2,1,2)
 [shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2,1);
 
-k=7;
+k=N-1;
 figure(5)
 clf
 subplot(2,1,1)

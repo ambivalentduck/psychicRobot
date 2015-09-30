@@ -1,7 +1,7 @@
 clc
 clear all
 
-mass=.5; %.5 kg seems right, but don't know why.
+mass=.5; %.5 This affects nothing *but* plot magnitudes
 
 if ~exist('cartoonFigData.mat','file')
     x1=[];
