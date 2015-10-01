@@ -1,4 +1,4 @@
-function processPulse(SUB)
+function reachStruct=processPulse(SUB)
 
 load(['../Data/Data_pulse/pulse',num2str(SUB),'.mat'])
 
@@ -57,4 +57,6 @@ for t=1:length(reachStruct)
     plot(reachStruct(t).x(:,1),reachStruct(t).v(:,1),'linewidth',.1)
 end
 
-fitTsArray(reachStruct)
+if nargout<1
+    fitTsArray(reachStruct)
+end

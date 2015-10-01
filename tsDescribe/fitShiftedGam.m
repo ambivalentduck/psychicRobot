@@ -1,5 +1,9 @@
 function [shift,n,T]=fitShiftedGam(x,varargin)
 
+if isempty(x)
+    error('Dude, x is emptier than a politician''s campaign promises.')
+end
+
 if nargin<2
     doPlotting=0;
 else
@@ -9,8 +13,7 @@ end
 minx=min(x);
 shiftEst=minx-.000001; %gamfit is weird about zeroes in the data, so use an epsilon
 gpEst=gamfit(x-shiftEst);
-%gp=fmincon(@shiftedGamObj,[shiftEst gpEst]',-eye(3),zeros(3,1));
-gp=fmincon(@shiftedGamObj,[shiftEst gpEst]',-eye(3),-100*ones(3,1));
+gp=fmincon(@shiftedGamObj,[shiftEst gpEst]',-eye(3),zeros(3,1));
 shift=gp(1);
 n=gp(2);
 T=gp(3);
