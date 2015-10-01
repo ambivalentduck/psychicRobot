@@ -1,5 +1,9 @@
 function [shift,n,T]=fitShiftedGam(x,varargin)
 
+if isempty(x)
+    error('Dude, x is emptier than a politician''s campaign promises.')
+end
+
 if nargin<2
     doPlotting=0;
 else
