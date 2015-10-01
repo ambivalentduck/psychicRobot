@@ -1,8 +1,8 @@
 clc
 clear all
 
-%load kording_2004
-load wei_2010_1
+load kording_2004
+%load wei_2010_1
 
 figure(1)
 clf
