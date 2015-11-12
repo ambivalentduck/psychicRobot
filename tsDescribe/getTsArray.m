@@ -20,7 +20,6 @@ Tx=t(offsets)-t(onset);
 RoTx=Rx./(Tx.^2); %In theory, this is the point mass since L is constant.
 
 
-
 function out=rotateProgressError(x,x0,x1)
 
 x=[x(:,1)-x0(1), x(:,2)-x0(2)];

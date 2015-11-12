@@ -192,15 +192,17 @@ plot([xtick(1)-kstep xtick(end)+kstep],[0 0],'color',.7*[1 1 1])
 %Hypothesis 4: Which is better?
 
 for H=1:size(nums,1)
-    pS=miniplot(jerror1(exp1,nums(H,1)),jerror2(exp1,nums(H,2)),k,'k.',msize,rn,asth,asts);
+    [pS,statsS,meanS]=miniplot(jerror1(exp1,nums(H,1)),jerror2(exp1,nums(H,2)),k,'k.',msize,rn,asth,asts);
     lab=[textInvariant,'\color[rgb]{',num2str(hand(1)),',',num2str(hand(2)),',',num2str(hand(3)),...
         '}H_',num2str(nums(H,1)),'\color{black}-\color[rgb]{',num2str(intent(1)),',',num2str(intent(2)),',',num2str(intent(3)),...
         '}I_',num2str(nums(H,2))];
     text(k+kstep/2,labheight,lab,'HorizontalAlignment','Center')
     k=k+kstep;
-    pR=miniplot(jerror1(exp2,nums(H,1)),jerror2(exp2,nums(H,2)),k,'k.',msize,rn,asth,asts);
+    [pR,statsR,meanR]=miniplot(jerror1(exp2,nums(H,1)),jerror2(exp2,nums(H,2)),k,'k.',msize,rn,asth,asts);
     k=k+kleap;
-    disp(['H',num2str(nums(H,1)),'-I',num2str(nums(H,2)),' pS=',num2str(pS),'; pR=',num2str(pR)])
+    disp(['H',num2str(nums(H,1)),'-I',num2str(nums(H,2))])
+    disp(['pS=',num2str(pS),'; TS=',num2str(statsS.tstat),'; dfS=',num2str(statsS.df),'; meanS=',num2str(meanS),'; semS=',num2str(statsS.sd/sqrt(statsS.df))])
+    disp(['pR=',num2str(pR),'; TR=',num2str(statsR.tstat),'; dfR=',num2str(statsR.df),'; meanR=',num2str(meanR),'; semR=',num2str(statsR.sd/sqrt(statsR.df))])
 end
 
 ylabel([axlabInvariant,'Difference (cm)'])
