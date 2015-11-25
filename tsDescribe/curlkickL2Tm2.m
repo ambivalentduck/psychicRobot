@@ -26,7 +26,7 @@ for SUB=1:8
         end
     end
     
-    %isfirst=isfirst==1;
+    %isfirst=(order==2);
     %L2=L2(isfirst);
     %Tm2=Tm2(isfirst);
     
@@ -37,10 +37,25 @@ for SUB=1:8
     L2=L2(f);
     Tm2=Tm2(f);
     
+    enstruct(SUB).Tm2=Tm2;
+    [cumf,bins]=ecdf(Tm2);
+    f=find(cumf<.8);
+    [~,closest]=min(abs(cumf-.5));
+    enstruct(SUB).Tm2F=cumf(f);
+    enstruct(SUB).Tm2X=bins(f)/bins(closest);
+    
+    enstruct(SUB).L2oT2=L2.*Tm2;
+    [cumf,bins]=ecdf(L2.*Tm2);
+    f=find(cumf<.8);
+    [~,closest]=min(abs(cumf-.5));
+    enstruct(SUB).L2oT2F=cumf(f);
+    enstruct(SUB).L2oT2X=bins(f)/bins(closest);
+    
     nbins=15;
     sy=3;
     sx=2;
     
+    continue 
     figure(SUB)
     clf
     subplot(sy,sx,1)
