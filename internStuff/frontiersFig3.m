@@ -222,7 +222,7 @@ plot([xtick(1)-kstep xtick(end)+kstep],[0 0],'color',.7*[1 1 1])
 nums=[2 1;3 2; 4 3; 3 6];
 
 for H=1:4
-    pS=miniplot(stiff(exp1,nums(H,1)),stiff(exp1,nums(H,2)),k,'k.',msize,rn,asth,asts);
+    [pS,statsS,meanS]=miniplot(stiff(exp1,nums(H,1)),stiff(exp1,nums(H,2)),k,'k.',msize,rn,asth,asts);
     ctext=['\color[rgb]{',num2str(hand(1)),',',num2str(hand(2)),',',num2str(hand(3)),'}'];
     if nums(H,2)~=6
         lab=[textInvariant,ctext,'K_',num2str(nums(H,1)),'-K_',num2str(nums(H,2))];
@@ -231,9 +231,11 @@ for H=1:4
     end
     text(k+kstep/2,labheight,lab,'HorizontalAlignment','Center')
     k=k+kstep;
-    pR=miniplot(stiff(exp2,nums(H,1)),stiff(exp2,nums(H,2)),k,'k.',msize,rn,asth,asts);
+    [pR,statsR,meanR]=miniplot(stiff(exp2,nums(H,1)),stiff(exp2,nums(H,2)),k,'k.',msize,rn,asth,asts);
     k=k+kleap;
-    disp(['K',num2str(nums(H,1)),'-K',num2str(nums(H,2)),' pS=',num2str(pS),'; pR=',num2str(pR)])
+    disp(['K',num2str(nums(H,1)),'-K',num2str(nums(H,2))])
+    disp(['pS=',num2str(pS),'; TS=',num2str(statsS.tstat),'; dfS=',num2str(statsS.df),'; meanS=',num2str(meanS),'; semS=',num2str(statsS.sd/sqrt(statsS.df))])
+    disp(['pR=',num2str(pR),'; TR=',num2str(statsR.tstat),'; dfR=',num2str(statsR.df),'; meanR=',num2str(meanR),'; semR=',num2str(statsR.sd/sqrt(statsR.df))])
 end
 
 ylabel([axlabInvariant,'Difference (N/cm)'])

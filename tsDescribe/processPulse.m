@@ -35,7 +35,7 @@ urc=urc(2:end);
 %% Use undisturbed examples only
 dcats=[trials.disturbcat];
 
-nclean=4;
+nclean=2;
 clean=0*dcats;
 for kk=1:nclean
     clean=clean+[zeros(1,kk-1) dcats(1:end-(kk-1))];
@@ -50,13 +50,13 @@ end
 
 reachStruct=reachStruct([reachStruct.clean]);
 
-figure(57)
-clf
-hold on
-for t=1:length(reachStruct)
-    plot(reachStruct(t).x(:,1),reachStruct(t).v(:,1),'linewidth',.1)
-end
-
 if nargout<1
+    figure(57)
+    clf
+    hold on
+    for t=1:length(reachStruct)
+        plot(reachStruct(t).x(:,1),reachStruct(t).v(:,1),'linewidth',.1)
+    end
+    
     fitTsArray(reachStruct)
 end

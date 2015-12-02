@@ -4,10 +4,9 @@ clc
 clear all
 close all
 
-nbins=64;
+nbins=30;
 datafile='free_exp_05stroke.mat';
 %datafile='free_exp_MF.mat'
-
 
 load(datafile)
 en=dot(v',v');
@@ -27,9 +26,9 @@ upper=max(x);
 range=upper-lower;
 
 selectors=[(x(:,1)-lower(1))/range(1), (x(:,2)-lower(2))/range(2)];
-selectors=floor(selectors*64)+1;
+selectors=floor(selectors*nbins)+1;
 for k=1:2
-    selectors(selectors(:,k)==65,k)=64;
+    selectors(selectors(:,k)==nbins+1,k)=nbins;
 end
 
 %Get the histogram
@@ -62,92 +61,51 @@ clf
 surf(U)
 
 %% Flatten velocity after a sanity check
+totU=sum(U(:));
+Uf=U(:);
+ln=linspace(0,1,nbins);
+[selmatX,selmatY]=meshgrid(ln*range(1)+lower(1),ln*range(2)+lower(2));
+selmatXf=selmatX(:);
+selmatYf=selmatY(:);
+centroidX=sum(Uf.*selmatXf)/totU;
+centroidY=sum(Uf.*selmatYf)/totU;
+centroid=[centroidX,centroidY]
+centroid=[.13 -.53]
+
+velf=velocities(:);
+distf=zeros(length(velf),1);
+vel=distf;
+for k=1:length(Uf)
+    vel(k)=mean(vecmag(velf{k}).^2);
+    distf(k)=norm([selmatXf(k) selmatYf(k)]-centroid)^2;
+end
+X=[vel distf ones(size(vel))];
+[b,bint]=regress(Uf,X)
+f=find(Uf>.7);
+[b,bint]=regress(Uf(f),X(f,:))
 
 figure(4)
 clf
 hold on
-Uf=1-U(:);
-velf=velocities(:);
-for k=1:length(Uf)
-    vel=max(vecmag(velf{k}).^2);
-    semilogx(Uf(k)*ones(size(vel)),vel,'.','markersize',.01)
-end
-set(gca,'xscale','linear')
-
-return
-%% WTF
-figure(77)
-clf
-hold on
-[sun,ord]=sort(Unorm(:));
-for k=1:length(ord)
-        XR=mod(ord(k)-1,nbins)+1;
-        YR=floor(ord(k)/nbins)+1;
-        YR=min(64,YR);
-        f=find((selectors(:,1)==XR)&(selectors(:,2)==YR));
-        plot((k/(nbins^2))*ones(length(f),1),en(f)+Unorm(XR,YR),'.','markersize',.001)
-end
-plot(linspace(0,1,nbins^2),sun,'r-')
-set(gca,'xtick',[])
-xlabel('Potential Rank')
-ylabel('Total Energy, J')
-
-return
-U=-log(counts)*mu;
-Unorm=U-min(U(:));
-xbins=linspace(lower(1),upper(1),nbins);
-ybins=linspace(lower(2),upper(2),nbins);
-imagesc(xbins,ybins,Unorm)
+%plot(Uf,X*b,'r.')
+plot(vel,Uf,'b.','markersize',.01)
+%plot([0 1],[0 1],'m-')
 axis equal
-hold on
-plot(-.25+[0 .05],-.6*[1 1],'k-')
-text(-.25+.025, -.6,'5 cm','HorizontalAlignment','center','verticalalignment','top')
-axis off
 
-
-figure(76)
+%% Different approach...show L^2 directly?
+figure(5)
 clf
-hold on
-[xgrid,ygrid]=meshgrid(xbins,ybins);
-mesh(xgrid',ygrid',Unorm,'facealpha',0)
-inds=1:15:size(x,1);
-enNorm=en;
-for k=1:length(en)
-    enNorm(k)=en(k)+Unorm(selectors(k,1),selectors(k,2));
+f=find(Uf>3);
+[b,bint]=regress(Uf(f),X(f,[1 3]))
+
+velmat=zeros(nbins);
+for k=1:nbins
+    for kk=1:nbins
+        velmat(k,kk)=mean(vecmag(velocities{k,kk}).^2);
+        if isnan(velmat(k,kk))
+            velmat(k,kk)=0;
+        end
+    end
 end
-plot3(x(inds,1),x(inds,2),enNorm(inds),'.','markersize',10)
-zlabel('Total Energy, J')
-ylabel('Robot y, m')
-xlabel('Robot x, m')
-
-figure(66)
-clf
-[gxU,gyU]=gradient(U);
-psub=dot(v',a');
-ppot=psub;
-for k=1:length(en)
-    ppot(k)=dot(v(k,:),[gxU(selectors(k,1),selectors(k,2)), gyU(selectors(k,1),selectors(k,2))]);
-end
-plot(psub,ppot,'.','markersize',.0001)
-
-figure(666)
-clf
-
-
+surf(selmatX,selmatY,U+b(1)*velmat)
 return
-
-figure(77)
-clf
-hold on
-[sun,ord]=sort(Unorm(:));
-for k=1:length(ord)
-        XR=mod(ord(k)-1,nbins)+1;
-        YR=floor(ord(k)/nbins)+1;
-        YR=min(64,YR);
-        f=find((selectors(:,1)==XR)&(selectors(:,2)==YR));
-        plot((k/(nbins^2))*ones(length(f),1),en(f)+Unorm(XR,YR),'.','markersize',.001)
-end
-plot(linspace(0,1,nbins^2),sun,'r-')
-set(gca,'xtick',[])
-xlabel('Potential Rank')
-ylabel('Total Energy, J')
