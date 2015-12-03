@@ -102,5 +102,39 @@ for SUB=1:8
     set(h,'position',get(h,'position')-[0 .01 0 0])
     set(gcf,'position',[680   134   536   830])
     print('-dpng',['curlkick',num2str(SUB),'.png'])
-    
 end
+
+figure(9)
+clf
+subplot(1,2,1)
+
+X=vertcat(enstruct.L2oT2X);
+X=[X ones(size(X))];
+y=log(1-vertcat(enstruct.L2oT2F));
+
+b=X\y;
+yhat=X*b;
+
+R2 = 1 - sum((y - yhat).^2)/sum((y - mean(y)).^2);
+hold on
+plot(X(:,1),y,'.')
+plot(X(:,1),X*b,'k-')
+title(['R^2 = ',num2str(R2)])
+ylabel('log PDF($\frac{L^2}{T^2}$)','interpreter','latex')
+xlabel('Normalized to 50th percentile = 1','interpreter','tex')
+
+subplot(1,2,2)
+X=vertcat(enstruct.Tm2X);
+X=[X ones(size(X))];
+y=log(1-vertcat(enstruct.Tm2F));
+
+b=X\y;
+yhat=X*b;
+
+R2 = 1 - sum((y - yhat).^2)/sum((y - mean(y)).^2);
+hold on
+plot(X(:,1),y,'.')
+plot(X(:,1),X*b,'k-')
+title(['R^2 = ',num2str(R2)])
+ylabel('log PDF($\frac{1}{T^2}$)','interpreter','latex')
+xlabel('Normalized to 50th percentile = 1','interpreter','tex')
