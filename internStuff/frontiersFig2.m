@@ -214,5 +214,3 @@ xlim([xtick(1)-kstep xtick(end)+kstep])
 yl=ylim;
 xl=xlim;
 text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),[textInvariant,'D'],'FontWeight','Bold')
-
-
