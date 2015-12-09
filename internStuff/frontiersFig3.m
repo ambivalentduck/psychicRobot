@@ -15,7 +15,7 @@ rmargin=.25;
 msize=8;
 figW=8.5;
 axW=8.5-lmargin-rmargin;
-hiStagger=.2;
+hiStagger=.3;
 jitter=.8;
 medwidth=2;
 labheight=3;
@@ -155,11 +155,14 @@ xl=xlim;
 text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),[textInvariant,'A'],'FontWeight','Bold')
 
 %% Experiments 1 and 2
+load modelstiff.mat
+ms=mean(modelstiff')';
+
 Einds={exp1,exp2};
 letter={'B','C'};
 mLineLabel={{[textInvariant,'\bfS\rmtandard']},...
     {[textInvariant,'\bfR\rmeduced'],[textInvariant,'Stiffness']}};
-
+stagger=[0 0 hiStagger/2 0 0];
 for E=1:2
     subplot(sph(1+E))
     hold on
@@ -170,7 +173,8 @@ for E=1:2
     medS(3)-medS(2)
     plot(1:5,medS,'color',hand,'linewidth',medwidth)
     for s=1:8
-        plot((1:5)-rn(s),stiff(inds(s),:),'.','markersize',msize,'color',hand)
+        plot((1:5)-stagger-rn(s),stiff(inds(s),:),'.','markersize',msize,'color',hand)
+        plot(3+hiStagger/2-rn(s),ms(inds(s))/100,'.','markersize',msize,'color',intent)
     end
     
     xlim([.5 5.5])
@@ -191,8 +195,7 @@ end
 subplot(sph(4))
 hold on
 
-load modelstiff.mat
-ms=mean(modelstiff')';
+ms=mean(Smodelstiff')';
 stiff=[stiff ms/100];
 
 k=1;

@@ -15,7 +15,7 @@ rmargin=.25;
 msize=8;
 figW=8.5;
 axW=8.5-lmargin-rmargin;
-hiStagger=.2;
+hiStagger=.3;
 jitter=.8;
 medwidth=2;
 labheight=2.35;
@@ -214,5 +214,3 @@ xlim([xtick(1)-kstep xtick(end)+kstep])
 yl=ylim;
 xl=xlim;
 text(xrat*xl(2)+(1-xrat)*xl(1),yrat*yl(2)+(1-yrat)*yl(1),[textInvariant,'D'],'FontWeight','Bold')
-
-

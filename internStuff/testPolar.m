@@ -148,10 +148,12 @@ ylim([0 1.05])
 xlabel('Progress, cm')
 title('Block 4')
 
+
+%% Make fig 2
 figure(2)
 clf
 hold on
-alpha=.8;
+alpha=.15;
 m2=mean(xsubEff(2,:,:),3);
 s2=std(xsubEff(2,:,:),0,3);
 m3=mean(xsubEff(3,:,:),3);
@@ -161,23 +163,30 @@ s4=std(xsubEff(4,:,:),0,3);
 m6=mean(xsubEff(6,:,:),3);
 s6=std(xsubEff(6,:,:),0,3);
 
+Rs=Rs-2;
+c=1;
+while ttest(squeeze(xsubEff(6,c,:)-xsubEff(2,c,:)))
+    c=c+1;
+end
+Rs(c)
+
 h=fill([Rs wrev(Rs)],[m2+s2 wrev(m2-s2)],'g');
 set(h,'edgealpha',0,'facealpha',alpha);
 h2=plot(Rs,m2,'color','g','linewidth',2);
 
 h=fill([Rs wrev(Rs)],[m3+s3 wrev(m3-s3)],[0 0 .7]);
 set(h,'edgealpha',0,'facealpha',alpha);
-h3=plot(Rs,m3,'color',[0 0 .7],'linewidth',2)
+h3=plot(Rs,m3,'color',[0 0 .7],'linewidth',2);
 
 h=fill([Rs wrev(Rs)],[m4+s4 wrev(m4-s4)],'c');
 set(h,'edgealpha',0,'facealpha',alpha);
-h4=plot(Rs,m4,'color','c','linewidth',2)
+h4=plot(Rs,m4,'color','c','linewidth',2);
 
 h=fill([Rs wrev(Rs)],[m6+s6 wrev(m6-s6)],[.7 0 0]);
 set(h,'edgealpha',0,'facealpha',alpha);
 h6=plot(Rs,m6,'color',[.7 0 0],'linewidth',2);
 
-xlim([2 15])
+xlim([0 13])
 ylim([0 1.05])
 legend([h2 h3 h6 h4],{'Block 2, Hand','Block 3, Hand','Block 3, Intent','Block 4, Hand'})
 xlabel('Progress, cm')

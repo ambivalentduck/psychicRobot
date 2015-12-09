@@ -14,6 +14,7 @@ P=0:5:360;
 eps=1/1000;
 
 modelstiff=zeros(max(subs),length(P));
+Smodelstiff=zeros(max(subs),length(P));
 
 for S=subs
     if S<20
@@ -39,11 +40,19 @@ for S=subs
         qp=ikin(center+eps*[sind(P(p)) cosd(P(p))]);
         if S<15
             tau=kp1*(q-qp);
+            Jt=fJ(qp)';
+            modelstiff(S,p)=norm(Jt\tau)/eps;
+            Smodelstiff(S,p)=norm(Jt\tau)/eps;
         else
+            tau=kp1*(q-qp);
+            Jt=fJ(qp)';
+            Smodelstiff(S,p)=norm(Jt\tau)/eps;
+            
             tau=kp2*(q-qp);
+            Jt=fJ(qp)';
+            modelstiff(S,p)=norm(Jt\tau)/eps;
         end
-        Jt=fJ(qp)';
-        modelstiff(S,p)=norm(Jt\tau)/eps;
+        
     end
 end
 
@@ -54,4 +63,4 @@ for S=subs
     plot(S*ones(length(P),1)-.1,modelstiff(S,:),'b.')
 end
 
-save('modelstiff.mat','modelstiff')
+save('modelstiff.mat','modelstiff','Smodelstiff')
