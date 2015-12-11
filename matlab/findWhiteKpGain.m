@@ -203,7 +203,7 @@ axis equal
 scat=[storeme.starts];
 subfitlower=.25/.005;
 subfitupper=.45/.005;
-for kk=1 %:3
+for kk=1:3
     f=find(scat);
     TMP=[storeme(f).TMP];
     TSP=[storeme(f).TSP];

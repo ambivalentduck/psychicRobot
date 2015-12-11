@@ -1,8 +1,4 @@
-function [TBMP,TSP,TNP]=cart2modelStatic(X,Y,L1,L2,x0)
-
-% Assume that forces perpendicular to the direction of movement don't
-% *quickly* effect parallel progress
-% (X is x,y and derivatives measured; Y is y-component desired/typical)
+function [TBMP,TSP,TNP]=cart2modelStatic(X,Y,l1,l2,x0,mass)
 
 % TBMP=Body Mass Proportional Torque
 % TSP=Stiffness Proportional Torque
@@ -23,7 +19,7 @@ for k=1:size(X,1)
     qddot=getAlphaStatic(q,qdot,X(k,5:6)',l1,l2);
     torque=-fJq'*X(k,7:8)'; %Negative sign is consistent with extract.m
     qreal=[q; qdot; qddot];
-    [D_real,C_real]=computeDC(qreal(1:2),qreal(3:4));
+    [D_real,C_real]=computeDC(qreal(1:2),qreal(3:4),l1,l2,mass);
 
     %Compute desired q and tau
     q=ikinStatic(Y(k,1:2),l1,l2,x0);
@@ -31,7 +27,7 @@ for k=1:size(X,1)
     qdot=fJq\Y(k,3:4)';
     qddot=getAlphaStatic(q,qdot,Y(k,5:6)',l1,l2);
     qdes=[q; qdot; qddot];
-    [D_des,C_des]=computeDC(qdes(1:2),qdes(3:4));
+    [D_des,C_des]=computeDC(qdes(1:2),qdes(3:4),l1,l2,mass);
     
     %Find bodymass-proportional, stiffness-proportional, and neither-proportional terms
     Tff=D_des*qdes(5:6)+C_des;
