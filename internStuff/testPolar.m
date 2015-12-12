@@ -62,11 +62,13 @@ for S=1:8
         %[trials(k).thetay,trials(k).ryV]=cart2pol(gradient(trials(k).y(:,1)),gradient(trials(k).y(:,2)));
         trials(k).ry=trials(k).ry*100;
         trials(k).thetay=trials(k).thetay*180/pi+180+30;
+        trials(k).times=zeros(length(r_iter),1);
         for r_iter=1:length(Rs)
             [val,ind]=min(abs(trials(k).ry-Rs(r_iter)));
+            trials(k).times(r_iter)=trials(k).t(ind);            
             thetasy(k,r_iter)=trials(k).thetay(ind);
         end
-        
+        trials(k).times=trials(k).times-trials(k).times(1);
     end
     
     targs=[trials.targcat]';
@@ -122,6 +124,8 @@ for S=1:8
     plot(Rs,efficiencies(4,:),'color',handfade)
     
     xsubEff(:,:,S)=efficiencies;
+    times=horzcat(trials.times);
+    mean(times,2)
 end
 
 figure(1)
