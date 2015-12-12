@@ -44,8 +44,10 @@ figure(5)
 clf
 subplot(2,1,1)
 [shiftCumR(k),nCumR(k),TCumR(k)]=fitShiftedGam(Rx(:,k),1);
+xlabel('L^2 T^{-2}')
 subplot(2,1,2)
 [shiftCumT(k),nCumT(k),ACumT(k)]=fitShiftedGam(Tx(:,k).^-2,1);
+xlabel('T^{-2}')
 
 
 figure(1)

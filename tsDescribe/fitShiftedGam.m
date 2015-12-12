@@ -25,7 +25,6 @@ if doPlotting
     hold on
     ecdf(x,'bounds','on')
     plot(xcdf,gcdf,'r')
-    xlabel('ts^{-2}')
     ylabel('Cumulative Probability')
     title(['U=',num2str(shift),' n=',num2str(n),' T=',num2str(T)])
 end
