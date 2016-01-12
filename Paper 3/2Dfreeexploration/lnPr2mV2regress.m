@@ -4,18 +4,19 @@ clc
 clear all
 close all
 
-nbins=30;
+nbins=20;
 datafile='free_exp_05stroke.mat';
 %datafile='free_exp_MF.mat'
 
 load(datafile)
 en=dot(v',v');
+pow=dot(a',v');
 
 %Plot the upside down bowl as a sanity check
 figure(1) 
 clf
 inds=1:20:size(x,1);
-plot3(x(inds,1),x(inds,2),en(inds),'.','markersize',.01)
+plot3(x(inds,1),x(inds,2),pow(inds),'.','markersize',.01)
 
 
 %% 2D Histogram 
@@ -39,7 +40,7 @@ for k=1:nbins
     for kk=1:nbins
         f2=find(selectors(f,2)==kk);
         rawcounts(k,kk)=length(f2);
-        velocities{k,kk}=v(f(f2),:);
+        pows{k,kk}=pow(f(f2));
     end
     counts(k,:)=rawcounts(k,:);
     counts(k,counts(k,:)==0)=1;
@@ -53,45 +54,33 @@ surf(counts)
 %% Deal with potentials
 
 U=log(counts);
-U=U-min(U(:));
-U=U/max(U(:));
 
 figure(3)
 clf
 surf(U)
 
-%% Flatten velocity after a sanity check
-totU=sum(U(:));
+%% Flatten various values
 Uf=U(:);
+totU=sum(U(:));
 ln=linspace(0,1,nbins);
 [selmatX,selmatY]=meshgrid(ln*range(1)+lower(1),ln*range(2)+lower(2));
 selmatXf=selmatX(:);
 selmatYf=selmatY(:);
-centroidX=sum(Uf.*selmatXf)/totU;
-centroidY=sum(Uf.*selmatYf)/totU;
-centroid=[centroidX,centroidY]
-centroid=[.13 -.53]
+pows=pows(:);
 
-velf=velocities(:);
-distf=zeros(length(velf),1);
-vel=distf;
+meanpow=zeros(length(Uf),1);
 for k=1:length(Uf)
-    vel(k)=mean(vecmag(velf{k}).^2);
-    distf(k)=norm([selmatXf(k) selmatYf(k)]-centroid)^2;
+    meanpow(k)=mean(abs(pows{k}));
 end
-X=[vel distf ones(size(vel))];
-[b,bint]=regress(Uf,X)
-f=find(Uf>.7);
-[b,bint]=regress(Uf(f),X(f,:))
 
 figure(4)
 clf
 hold on
 %plot(Uf,X*b,'r.')
-plot(vel,Uf,'b.','markersize',.01)
+plot(Uf,meanpow,'b.','markersize',.01)
 %plot([0 1],[0 1],'m-')
 axis equal
-
+return
 %% Different approach...show L^2 directly?
 figure(5)
 clf

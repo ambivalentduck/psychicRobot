@@ -2,8 +2,8 @@ clc
 clear all
 close all
 
-for SUB=1:8
-    load(['../Data/curlkick',num2str(SUB),'g.mat'])
+for SUB=1:6
+    load(['../Data/curlkickdata/curlkick',num2str(SUB),'g.mat'])
     dt=mean(diff(trials(2).t));
     lt=length(trials);
     haslumps=zeros(lt,1);
