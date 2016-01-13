@@ -38,3 +38,16 @@ subplot(2,1,2)
 plot(z,dot(v',v'),'.','markersize',.01)
 xlabel('height')
 ylabel('Speed^2')
+
+figure(3)
+clf
+subplot(2,1,1)
+vz=v(:,3);
+speed=sqrt(dot(v',v'));
+[fn,xn]=ecdf(speed(vz<0));
+[fp,xp]=ecdf(speed(vz>0));
+plot(xp,fp,'r',xn,fn,'b')
+subplot(2,1,2)
+[fn,xn]=ecdf(abs(vz(vz<0)));
+[fp,xp]=ecdf(vz(vz>0));
+plot(xp,fp,'r',xn,fn,'b')

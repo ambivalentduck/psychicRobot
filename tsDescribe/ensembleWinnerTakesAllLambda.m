@@ -16,6 +16,7 @@ end
 
 ensemblelambda=expfit(winner);
 1/ensemblelambda
+sum(invlambdas)
 
 pwinner=zeros(1,length(lambdas));
 for k=1:length(lambdas)
