@@ -1,7 +1,7 @@
 clc
 clear all
 
-d=load('3dfreeexp1.dat');
+d=load('3dfreeexp2.dat');
 
 t=d(:,1);
 x=d(:,2:4);
@@ -19,11 +19,15 @@ for k=1:3
     v(:,k)=gradient(x(:,k))./gT;
 end
 
+not2low=x(:,3)>.35;
+v=v(not2low,:);
+x=x(not2low,:);
+
 figure(2)
 clf
 subplot(2,1,1)
-[f,h]=hist(x(:,3),15);
-plot(h,log(f),'.')
+[f,h]=ecdf(x(:,3));
+plot(h,log(1-f),'.')
 xlabel('Height')
 ylabel('ln Prob(height)')
 
