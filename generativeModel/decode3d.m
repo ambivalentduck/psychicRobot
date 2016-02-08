@@ -1,7 +1,7 @@
 clc
 clear all
 
-d=load('3dfreeexp1.dat');
+d=load('3dfreeexp2.dat');
 
 t=d(:,1);
 x=d(:,2:4);
@@ -19,25 +19,17 @@ for k=1:3
     v(:,k)=gradient(x(:,k))./gT;
 end
 
-f=find(x(:,3)>=.35);
-x=x(f,:);
-v=v(f,:);
-
-lX=size(x,1);
+not2low=x(:,3)>.35;
+v=v(not2low,:);
+x=x(not2low,:);
 
 figure(2)
 clf
 subplot(2,1,1)
-hold on
 [f,h]=ecdf(x(:,3));
-h=h(f~=1);
-f=f(f~=1);
-plot(h,log10((1-f)*lX),'.','markersize',.1)
-p=[h ones(size(h))]\log10((1-f)*lX)
-plot(h,[h ones(size(h))]*p,'r')
+plot(h,log(1-f),'.')
 xlabel('Height')
 ylabel('ln Prob(height)')
-
 
 z=x(:,3);
 minz=min(z);
