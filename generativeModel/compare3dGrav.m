@@ -1,7 +1,7 @@
 clc
 clear all
 
-N=3;
+N=2;
 mode(1).suffix='';
 mode(2).suffix='nograv';
 mode(1).color='r';
@@ -42,7 +42,10 @@ for M=1:length(mode)
     X=[h ones(size(h))];
     Y=log(1-f);
     p=X\Y;
-    plot(X(:,1),X*p,'color',mode(M).fitcolor,'linewidth',2)
+    yhat=X*p;
+    EY=mean(Y);
+    R2=1-sum((Y-yhat).^2)/sum((Y-EY).^2)
+    plot(X(:,1),yhat,'color',mode(M).fitcolor,'linewidth',2)
     
 end
 legend(handles,{'No Support','Arm Support'})

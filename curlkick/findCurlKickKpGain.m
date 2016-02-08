@@ -27,7 +27,8 @@ clf
 hold on
 
 toi=0:.01:1;
-for U=1:3
+DOI=2;
+for U=DOI
     figure(1)
     f=find(clean'&(reachcat==U));
     rp=randperm(length(f));
@@ -70,9 +71,9 @@ figure(4)
 clf
 hold on
 
-for U=1:3
+for U=DOI
     for D=1:2
-        toffset=1*(D-1);
+        toffset=4*(D-1);
         xoffset=.4*(D-1);
         
         figure(3)
@@ -86,7 +87,7 @@ for U=1:3
                 x=trials(f(fk)).x;
                 
                 catus(U,D,krp).t=time;
-                catus(U,D,krp).x=[x trials(f(fk)).v trials(f(fk)).a];
+                catus(U,D,krp).x=[x trials(f(fk)).v trials(f(fk)).a trials(f(fk)).f];
             end
             plot(trials(f(fk)).x(:,1)+xoffset,trials(f(fk)).x(:,2),'linewidth',.01)
             plot(trials(f(fk)).x(end,1)+xoffset,trials(f(fk)).x(end,2),'rx')
@@ -94,7 +95,7 @@ for U=1:3
         catx=vertcat(catus(U,D,:).x);
         catt=vertcat(catus(U,D,:).t);
         Y=gaussianWeightedRegression(catt,catx,toi,GWR);
-        disturbed(U,D).Y=X;
+        disturbed(U,D).Y=Y;
         disturbed(U,D).X=direction(U).X;
         plot(Y(:,1)+xoffset,Y(:,2),'g')
         figure(4)
@@ -111,11 +112,15 @@ Y=vertcat(disturbed.Y);
 %% Relate torques to find shift as well as mass and stiff gains
 addpath ../../DeOpt/
 params
-[c,L1,L2,x0,mass]=deoptMassStiffShiftStatic(X,Y)
+
+max([X(:,2);Y(:,2)])
+min([X(:,2);Y(:,2)])
+[massgains(kk),kpgains(kk)]=deoptMassStiffShift(TMP,TSP,TNP,subfitlower:subfitupper)
+[c,L1,L2,x0,mass]=deoptMassStiffShiftStatic(Y,X,1:15)
 params.c=c;
 params.L1=L1;
 params.L2=L2;
 params.x0=x0;
 params.mass=mass;
 
-save(['../Data/Data_pulse/pulse',num2str(k),'W.mat'],'trials','params')
+save(['../Data/curlkick/curlkick',num2str(k),'W.mat'],'trials','params')
