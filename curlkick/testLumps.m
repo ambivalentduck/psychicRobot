@@ -3,7 +3,7 @@ clear all
 
 load ../Data/curlkick/curlkick1Y.mat
 
-f=find(([trials.targetcat]==2)&([trials.disturbcat]))
+f=find(([trials.targetcat]~=0)&([trials.disturbcat]))
 
 figure(1001)
 clf
@@ -28,7 +28,7 @@ for ff=1:length(f)
         1 0 1;
         rand(10,3)];
     
-    
+    if 0
     figure(ff)
     clf
     hold on
@@ -39,13 +39,28 @@ for ff=1:length(f)
         kappa=30*tau.^2-60*tau.^3+30*tau.^4;
         plot(t(inds)',vecmag(kappa*lumps(k).L),'color',colors(k,:))
     end
+    end
     
     figure(1001)
     Y=cumtrapz(t(inds),resid(inds,:),1);
     plot(Y(:,1),Y(:,2)+ff/100,'k')
     axis equal
-    [~,V(ff)] = convhull(1000*Y(:,1),1000*Y(:,2)); %Convex hull and its volume corresponding to an [X Y] set.
+    [~,V(ff)] = convhull(resid(:,1),resid(:,2)); %Convex hull and its volume corresponding to an [X Y] set.
+    [~,X(ff)] = convhull(1000*Y(:,1),1000*Y(:,2)); %Convex hull and its volume corresponding to an [X Y] set.
 end
 
 figure(1002)
-ecdf(V)
+clf
+subplot(2,1,1)
+hold on
+[f,x]=ecdf(V);
+ecdf(V,'bounds','on')
+mu=gamfit(V);
+plot(x,gamcdf(x,mu(1),mu(2)),'r')
+
+subplot(2,1,2)
+hold on
+[f,x]=ecdf(V);
+ecdf(V,'bounds','on')
+mu=expfit(V);
+plot(x,expcdf(x,mu),'r')

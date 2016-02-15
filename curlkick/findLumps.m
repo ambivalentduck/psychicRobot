@@ -37,7 +37,7 @@ k=0;
 minpeakheight=.03;
 mingradpeakheight=.01;
 
-while k<15
+while k<5
     k=k+1;
     
     %Assume the biggest peak is always pure
@@ -88,7 +88,7 @@ while k<15
     C=t(peak);
     %C=(t(upper)+t(lower))/2;
     %S=gT*(upper-lower)*1.05; %Probably add a fudge factor
-    S=max(2*min(t(upper)-C,C-t(lower))*1.1,gT);
+    S=min(max(2*min(t(upper)-C,C-t(lower))*1.1,gT),1);
     L=y(peak,:)*S/1.875;
     lumps(k).C=C;
     lumps(k).S=S;

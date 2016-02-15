@@ -1,4 +1,4 @@
-function extractPulses(k)
+function extractReaches(k)
 
 global kpgain
 
@@ -8,8 +8,8 @@ hold on
 axis equal
 
 load(['../Data/curlkick/curlkick',num2str(k),'.mat'])
-c=.6;
-mass=70;
+c=1;
+mass=50;
 kpgain=c;
 [l1,l2,x0]=getSubjectParams(k);
 
@@ -17,7 +17,9 @@ kpgain=c;
 set2dGlobals(l1,l2,x0,mass)
 
 dcats=[trials.disturbcat];
-F=find((dcats>0)&(dcats<5));
+tcats=[trials.targetcat];
+unique(dcats)
+F=find((dcats>0)&(tcats~=0));
 
 
 for c=1:length(F)
@@ -44,8 +46,8 @@ for c=1:length(F)
     trials(kk).if=length(trials(kk-1).t)-onset0+length(trials(kk).t);
     
     if 1
-    yoff=-xvaf(1,2)+trials(kk).disturbcat/2;
-    xoff=-xvaf(1,1)+trials(kk).targetcat/3;
+    yoff=trials(kk).disturbcat/2;
+    xoff=0;%-xvaf(1,1); %+trials(kk).targetcat/3;
     plot(xvaf1(:,1)+xoff,xvaf1(:,2)+yoff,'b')
     inds=trials(kk).i0:trials(kk).if;
     plot(y(inds,1)+xoff,y(inds,2)+yoff,'r')
