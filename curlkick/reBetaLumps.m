@@ -1,12 +1,14 @@
 clc
 clear all
 
-global fit_t fit_y lumpsvec
+%profile on
+
+addpath ../../DeOpt/
 
 load ../Data/curlkick/curlkick1Y.mat
 
-doPlots=0;
-clean_init=1;
+doPlots=1;
+alpha=5;
 
 f=find(([trials.targetcat]~=0)&([trials.disturbcat]))
 
@@ -17,9 +19,8 @@ if doPlots
 end
 
 alllumps=0;
-hulls=zeros(length(f),1);
 
-for ff=1:length(f)
+for ff=6 %1:length(f)
     T=f(ff);
     yoff=ff-1;
     
@@ -30,68 +31,44 @@ for ff=1:length(f)
     inds=inds(1):inds(peaks(end)-5);
     t=t-t(inds(1));
     
-    [lumps,de(ff).resid]=findLumps(t',y(:,3:4),inds);
-    [~,hulls(ff)]=convhull(de(ff).resid);
-    if clean_init
-        fit_y=y(inds,3:4);
-        fit_t=t(inds);
-        lumpsvec=lumps2vec(lumps);
-        warning off all
-        Sopt=fminunc(@justSobj,[lumps.S]',optimset('TolFun',1e-12));
-        warning on all
-        [justSobj([lumps.S]'),justSobj(Sopt),norm([lumps.S]'-Sopt)]
-        lumps=vec2lumps(adjustLumpS(lumpsvec,Sopt));
-    end
-    
+    [lumps,de(ff).resid]=findBetaLumps(t',y(:,3:4),inds,alpha);
+    gtlumps=lumps;
     de(ff).lumps=lumps;
     plot(t',vecmag(y(:,3:4))+yoff,'k')
     plot(t',vecmag(de(ff).resid)+yoff,'k-.')
     re(ff).y=zeros(length(trials(T).y),2);
     
     for k=1:length(lumps)
-        y=lumpy(t,lumps(k));
-        re(ff).y=re(ff).y+y;
+        tau=(t'-lumps(k).C)/lumps(k).S+.5;
+        tau=max(min(tau,1),0);
+        kappa=betapdf(tau,alpha,alpha)/lumps(k).S;
+        re(ff).y=re(ff).y+kappa*lumps(k).L;
         if doPlots
-            plot(t',vecmag(y)+yoff,'b')
+            plot(t',vecmag(kappa*lumps(k).L)+yoff,'b')
         end
     end
     if doPlots
         plot(t,vecmag(re(ff).y)+yoff,'c')
     end
-    if clean_init
-        [~,cleanhulls(ff)]=convhull(fit_y-re(ff).y(inds,:));
-    end
     
-    [lumps,re(ff).resid]=findLumps(t',re(ff).y,inds);
-    %lumpSopt=deoptSubunits(lumps2vec(lumps),t(inds)',re(ff).y(inds,:));
-    lumpsvec=lumps2vec(lumps);
-    y=re(ff).y;
-    warning off all
-    Sopt=fminunc(@justSobj,[lumps.S]',optimset('TolFun',1e-16));
-    warning on all
-    [justSobj([lumps.S]'),justSobj(Sopt),norm([lumps.S]'-Sopt)]
-    lumpSopt=vec2lumps(adjustLumpS(lumpsvec,Sopt));
-    
+    [lumps,re(ff).resid]=findBetaLumps(t',re(ff).y,inds);
+    %lumps=deoptSubunits(lumps,t(inds)',re(ff).y(inds,:));
     de(ff).y=zeros(length(trials(T).y),2);
-    deS(ff).y=zeros(length(trials(T).y),2);
     if doPlots
         plot(t',vecmag(re(ff).resid)+yoff,'r-.')
     end
-    
     for k=1:length(lumps)
-        rey=lumpy(t,lumps(k));
-        yopt=lumpy(t,lumpSopt(k));
-        de(ff).y=de(ff).y+rey;
-        deS(ff).y=deS(ff).y+yopt;
+        tau=(t'-lumps(k).C)/lumps(k).S+.5;
+        tau=max(min(tau,1),0);
+        kappa=betapdf(tau,alpha,alpha)/lumps(k).S;
+        de(ff).y=de(ff).y+kappa*lumps(k).L;
         if doPlots
-            plot(t',vecmag(rey)+yoff,'r--')
-            plot(t',vecmag(yopt)+yoff,'g--')
+            plot(t',vecmag(kappa*lumps(k).L)+yoff,'r--')
             drawnow
         end
     end
     if doPlots
         plot(t,vecmag(de(ff).y)+yoff,'m')
-        plot(t,vecmag(deS(ff).y)+yoff,'y')
     end
     
     for k=1:length(lumps)
@@ -106,7 +83,6 @@ for ff=1:length(f)
         lxdiffP(alllumps,1:2)=[lumps(k).L(1),de(ff).lumps(ic).L(1)];
         lydiffP(alllumps,1:2)=[lumps(k).L(2),de(ff).lumps(ic).L(2)];
         sdiffP(alllumps,1:2)=[lumps(k).S,de(ff).lumps(ic).S];
-        sdiffPS(alllumps,1:2)=[lumpSopt(k).S,de(ff).lumps(ic).S];
     end
 end
 
@@ -117,9 +93,6 @@ ecdf(cdiff)
 xlabel('C error, seconds')
 subplot(2,2,2)
 ecdf(sdiff)
-hold on
-[f,x]=ecdf(sdiffPS(:,1)-sdiffPS(:,2));
-plot(x,f,'r')
 xlabel('S error, seconds')
 subplot(2,2,3)
 ecdf(lxdiff)
@@ -129,18 +102,19 @@ subplot(2,2,4)
 ecdf(lydiff)
 xlabel('L_y error, meters per second')
 
+%profile viewer
+
 %% Plot for Paper/Konrad
 
 figure(1006)
 clf
 set(gcf,'color','w')
-msize=10;
 
 subplot(2,2,1)
 hold on
 ul=[0 2];
 plot(ul,ul,'m')
-plot(cdiffP(:,2),cdiffP(:,1),'.','markersize',msize)
+plot(cdiffP(:,2),cdiffP(:,1),'.','markersize',.75)
 axis equal
 set(gca,'ytick',[])
 xlim(ul)
@@ -153,8 +127,7 @@ subplot(2,2,2)
 hold on
 ul=[0 1];
 plot(ul,ul,'m')
-plot(sdiffP(:,2),sdiffP(:,1),'b.','markersize',msize)
-plot(sdiffPS(:,2),sdiffPS(:,1),'r.','markersize',msize)
+plot(sdiffP(:,2),sdiffP(:,1),'.','markersize',.75)
 axis equal
 set(gca,'ytick',[])
 xlim(ul)
@@ -167,7 +140,7 @@ subplot(2,2,3)
 hold on
 ul=[-.25 .25];
 plot(ul,ul,'m')
-plot(lxdiffP(:,2),lxdiffP(:,1),'.','markersize',msize)
+plot(lxdiffP(:,2),lxdiffP(:,1),'.','markersize',.75)
 axis equal
 set(gca,'ytick',[])
 set(gca,'xtick',[-.2 .2])
@@ -180,7 +153,7 @@ subplot(2,2,4)
 hold on
 ul=[-.25 .25];
 plot(ul,ul,'m')
-plot(lydiffP(:,2),lydiffP(:,1),'.','markersize',msize)
+plot(lydiffP(:,2),lydiffP(:,1),'.','markersize',.75)
 axis equal
 set(gca,'ytick',[])
 set(gca,'xtick',[-.2 .2])
@@ -197,13 +170,3 @@ subplot(2,2,3)
 set(gca,'position',[0 .1 .4 .4])
 subplot(2,2,4)
 set(gca,'position',[.35 .1 .4 .4])
-
-figure(2006)
-clf
-hold on
-%[f,x]=ecdf(hulls);
-%plot(x,f,'b')
-ecdf(cleanhulls,'bounds','on')
-[f,x]=ecdf(cleanhulls);
-mu=expfit(cleanhulls);
-plot(x,expcdf(x,mu),'r')

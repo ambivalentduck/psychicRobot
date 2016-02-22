@@ -1,4 +1,4 @@
-function [lumps,y]=findLumps(t,y,searchinds)
+function [lumps,y]=findBetaLumps(t,y,searchinds,alpha)
 
 %Accept inputs of the form:
 % column t
@@ -37,7 +37,7 @@ k=0;
 minpeakheight=.03;
 mingradpeakheight=.0025;
 
-while k<7
+while k<5
     k=k+1;
     
     %Assume the biggest peak is always pure
@@ -68,15 +68,15 @@ while k<7
     end
     
     C=t(peak);
-    S=min(1.3*max(2*min(t(upper)-C,C-t(lower)),gT),1);
-    L=y(peak,:)*S/1.875; %1.875 corresponds to min jerk *only*
+    S=min(max(1.3*2*min(t(upper)-C,C-t(lower)),gT),1);
+    L=y(peak,:)*S/betapdf(.5,alpha,alpha); %1.875 corresponds to min jerk *only*
     lumps(k).C=C;
     lumps(k).S=S;
     lumps(k).L=L;
     
     tau=(t-C)/S+.5;
     tau=max(min(tau,1),0);
-    kappa=(30*tau.^2-60*tau.^3+30*tau.^4)/S;
+    kappa=betapdf(tau,alpha,alpha)/S;
     y=y-kappa*L;
     
     if doPlots
