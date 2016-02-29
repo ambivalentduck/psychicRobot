@@ -252,3 +252,18 @@ ecdf(cleanhulls,'bounds','on')
 [f,x]=ecdf(cleanhulls);
 mu=expfit(cleanhulls);
 plot(x,expcdf(x,mu),'r')
+
+%% N lumps
+
+figure(2007)
+clf
+hold on
+%ecdf(nlumps)
+[f,x]=ecdf(nlumps);
+x=x(1:end-1);
+f=f(1:end-1);
+%mu=expfit(nlumps)
+plot(x,log(1-f),'bx')
+X=[x ones(size(x))];
+a=X\log(1-f);
+plot(x,X*a,'r-')
