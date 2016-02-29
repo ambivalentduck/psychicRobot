@@ -3,7 +3,7 @@ clear all
 close all
 
 for SUB=1:6
-    load(['../Data/curlkickdata/curlkick',num2str(SUB),'g.mat'])
+    load(['../Data/curlkick',num2str(SUB),'g.mat'])
     dt=mean(diff(trials(2).t));
     lt=length(trials);
     haslumps=zeros(lt,1);
@@ -46,7 +46,7 @@ for SUB=1:6
     
     enstruct(SUB).L2oT2=L2.*Tm2;
     [cumf,bins]=ecdf(L2.*Tm2);
-    f=find(cumf<.8);
+    f=find(cumf<.80);
     [~,closest]=min(abs(cumf-.5));
     enstruct(SUB).L2oT2F=cumf(f);
     enstruct(SUB).L2oT2X=bins(f)/bins(closest);
@@ -90,7 +90,7 @@ for SUB=1:6
     plot(bins,log(counts),'.')
     [R2,A]=plotExp(bins,counts);
     title(['R^2 = ',num2str(R2),' A=',num2str(A)])
-    ylabel('log PDF($\frac{L^2}{T^2}$)','interpreter','latex')
+    ylabel('log PDF(L^2T^{-2})')
     xlabel('$\frac{L^2}{T^2}$','interpreter','latex')
     subplot(sy,sx,6)
     ecdf(L2.*Tm2)
@@ -110,31 +110,38 @@ subplot(1,2,1)
 
 X=vertcat(enstruct.L2oT2X);
 X=[X ones(size(X))];
-y=log(1-vertcat(enstruct.L2oT2F));
+y=log(.85-vertcat(enstruct.L2oT2F));
+%y=vertcat(enstruct.L2oT2F);
 
 b=X\y;
 yhat=X*b;
 
 R2 = 1 - sum((y - yhat).^2)/sum((y - mean(y)).^2);
 hold on
-plot(X(:,1),y,'.')
+plot(X(:,1),y,'.','markersize',.75)
 plot(X(:,1),X*b,'k-')
 title(['R^2 = ',num2str(R2)])
-ylabel('log PDF($\frac{L^2}{T^2}$)','interpreter','latex')
-xlabel('Normalized to 50th percentile = 1','interpreter','tex')
+ylabel('log PDF( L^2 T^{ -2} )')
+xlabel('L^2 T^{ -2} Normalized to 50th percentile','interpreter','tex')
+set(gca,'xtick',[0 1 2],'xticklabels',{'0','0.5','1'})
+xlim([0 2])
+
 
 subplot(1,2,2)
 X=vertcat(enstruct.Tm2X);
 X=[X ones(size(X))];
-y=log(1-vertcat(enstruct.Tm2F));
+y=log(1.05-vertcat(enstruct.Tm2F));
 
 b=X\y;
 yhat=X*b;
 
 R2 = 1 - sum((y - yhat).^2)/sum((y - mean(y)).^2);
 hold on
-plot(X(:,1),y,'.')
+plot(X(:,1),y,'.','markersize',.75)
 plot(X(:,1),X*b,'k-')
 title(['R^2 = ',num2str(R2)])
-ylabel('log PDF($\frac{1}{T^2}$)','interpreter','latex')
-xlabel('Normalized to 50th percentile = 1','interpreter','tex')
+ylabel('log PDF( T^{ -2} )')
+xlabel('T^{ -2} Normalized to 50th percentile','interpreter','tex')
+set(gca,'yAxisLocation','right')
+set(gca,'xtick',[0 1 2],'xticklabels',{'0','0.5','1'})
+xlim([0 2])
