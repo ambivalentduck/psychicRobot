@@ -1,25 +1,25 @@
-function lumps=deoptSubunits(lumps_init,t,y)
+function lumps_opt=deoptSubunits(lumps_init,t,y)
 
 % F_VTR		"Value To Reach" (stop when ofunc < F_VTR)
-F_VTR = 0.01; 
+F_VTR = 0.001; 
 
 % I_D		number of parameters of the objective function 
-x_init=lumps2vec(lumps_init);
-I_D = length(x_init); 
+I_D = length(lumps_init)/4; 
+x_init=lumps_init(4*(1:I_D)); %Only the Ses
 
 % FVr_minbound,FVr_maxbound   vector of lower and bounds of initial population
 %    		the algorithm seems to work especially well if [FVr_minbound,FVr_maxbound] 
 %    		covers the region where the global minimum is expected
 %               *** note: these are no bound constraints!! ***
-      FVr_minbound = x_init'*.7; 
-      FVr_maxbound = x_init'*1.3; 
+      FVr_minbound = x_init'*.5; 
+      FVr_maxbound = x_init'*1.5; 
       I_bnd_constr = 0;  %1: use bounds as bound constraints, 0: no bound constraints      
             
 % I_NP            number of population members
-		I_NP = 35; 
+		I_NP = 15; 
 
 % I_itermax       maximum number of iterations (generations)
-		I_itermax = 500; %Was 5000
+		I_itermax = 1000; %Was 5000
        
 % F_weight        DE-stepsize F_weight ex [0, 2]
 		F_weight = 0.6; 
@@ -58,8 +58,9 @@ I_D = length(x_init);
 %-----Definition of tolerance scheme--------------------------------------
 %-----The scheme is sampled at I_lentol points----------------------------
 %-----tie all important values to a structure that can be passed along----
-S_struct.t           = t;
-S_struct.y           = y;
+S_struct.t            = t;
+S_struct.y            = y;
+S_struct.lumps        = lumps_init;
 S_struct.I_NP         = I_NP;
 S_struct.F_weight     = F_weight;
 S_struct.F_CR         = F_CR;
@@ -80,4 +81,9 @@ tic
 [FVr_x,S_y,I_nf] = deopt('objSubunits',S_struct);
 toc
 final_cost=S_y
-lumps = vec2lumps(FVr_x);
+
+S=FVr_x;
+lumps_opt=lumps_init;
+lumps_opt(4*(1:I_D))=S;
+lumps_opt=vec2lumps(lumps_opt);
+
