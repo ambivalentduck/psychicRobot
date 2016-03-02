@@ -1,4 +1,4 @@
-function ts=getTsMetric(x,t,x0,xf)
+function [ts, rw]=getTsMetric(x,v,a,t,x0,xf)
 
 buffer=.1;
 
@@ -6,6 +6,7 @@ p=rotateProgressError(x,x0,xf);
 onset=find(p(:,1)>buffer,1,'first');
 offset=find(p(:,1)>(1-buffer),1,'first');
 ts=t(offset)-t(onset);
+rw=trapz(t(onset:offset),abs(dot(v(onset:offset,:)',a(onset:offset,:)')'));
 
 function out=rotateProgressError(x,x0,x1)
 
