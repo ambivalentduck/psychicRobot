@@ -6,7 +6,7 @@ global fit_t fit_y lumpsvec
 load ../Data/curlkick/curlkick1Y.mat
 
 doPlots=0;
-clean_init=1;
+clean_init=0;
 
 f=find(([trials.targetcat]~=0)&([trials.disturbcat]))
 
@@ -84,7 +84,7 @@ for ff=1:length(f)
     fit_y=re(ff).y;
     fit_t=t;
     warning off all
-    Sopt=fminunc(@justSobj,[lumps.S]',optimset('TolFun',1e-16));
+    Sopt=[lumps.S]'; %=fminunc(@justSobj,[lumps.S]',optimset('TolFun',1e-16));
     warning on all
     [justSobj([lumps.S]'),justSobj(Sopt),norm([lumps.S]'-Sopt)]
     lumpSopt=vec2lumps(adjustLumpS(lumpsvec,Sopt));
