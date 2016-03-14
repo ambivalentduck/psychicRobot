@@ -154,7 +154,7 @@ set(gca,'position',[.35 .1 .4 .4])
 
 figure(2)
 clf
-subplot(1,2,1)
+subplot(1,3,1)
 hold on
 n=ndiff(:,1);
 [f,x]=ecdf(n);
@@ -162,7 +162,7 @@ plot(x,log(1-f),'k.')
 ylabel('log(1-Cumulative Density)')
 xlabel('n')
 
-subplot(1,2,2)
+subplot(1,3,2)
 hold on
 %[f,x]=ecdf(hulls);
 %plot(x,f,'b')
@@ -171,5 +171,15 @@ T=vertcat(de.T);
 plot(x,log(1-f),'k.')
 xlim([0 .1])
 xlabel('L^2S^{-2}')
+
+subplot(1,3,3)
+hold on
+%[f,x]=ecdf(hulls);
+%plot(x,f,'b')
+dC=vertcat(de.dC);
+[f,x]=ecdf(dC);
+plot(x,log(1-f),'k.')
+xlim([0 .6])
+xlabel('\Delta C')
 
 
