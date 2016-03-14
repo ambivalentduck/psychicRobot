@@ -5,12 +5,13 @@ clear all
 %saccadefunc=@minjerkSaccade; %Closer to reality
 %saccadefunc=@linearSaccade; %Important for testing since E(t) is constant
 mass=1;
-temp=.1;
-bounty=1
-nbins=20;
-timetemp=1;
+temp=.01;
+doNothingQ=0.1
+nbins=40;
+timetemp=.005;
+shift=1;
 
-sacMaxV=saccadefunc();
+sacMaxV=1.875; %saccadefunc();
 sacRu=.5*mass*sacMaxV^2;
 
 %% Actual sequence for later reference
@@ -23,7 +24,7 @@ sacRu=.5*mass*sacMaxV^2;
 
 [X,Y]=meshgrid(linspace(-.2,.2,nbins),linspace(.35,.7,nbins)); %Mimic manipulandum
 
-U=((X-0).^2+(Y-.5).^2)/1; %The most important decision in this file
+U=(10*(X-0).^2+(Y-.5).^2); %The most important decision in this file
 %U=0*U;
 
 figure(1)
@@ -46,11 +47,11 @@ while k<10000 %jumps(k).tf<10 %Seconds to run the simulation
     deltaU=U-jumps(k).U;
     
     % Tn2=(bounty-deltaU)./(3*L2*sacRu); %Based on Shadmehrian T_crit
-    shift=max(0,deltaU./L2);
-    %shift=0.245;
-    Tn2=shift+exprnd((bounty-deltaU)./(3*L2),size(L2));
-    Jdot=(bounty-deltaU).*(Tn2.^.5)+sacRu*L2.*(Tn2.^(3/2));
-    J=exp(-(deltaU-bounty+sacRu*L2.*Tn2)/temp);
+    %shift=max(0,deltaU./L2);
+    
+    Tn2=shift+exprnd((doNothingQ-deltaU)./(3*L2),size(L2));
+    Jdot=(doNothingQ-deltaU).*(Tn2.^.5)+sacRu*L2.*(Tn2.^(3/2));
+    J=exp(-(deltaU-doNothingQ+sacRu*L2.*Tn2)/temp);
     J(Jdot(:)<=0)=0;
     J(jumps(k).i)=0.0001; %epsilon, if everything else sucks, stand still
     %J(J<0)=0;
