@@ -6,7 +6,8 @@ y=.3:.001:.5;
 
 [X,Y]=meshgrid(x,y);
 
-Uf=@(X,Y) 10000*X.^2+150*(Y-.45).^2+30*(Y-.45).*(Y>.45)
+%Uf=@(X,Y) 1000*(abs(X)-.01).*(abs(X)>.01)+1000*abs(Y-.45);
+Uf=@(X,Y) sqrt(20*X.^2+8*(Y-.45).^2)
 U=Uf(X,Y);
 
 figure(1)
@@ -41,4 +42,4 @@ hist(ns,1:15)
 
 figure(4)
 clf
-hist(ts.^-2)
+hist(ts.^-2,20)
