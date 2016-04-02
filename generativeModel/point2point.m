@@ -22,7 +22,7 @@ hold on
 ns=zeros(50,1);
 ts=ns;
 
-for N=1:100
+for N=1:200
     t=0;
     x=[0,.3]+randn(1,2)*.005;
     Us=Uf(x(1),x(2));
@@ -42,4 +42,8 @@ hist(ns,1:15)
 
 figure(4)
 clf
-hist(ts.^-2,20)
+hold on
+[f,x]=ecdf(ts.^-2);
+plot(x,f)
+p=gamfit(ts.^-2);
+plot(x,gamcdf(x,p(1),p(2)),'r')
