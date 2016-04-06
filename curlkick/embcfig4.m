@@ -150,9 +150,88 @@ set(gca,'position',[0 .1 .4 .4])
 subplot(2,2,4)
 set(gca,'position',[.35 .1 .4 .4])
 
-%% Stats figure
+%% Histogram Figure
 
 figure(2)
+clf
+set(gcf,'color','w','units','centimeters','position',[32 2 8.8 14])
+Nhist=15;
+
+subplot(2,2,1)
+hold on
+[Ncos,X]=hist(cdiffCos(:,2)-cdiffCos(:,1),Nhist);
+N=hist(cdiff(:,2)-cdiff(:,1),X);
+barh(X',[N'/sum(N), Ncos'/sum(Ncos)])
+[~,p]=ttest(cdiff(:,2)-cdiff(:,1))
+[~,p]=ttest(cdiffCos(:,2)-cdiffCos(:,1))
+ylabel('Peak Location Error, seconds')
+ylim([-.2 .2])
+
+subplot(2,2,2)
+hold on
+[Ncos,X]=hist(sdiffCos(:,2)-sdiffCos(:,1)-.1,Nhist);
+N=hist(sdiff(:,2)-sdiff(:,1)-.07,X);
+barh(X',[N'/sum(N), Ncos'/sum(Ncos)])
+[~,p]=ttest(sdiff(:,2)-sdiff(:,1)-.07)
+[~,p]=ttest(sdiffCos(:,2)-sdiffCos(:,1)-.1)
+ylabel('Duration Error, seconds')
+ylim([-.55 .55])
+
+subplot(2,2,3)
+hold on
+[Ncos,X]=hist(ldiffCos(:,2)-ldiffCos(:,1),Nhist);
+N=hist(ldiff(:,2)-ldiff(:,1),X);
+barh(X',[N'/sum(N), Ncos'/sum(Ncos)])
+[~,p]=ttest(ldiff(:,2)-ldiff(:,1))
+[~,p]=ttest(ldiffCos(:,2)-ldiffCos(:,1))
+ylabel('Position Change Error, meters')
+ylim([-.2 .2])
+
+subplot(2,2,4)
+X=unique(ndiff(:,2)-ndiff(:,1));
+hold on
+Ncos=hist(ndiffCos(:,2)-ndiffCos(:,1),X);
+N=hist(ndiff(:,2)-ndiff(:,1),X);
+barh(X',[N'/sum(N), Ncos'/sum(Ncos)])
+[~,p]=ttest(ndiff(:,2)-ndiff(:,1))
+[~,p]=ttest(ndiffCos(:,2)-ndiffCos(:,1))
+ylabel('Count Error, meters')
+ylim([-5.5 5.5])
+
+for k=1:4
+    subplot(2,2,k)
+    xlim([0 .6])
+    set(gca,'xtick',[0 .2 .4 .6])
+end
+% subplot(2,2,1)
+% set(gca,'position',[.2 .5 .4 .4])
+% subplot(2,2,2)
+% set(gca,'position',[.6 .5 .4 .4])
+% subplot(2,2,3)
+% set(gca,'position',[.2 .1 .4 .4])
+% subplot(2,2,4)
+% set(gca,'position',[.35 .1 .4 .4])
+suplabel('Relative Frequency','x');
+
+subplot(2,2,2)
+legend({'Minimum Jerk','Sin'},'orientation','horizontal')
+
+% leftmargin=.15;
+% bottommargin=.05;
+% topmargin=.0075;
+% gap2=.03;
+% subplot(2,2,1)
+% set(gca,'position',[leftmargin .5+bottommargin+gap2 .5-leftmargin-gap2 .5-bottommargin-topmargin-gap2])
+% subplot(2,2,2)
+% set(gca,'position',[.5+leftmargin+gap2 .5+bottommargin+gap2 .47-leftmargin-gap2 .5-bottommargin-topmargin-gap2])
+% subplot(2,2,3)
+% set(gca,'position',[leftmargin bottommargin .5-leftmargin .5-bottommargin-topmargin-gap2])
+% subplot(2,2,4)
+% set(gca,'position',[.5+leftmargin+gap2 bottommargin .47-leftmargin-gap2 .5-bottommargin-topmargin-gap2])
+
+%% Stats figure
+
+figure(3)
 clf
 subplot(1,3,1)
 hold on

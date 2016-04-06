@@ -48,7 +48,9 @@ while k<maxlumps
     vmy=vecmag(y(searchinds,:));
     [val,peak]=max(vmy);
     peak=trueinds(searchinds(peak));
-    
+    if (val<.1)&(k>1)
+        break
+    end
     
     %Shitty coding, grossly inefficient
     dr=y(peak,:);
@@ -69,11 +71,11 @@ while k<maxlumps
     end
     
     C=t(peak);
-    S=min(1.3*max(2*min(t(upper)-C,C-t(lower)),gT),1.2);
+    S=min(max(.9*2*min(t(upper)-C,C-t(lower)),gT),1.2);
     %S=1.2*max(2*min(t(upper)-C,C-t(lower)),gT);
     L=y(peak,:)*S/1.875; %1.875 corresponds to min jerk *only*
     
-    if (norm(L)<minsublength)&(nargin<4)
+    if (norm(L)<minsublength)&(nargin<4)&(k>1)
         break
     end
     
