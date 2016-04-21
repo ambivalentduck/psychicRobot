@@ -24,6 +24,7 @@ for k=1:length(f)
 end
 
 [f,x]=ecdf(S);
+
 [shift,n,T]=fitShiftedGam(S)
 plot(x,f,colors(DERP))
 plot(x,gamcdf(x-shift,n,T),[colors(DERP),'--'])
