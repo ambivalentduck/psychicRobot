@@ -1,7 +1,7 @@
 clc
 clear all
 
-load('../Data/curlkick/curlkick1Y.mat')
+load('../Data/curlkick/curlkick1g.mat')
 
 tcats=[trials.targetcat];
 dcats=[trials.disturbcat];
@@ -13,7 +13,7 @@ hold on
 colors='rgb';
 dirs=[1 2 4];
 
-for DERP=1:3
+for DERP=1 %1:3
 f=find((tcats==dirs(DERP))&~dcats);
 S=zeros(size(f));
 RW=S;
@@ -27,4 +27,26 @@ end
 [shift,n,T]=fitShiftedGam(S)
 plot(x,f,colors(DERP))
 plot(x,gamcdf(x-shift,n,T),[colors(DERP),'--'])
+end
+
+return
+
+figure(2)
+clf
+hold on
+
+colors='rgb';
+dirs=[1 2 4];
+
+for DERP=1:3
+f=find((tcats==dirs(DERP))&~dcats);
+S=zeros(size(f));
+RW=S;
+
+for k=1:length(f)
+    tr=trials(f(k));
+    t=tr.t;
+    t=(t-t(1))/(t(end)-t(1));
+    plot(t,vecmag(tr.v),colors(DERP),'linewidth',.1)
+end
 end

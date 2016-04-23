@@ -10,8 +10,8 @@ msize=10;
 for k=1:45
     for kk=1:8
         if length(lumps(k,kk).dC) > 0
-            lumps(k,kk).backward=lumps(k,kk).L2(1:end-1).*lumps(k,kk).Tn2(1:end-1);
-            lumps(k,kk).forward=lumps(k,kk).L2(2:end).*lumps(k,kk).Tn2(2:end);
+            lumps(k,kk).backward=lumps(k,kk).Tn2(1:end-1).^-.5;
+            lumps(k,kk).forward=lumps(k,kk).Tn2(2:end).^-.5;
         end
     end
 end

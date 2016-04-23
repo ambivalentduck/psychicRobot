@@ -7,7 +7,7 @@ y=.3:.001:.5;
 [X,Y]=meshgrid(x,y);
 
 %Uf=@(X,Y) 1000*(abs(X)-.01).*(abs(X)>.01)+1000*abs(Y-.45);
-Uf=@(X,Y) sqrt(20*X.^2+8*(Y-.45).^2)
+Uf=@(X,Y) sqrt(20*X.^2+20*(Y-.45).^2)
 U=Uf(X,Y);
 
 figure(1)
@@ -22,9 +22,11 @@ hold on
 ns=zeros(50,1);
 ts=ns;
 
+%.1214 is the mean of the exponential distribution of dC^2
+
 for N=1:200
     t=0;
-    x=[0,.3]+randn(1,2)*.005;
+    x=[0,.3]+randn(1,2)*.0025;
     Us=Uf(x(1),x(2));
     while (norm(x(end,:)-[0,.45])>.01)&(length(t)<25)
         [t(end+1),x(end+1,1:2),Us(end+1)]=chooseSubmotion(U,X,Y,Us(end),t(end),x(end,:));
@@ -38,7 +40,8 @@ axis equal
 
 figure(3)
 clf
-hist(ns,1:15)
+[f,x]=ecdf(ns);
+plot(x,log(1-f))
 
 figure(4)
 clf

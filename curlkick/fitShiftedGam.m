@@ -13,13 +13,8 @@ end
 minx=min(x);
 shiftEst=minx-.000001; %gamfit is weird about zeroes in the data, so use an epsilon
 gpEst=gamfit(x-shiftEst);
-problem.x0=[shiftEst gpEst]';
-problem.objective=@shiftedGamObj;
-problem.Aineq=diag([-1 -1 -1]);
-problem.Bineq=zeros(3,1);
-problem.options=optimset('TolX',1e-9,'MaxFunEvals',2000,'TolFun',1e-9)
-gp=fmincon(problem);
-%gp=fminbnd(@shiftedGamObj,[0 0 0]',[100 100 100]',optimset('TolX',1e-9,'MaxFunEvals',2000,'TolFun',1e-9));
+%gp=fmincon(@shiftedGamObj,[shiftEst gpEst]',diag([-1 -1 -1]),zeros(3,1));
+gp=fminunc(@shiftedGamObj,[shiftEst gpEst]',optimset('TolX',1e-9,'MaxFunEvals',2000,'TolFun',1e-9));
 shift=gp(1);
 n=gp(2);
 T=gp(3);
@@ -42,7 +37,7 @@ end
 
 %Nesting the function allows sharing of x without using a global
     function cost=shiftedGamObj(params)
-        cost=gamlike(params(2:3),x-params(1));
+        cost=gamlike(params(2:3),x-params(1))+params(2)/2;
     end
 
 end

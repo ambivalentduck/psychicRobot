@@ -37,7 +37,7 @@ end
 
 %Nesting the function allows sharing of x without using a global
     function cost=shiftedGamObj(params)
-        cost=gamlike(params(2:3),x-params(1));
+        cost=gamlike(params(2:3),x-params(1))+.1*params(2);
     end
 
 end

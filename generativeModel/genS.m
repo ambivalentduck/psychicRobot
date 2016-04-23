@@ -3,20 +3,21 @@ clear all
 
 M=1000;
 
-minN=3;
-meanN=5;
+minN=10;
+meanN=20;
 mu=meanN-minN;
 
-lambda=1; %Around 10 cm/s
+lambda=10/meanN; %Around 10 cm/s
 
 n=minN+floor(exprnd(mu,M,1));
 figure(1)
 clf
 subplot(1,2,1)
 [f,x]=ecdf(n);
-plot(x,log(1-f))
+plot(x,log(1-f),'.')
 
-Sn2=gamrnd(n,lambda*ones(M,1));
+Sn2=gamrnd(n,lambda*ones(M,1))+1*n; %+max(0,200*randn(size(n))).*n;
+Sn2=Sn2;
 subplot(1,2,2)
 hold on
 [f,x]=ecdf(Sn2);

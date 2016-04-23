@@ -1,7 +1,7 @@
-function [tf,xf,Uf]=chooseSubmotion(U,X,Y,U0,t0,x0)
+function [S,xf,Uf]=chooseSubmotion(U,X,Y,U0,x0)
 
 B=.15^2; %mean peak submovement velocity = 15 cm / s
-Q0=-5; %Cost is a loss
+Q0=-1; %Cost is a loss
 Q1=-2*1.875^2;
 
 L2=(X-x0(1)).^2+(Y-x0(2)).^2;
@@ -15,6 +15,6 @@ cumP=cumsum(eJ);
 cumP=cumP/cumP(end);
 chosen=find(cumP>=rand,1,'first');
 
-tf=t0+Tn2(chosen)^-.5;
+S=Tn2(chosen)^-.5;
 xf=[X(chosen) Y(chosen)];
 Uf=U(chosen);
