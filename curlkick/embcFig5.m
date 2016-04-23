@@ -11,26 +11,26 @@ subplot(2,2,1)
 hold on
 for k=1:8
     subs(k).resid=vertcat(lumps(:,k).resid);
-    subs(k).resid=subs(k).resid/mean(subs(k).resid);
+    subs(k).resid=subs(k).resid; %/mean(subs(k).resid);
     [f,x]=ecdf(subs(k).resid);
-    plot(x,log(1-f),'.','color',colors(k,:),'markersize',msize)
+    plot(x,f,'.','color',colors(k,:),'markersize',msize)
     subs(k).residf=f;
     subs(k).residx=x;
 end
-R2(1)=linfitR2(vertcat(subs.residx),vertcat(subs.residf));
+%R2(1)=linfitR2(vertcat(subs.residx),vertcat(subs.residf));
 title('Residuals')
 
 subplot(2,2,2)
 hold on
 for k=1:8
     subs(k).L2Tn2=vertcat(lumps(:,k).L2).*vertcat(lumps(:,k).Tn2);
-    subs(k).L2Tn2=subs(k).L2Tn2/mean(subs(k).L2Tn2);
+    subs(k).L2Tn2=subs(k).L2Tn2; %/mean(subs(k).L2Tn2);
     [f,x]=ecdf(subs(k).L2Tn2);
-    plot(x,log(1-f),'.','color',colors(k,:),'markersize',msize)
+    plot(x,f,'.','color',colors(k,:),'markersize',msize)
     subs(k).L2Tn2f=f;
     subs(k).L2Tn2x=x;
 end
-R2(2)=linfitR2(vertcat(subs.L2Tn2x),vertcat(subs.L2Tn2f));
+%R2(2)=linfitR2(vertcat(subs.L2Tn2x),vertcat(subs.L2Tn2f));
 title('Peak Kinetic Energy')
 
 subplot(2,2,4)
@@ -50,7 +50,7 @@ for k=1:8
     subs(k).nf=f;
     subs(k).nx=x;
 end
-R2(3)=linfitR2(vertcat(subs.nx),vertcat(subs.nf));
+R2(4)=linfitR2(vertcat(subs.nx),vertcat(subs.nf));
 title('Submotion Count')
 
 subplot(2,2,3)
@@ -68,7 +68,7 @@ for k=1:8
     subs(k).dcf=f;
     subs(k).dcx=x;
 end
-%R2(4)=linfitR2(vertcat(subs.dcx),vertcat(subs.dcf))
+<<<<<<< HEAD
 title('Peak-to-Peak Duration')
 nDCs
 
