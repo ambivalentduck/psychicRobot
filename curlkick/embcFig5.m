@@ -68,7 +68,6 @@ for k=1:8
     subs(k).dcf=f;
     subs(k).dcx=x;
 end
-<<<<<<< HEAD
 title('Peak-to-Peak Duration')
 nDCs
 

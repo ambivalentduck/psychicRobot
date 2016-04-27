@@ -1,9 +1,9 @@
 clc
 clear all
 
-zed=0:.01:3;
+zed=0:.01:5;
 lz=length(zed);
-lambda=.1207; %Empirical, sub 1
+lambda=.0838; %Empirical, sub 1
 theta=.01; %.5301; %Empirical, sub 1
 
 maxn=6;
@@ -92,3 +92,17 @@ xlim([.3 .6])
 
 figure(6)
 hist(S,50)
+
+%% less than one
+
+figure(7)
+clf
+hold on
+
+fracsOfInt=[.9 1];
+
+for each=fracsOfInt
+    pInferred = ifft(fft(p).^each);
+    
+    plot(zed(1:10),real(pInferred(1:10)))
+end

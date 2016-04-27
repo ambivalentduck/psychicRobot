@@ -21,7 +21,9 @@ for k=1:8
         last(kk)=lumps(kk,k).dC(end);
     end
     first=first(first>=0);
+    firsts(k)=mean(first.^2)
     last=last(last>=0);
+    lasts(k)=mean(last.^2)
     
     subplot(1,2,1)
     hold on
@@ -50,3 +52,5 @@ xlabel('Inter-Submotion Peak Interval Squared')
 
 means
 mean(means)
+firsts'
+lasts'
