@@ -104,5 +104,9 @@ fracsOfInt=[.9 1];
 for each=fracsOfInt
     pInferred = ifft(fft(p).^each);
     
-    plot(zed(1:10),real(pInferred(1:10)))
+    plot(zed,real(pInferred))
 end
+
+
+pofx=@(zed)1/lambda*exp(-zed.^2/lambda)*2.*zed;
+maxme=@(x) ifft(fft(p).^x(1)
