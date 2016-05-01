@@ -105,4 +105,5 @@ for each=fracsOfInt
     pInferred = ifft(fft(p).^each);
     
     plot(zed(1:10),real(pInferred(1:10)))
+    plot(zed,real(pInferred))
 end
