@@ -3,6 +3,7 @@ function convertDingwell2LT(X)
 L=X(:,1);
 T=X(:,2);
 
+
 figure(1)
 clf
 subplot(2,1,1)
