@@ -43,7 +43,7 @@ for k=1:8
     lrf=log(1-f(inds));
     x=x(inds);
     p=polyfit(x,lrf,1);
-    nDCs(k,1:2)=[k p(1)];
+    nDCs(k,1:2)=[min(subs(k).n) p(1)];
     subs(k).n=subs(k).n/mean(subs(k).n);
     [f,x]=ecdf(subs(k).n);
     plot(x,log(1-f),'.','color',colors(k,:),'markersize',msize)
