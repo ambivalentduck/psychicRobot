@@ -1,4 +1,4 @@
-function correctcdf(trials)
+function [minned, dmse]=correctcdf(trials,N)
 
 % lambda=3;
 M=10000;
@@ -24,7 +24,7 @@ end
 
 c=S(:,4);
 c=sort(c);
-c=c(1:end-1);
+c=c(3:end-2);
 length(c)
 skewness(c)
 [F,x]=ecdf(c);
@@ -45,8 +45,9 @@ minme=@(params) sum((F-computeP(params)).^2);
 %minned=fmincon(minme,[.2; 2],-eye(2),[0;0])
 minned=fmincon(minme,[.2; 2],[],[],[],[],[0;0],[],@(x) deal(0,0),optimoptions('fmincon','TolX',1e-14))
 %minned=fminbnd(minme,[0 0],[1 100]) %,optimset('TolX',1e-12))
+%minned=fminsearch(minme,[.00001 70])
 
-figure(1)
+figure(N)
 clf
 hold on
 plot(x,F,'b',x,computeP(minned),'r')
@@ -55,7 +56,7 @@ mu=mean(c);
 sigma=std(c);
 plot(x,normcdf(x,mu,sigma),'g')
 mseGauss=mean((F-normcdf(x,mu,sigma)).^2)
-mseGauss-msePatton
+dmse=mseGauss-msePatton
 
 minned(1)
 

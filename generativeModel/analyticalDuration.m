@@ -109,4 +109,4 @@ end
 
 
 pofx=@(zed)1/lambda*exp(-zed.^2/lambda)*2.*zed;
-maxme=@(x) ifft(fft(p).^x(1)
+maxme=@(x) ifft(fft(p).^x(1))
